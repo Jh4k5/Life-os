@@ -1,5 +1,5 @@
 {
-  "app": { "name": "Live OS", "tagline": "Your smart life operating system" },
+  "app": { "name": "Life OS", "tagline": "Your smart life operating system" },
   "nav": { "home": "Home", "more": "More" },
   "home": {
     "ai": "AI",
@@ -267,7 +267,7 @@
     "preview": "Preview"
   },
   "auth": {
-    "welcome_title": "Live OS",
+    "welcome_title": "Life OS",
     "welcome_sub": "Your smart life operating system",
     "slide1_title": "Talk, and AI organizes",
     "slide1_desc": "Record your voice or type — AI understands and organizes everything",

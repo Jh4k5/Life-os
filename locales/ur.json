@@ -1,5 +1,5 @@
 {
-  "app": { "name": "Live OS", "tagline": "آپ کا اسمارٹ لائف آپریٹنگ سسٹم" },
+  "app": { "name": "Life OS", "tagline": "آپ کا اسمارٹ لائف آپریٹنگ سسٹم" },
   "nav": { "home": "ہوم", "more": "مزید" },
   "home": {
     "ai": "اے آئی",
@@ -267,7 +267,7 @@
     "preview": "پیش منظر"
   },
   "auth": {
-    "welcome_title": "Live OS",
+    "welcome_title": "Life OS",
     "welcome_sub": "آپ کا اسمارٹ لائف آپریٹنگ سسٹم",
     "slide1_title": "بولیں، اے آئی منظم کرے",
     "slide1_desc": "اپنی آواز ریکارڈ کریں یا لکھیں — اے آئی سب کچھ سمجھتا اور منظم کرتا ہے",

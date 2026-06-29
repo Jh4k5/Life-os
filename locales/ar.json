@@ -1,5 +1,5 @@
 {
-  "app": { "name": "Live OS", "tagline": "نظام تشغيل حياتك الذكية" },
+  "app": { "name": "Life OS", "tagline": "نظام تشغيل حياتك الذكية" },
   "nav": { "home": "الرئيسية", "more": "المزيد" },
   "home": {
     "ai": "الذكاء",
@@ -267,7 +267,7 @@
     "preview": "معاينة"
   },
   "auth": {
-    "welcome_title": "Live OS",
+    "welcome_title": "Life OS",
     "welcome_sub": "نظام تشغيل حياتك الذكي",
     "slide1_title": "تحدّث، والذكاء ينظّم",
     "slide1_desc": "سجّل صوتك أو اكتب — الذكاء الاصطناعي يفهم وينظّم كل شيء",

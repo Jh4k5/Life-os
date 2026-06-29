@@ -1,5 +1,5 @@
 {
-  "app": { "name": "Live OS", "tagline": "Dein smartes Lebens-Betriebssystem" },
+  "app": { "name": "Life OS", "tagline": "Dein smartes Lebens-Betriebssystem" },
   "nav": { "home": "Start", "more": "Mehr" },
   "home": {
     "ai": "KI",
@@ -267,7 +267,7 @@
     "preview": "Vorschau"
   },
   "auth": {
-    "welcome_title": "Live OS",
+    "welcome_title": "Life OS",
     "welcome_sub": "Dein smartes Lebens-Betriebssystem",
     "slide1_title": "Sprich, die KI organisiert",
     "slide1_desc": "Nimm deine Stimme auf oder schreibe — die KI versteht und organisiert alles",

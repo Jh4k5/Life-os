@@ -20,7 +20,7 @@ export default function SignInScreen() {
     <View style={[S.screen, { backgroundColor: c.bg0, paddingTop: top + 40 }]}>
       <ScrollView contentContainerStyle={{ padding: 24, gap: 20 }} keyboardShouldPersistTaps="handled">
         <View style={{ alignItems: 'center', gap: 8, marginBottom: 12 }}>
-          <Text style={{ fontSize: 28, fontWeight: '800', color: c.t1, letterSpacing: -0.5 }}>Live OS</Text>
+          <Text style={{ fontSize: 28, fontWeight: '800', color: c.t1, letterSpacing: -0.5 }}>Life OS</Text>
           <Text style={{ color: c.t2, fontSize: 14 }}>{t('auth.welcome_sub')}</Text>
         </View>
 

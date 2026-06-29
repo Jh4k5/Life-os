@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Live OS",
+    "name": "Life OS",
     "slug": "live-os",
     "version": "1.0.0",
     "scheme": "liveos",
@@ -14,8 +14,8 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.liveos.app",
       "infoPlist": {
-        "NSMicrophoneUsageDescription": "Live OS يحتاج للميكروفون لتسجيل ملاحظاتك",
-        "NSSpeechRecognitionUsageDescription": "Live OS يستخدم التعرف على الكلام"
+        "NSMicrophoneUsageDescription": "Life OS يحتاج للميكروفون لتسجيل ملاحظاتك",
+        "NSSpeechRecognitionUsageDescription": "Life OS يستخدم التعرف على الكلام"
       }
     },
     "android": {
@@ -31,8 +31,8 @@
       [
         "expo-speech-recognition",
         {
-          "microphonePermission": "Live OS يحتاج للميكروفون لتسجيل ملاحظاتك",
-          "speechRecognitionPermission": "Live OS يستخدم التعرف على الكلام"
+          "microphonePermission": "Life OS يحتاج للميكروفون لتسجيل ملاحظاتك",
+          "speechRecognitionPermission": "Life OS يستخدم التعرف على الكلام"
         }
       ]
     ],

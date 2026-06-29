@@ -1,5 +1,5 @@
 {
-  "app": { "name": "Live OS", "tagline": "Akıllı yaşam işletim sistemin" },
+  "app": { "name": "Life OS", "tagline": "Akıllı yaşam işletim sistemin" },
   "nav": { "home": "Ana sayfa", "more": "Daha fazla" },
   "home": {
     "ai": "Yapay zekâ",
@@ -267,7 +267,7 @@
     "preview": "Önizleme"
   },
   "auth": {
-    "welcome_title": "Live OS",
+    "welcome_title": "Life OS",
     "welcome_sub": "Akıllı yaşam işletim sistemin",
     "slide1_title": "Konuş, yapay zekâ düzenlesin",
     "slide1_desc": "Sesini kaydet veya yaz — yapay zekâ her şeyi anlar ve düzenler",

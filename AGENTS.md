@@ -1,4 +1,4 @@
-# Live OS — AGENTS.md v3
+# Life OS — AGENTS.md v3
 
 ## المشروع
 React Native + Expo SDK 54 | Frontend فقط | Mock Data | لا Backend

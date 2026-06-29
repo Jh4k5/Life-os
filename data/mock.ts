@@ -56,7 +56,7 @@ export const mockAreas = [
     name: 'المشروع الشخصي',
     emoji: '🚀',
     color: '#8B5CF6',
-    description: 'Live OS — نظام تشغيل الحياة الذكي',
+    description: 'Life OS — نظام تشغيل الحياة الذكي',
     projects: [],
   },
 ];

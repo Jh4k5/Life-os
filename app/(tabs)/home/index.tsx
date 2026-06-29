@@ -93,7 +93,7 @@ const HomeHeader = ({ c, router }: any) => {
   return (
     <View style={[S.header, { paddingTop: top + 12 }]}>
       <View>
-        <Text style={[S.logo, { color: c.t1 }]}>Live OS</Text>
+        <Text style={[S.logo, { color: c.t1 }]}>Life OS</Text>
         <Text style={[S.greeting, { color: c.t2 }]}>
           {new Date().getHours() < 12 ? '☀ صباح الخير' : '🌙 مساء الخير'}
         </Text>

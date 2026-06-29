@@ -1,5 +1,5 @@
 {
-  "app": { "name": "Live OS", "tagline": "Votre système d'exploitation de vie intelligent" },
+  "app": { "name": "Life OS", "tagline": "Votre système d'exploitation de vie intelligent" },
   "nav": { "home": "Accueil", "more": "Plus" },
   "home": {
     "ai": "IA",
@@ -267,7 +267,7 @@
     "preview": "Aperçu"
   },
   "auth": {
-    "welcome_title": "Live OS",
+    "welcome_title": "Life OS",
     "welcome_sub": "Votre système d'exploitation de vie intelligent",
     "slide1_title": "Parlez, l'IA organise",
     "slide1_desc": "Enregistrez votre voix ou écrivez — l'IA comprend et organise tout",
