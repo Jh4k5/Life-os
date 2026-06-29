@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "Live OS",
+    "slug": "live-os",
+    "version": "1.0.0",
+    "scheme": "liveos",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#06080F"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.liveos.app",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Live OS يحتاج للميكروفون لتسجيل ملاحظاتك",
+        "NSSpeechRecognitionUsageDescription": "Live OS يستخدم التعرف على الكلام"
+      }
+    },
+    "android": {
+      "package": "com.liveos.app",
+      "permissions": ["android.permission.RECORD_AUDIO"]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Live OS يحتاج للميكروفون لتسجيل ملاحظاتك",
+          "speechRecognitionPermission": "Live OS يستخدم التعرف على الكلام"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

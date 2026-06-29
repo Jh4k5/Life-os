@@ -1,0 +1,31 @@
+LIVE OS — AGENT RULES v3
+
+STRUCTURE RULES:
+- Projects → داخل Areas فقط (more/areas/[id])
+- Journal  → مستقل (more/journal/) — لا يُدمج مع شيء
+- Study    → مستقل (more/study/)   — لا يُدمج مع شيء
+- Learning → مستقل (more/learning/) — لا يُدمج مع شيء
+- More grid → 10 sections منفصلة
+
+COLORS:
+- useTheme() → { c } → c.t1, c.bg0, c.journal, c.study...
+- كل قسم له لون هوية: c.areas, c.habits, c.tasks, c.journal, c.study...
+- ❌ لا hardcoded colors أبداً
+
+RTL:
+- marginStart / marginEnd / paddingStart / paddingEnd
+- const { rowDir, textAlign } = useRTL()
+- ❌ marginLeft / marginRight ممنوع
+
+I18N:
+- const { t } = useTranslation()
+- t('sections.journal') — لا t('sections.knowledge')
+- ❌ نصوص عربية مباشرة ممنوعة خارج locales/
+
+PERFORMANCE:
+- BlurView للزجاج (dark mode فقط)
+- بطاقة بيضاء + ظل (light mode)
+
+COMMITS:
+- git commit بعد كل خطوة مكتملة
+- التطبيق يبني بدون أخطاء قبل كل commit
