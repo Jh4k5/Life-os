@@ -1,0 +1,211 @@
+// app/settings/index.tsx
+import React from 'react';
+import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme, type ThemeMode } from '@/contexts/ThemeContext';
+import { useTranslation } from 'react-i18next';
+import { Header } from '@/components/layout/Header';
+import { SmartCard } from '@/components/ui/SmartCard';
+import { accentPresets } from '@/tokens/colors';
+import { LANGS, changeLang } from '@/lib/i18n';
+import { useSettingsStore } from '@/store/settingsStore';
+
+export default function SettingsScreen() {
+  const { c, isDark, mode, setMode, accent, setAccent } = useTheme();
+  const { t, i18n } = useTranslation();
+  const router = useRouter();
+  const { fontSize, setFontSize, density, setDensity } = useSettingsStore();
+
+  const Row = ({ icon, label, value, onPress, iconColor }: any) => (
+    <Pressable onPress={onPress} style={[S.row, { borderBottomColor: c.b0 }]}>
+      <View style={[S.rowIcon, { backgroundColor: (iconColor ?? c.accent) + '20' }]}>
+        <Ionicons name={icon} size={18} color={iconColor ?? c.accent} />
+      </View>
+      <Text style={[S.rowLabel, { color: c.t1 }]}>{label}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+        {value && <Text style={{ color: c.t3, fontSize: 14 }}>{value}</Text>}
+        <Ionicons name="chevron-forward" size={16} color={c.t3} />
+      </View>
+    </Pressable>
+  );
+
+  return (
+    <View style={[S.screen, { backgroundColor: c.bg0 }]}>
+      <Header title={t('settings.title')} />
+      <ScrollView contentContainerStyle={{ padding: 16, gap: 18, paddingBottom: 110 }}>
+        {/* ── المظهر ── */}
+        <Text style={[S.groupTitle, { color: c.t2 }]}>{t('settings.appearance')}</Text>
+        <SmartCard>
+          {/* الثيم */}
+          <Text style={[S.cardLabel, { color: c.t1 }]}>{t('settings.theme')}</Text>
+          <View style={S.threeRow}>
+            {(
+              [
+                ['dark', '🌙', 'داكن'],
+                ['light', '☀', 'فاتح'],
+                ['system', '📱', 'تلقائي'],
+              ] as [ThemeMode, string, string][]
+            ).map(([m, em, lbl]) => (
+              <Pressable
+                key={m}
+                onPress={() => setMode(m)}
+                style={[
+                  S.themeBtn,
+                  { backgroundColor: mode === m ? c.accent : c.bg3, borderColor: mode === m ? c.accent : c.b1 },
+                ]}
+              >
+                <Text style={{ fontSize: 20 }}>{em}</Text>
+                <Text style={{ color: mode === m ? '#FFF' : c.t2, fontSize: 12, fontWeight: '600' }}>{lbl}</Text>
+              </Pressable>
+            ))}
+          </View>
+          <View style={[S.div, { backgroundColor: c.b0 }]} />
+          {/* لون النبرة */}
+          <Text style={[S.cardLabel, { color: c.t1 }]}>{t('settings.accent')}</Text>
+          <View style={S.accentGrid}>
+            {accentPresets
+              .filter((a) => a.id !== 'custom')
+              .map((opt) => {
+                const clr = isDark ? opt.dark : opt.light;
+                const isActive = accent === clr;
+                return (
+                  <Pressable
+                    key={opt.id}
+                    onPress={() => setAccent(clr)}
+                    style={[
+                      S.accentDot,
+                      {
+                        backgroundColor: clr,
+                        transform: [{ scale: isActive ? 1.25 : 1 }],
+                        borderWidth: isActive ? 3 : 0,
+                        borderColor: isDark ? '#FFF' : '#000',
+                      },
+                    ]}
+                  />
+                );
+              })}
+          </View>
+          <View style={[S.div, { backgroundColor: c.b0 }]} />
+          {/* حجم الخط */}
+          <Text style={[S.cardLabel, { color: c.t1 }]}>{t('settings.font_size')}</Text>
+          <View style={S.threeRow}>
+            {(
+              [
+                ['sm', 'A', 'صغير'],
+                ['md', 'AA', 'متوسط'],
+                ['lg', 'AAA', 'كبير'],
+              ] as const
+            ).map(([k, sym, lbl]) => (
+              <Pressable
+                key={k}
+                onPress={() => setFontSize(k)}
+                style={[
+                  S.themeBtn,
+                  { backgroundColor: fontSize === k ? c.accent : c.bg3, borderColor: fontSize === k ? c.accent : c.b1 },
+                ]}
+              >
+                <Text style={{ color: fontSize === k ? '#FFF' : c.t1, fontSize: k === 'sm' ? 14 : k === 'md' ? 18 : 22, fontWeight: '700' }}>
+                  {sym}
+                </Text>
+                <Text style={{ color: fontSize === k ? '#FFF' : c.t2, fontSize: 11 }}>{lbl}</Text>
+              </Pressable>
+            ))}
+          </View>
+          <View style={[S.div, { backgroundColor: c.b0 }]} />
+          {/* الكثافة */}
+          <Text style={[S.cardLabel, { color: c.t1 }]}>{t('settings.density')}</Text>
+          <View style={S.threeRow}>
+            {(
+              [
+                ['compact', 'مضغوط'],
+                ['default', 'افتراضي'],
+                ['spacious', 'واسع'],
+              ] as const
+            ).map(([k, lbl]) => (
+              <Pressable
+                key={k}
+                onPress={() => setDensity(k)}
+                style={[
+                  S.themeBtn,
+                  { backgroundColor: density === k ? c.accent : c.bg3, borderColor: density === k ? c.accent : c.b1 },
+                ]}
+              >
+                <Text style={{ color: density === k ? '#FFF' : c.t2, fontSize: 12, fontWeight: '600' }}>{lbl}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </SmartCard>
+
+        {/* ── اللغة ── */}
+        <Text style={[S.groupTitle, { color: c.t2 }]}>{t('settings.language')}</Text>
+        <SmartCard>
+          {LANGS.map((lang, idx) => (
+            <Pressable
+              key={lang.code}
+              onPress={() => changeLang(lang.code)}
+              style={[
+                S.langRow,
+                idx < LANGS.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: c.b0 },
+              ]}
+            >
+              <Text style={{ fontSize: 24 }}>{lang.flag}</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: c.t1, fontSize: 15 }}>{lang.name}</Text>
+                {lang.rtl && <Text style={{ color: c.t3, fontSize: 11, marginTop: 2 }}>RTL — من اليمين لليسار</Text>}
+              </View>
+              {i18n.language === lang.code ? (
+                <Ionicons name="checkmark-circle" size={22} color={c.accent} />
+              ) : (
+                <View style={[S.radioEmpty, { borderColor: c.b2 }]} />
+              )}
+            </Pressable>
+          ))}
+        </SmartCard>
+
+        {/* ── الحساب ── */}
+        <Text style={[S.groupTitle, { color: c.t2 }]}>{t('settings.account')}</Text>
+        <SmartCard>
+          <Row icon="person-outline" label="الملف الشخصي" onPress={() => {}} iconColor={c.accent} />
+          <Row icon="diamond-outline" label="الاشتراك" value="تجربة مجانية" onPress={() => {}} iconColor={c.habits} />
+          <Row icon="download-outline" label="تصدير البيانات" onPress={() => {}} iconColor={c.tasks} />
+          <Row icon="shield-checkmark-outline" label="الخصوصية" onPress={() => {}} iconColor={c.green} />
+        </SmartCard>
+
+        {/* Sign Out */}
+        <Pressable
+          onPress={() => router.replace('/(auth)/sign-in')}
+          style={[S.signOutBtn, { borderColor: c.red + '50' }]}
+        >
+          <Ionicons name="log-out-outline" size={20} color={c.red} />
+          <Text style={{ color: c.red, fontWeight: '600', fontSize: 16 }}>{t('settings.sign_out')}</Text>
+        </Pressable>
+      </ScrollView>
+    </View>
+  );
+}
+
+const S = StyleSheet.create({
+  screen: { flex: 1 },
+  groupTitle: { fontSize: 13, fontWeight: '700', paddingStart: 4 },
+  cardLabel: { fontSize: 15, fontWeight: '600', marginBottom: 12 },
+  threeRow: { flexDirection: 'row', gap: 8 },
+  themeBtn: { flex: 1, alignItems: 'center', gap: 4, paddingVertical: 12, borderRadius: 12, borderWidth: 1 },
+  div: { height: 1, marginVertical: 14 },
+  accentGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 14, paddingVertical: 4 },
+  accentDot: { width: 34, height: 34, borderRadius: 17 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 13, borderBottomWidth: StyleSheet.hairlineWidth },
+  rowIcon: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  rowLabel: { flex: 1, fontSize: 15 },
+  langRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
+  radioEmpty: { width: 22, height: 22, borderRadius: 11, borderWidth: 1.5 },
+  signOutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    height: 52,
+    borderRadius: 14,
+    borderWidth: 1.5,
+  },
+});
