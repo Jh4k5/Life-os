@@ -1,4 +1,5 @@
 // tokens/colors.ts
+type BlurTint = 'dark' | 'light';
 // ════════════════════════════════════════════════════
 // DARK — "Midnight Cosmos"
 // كحلي عميق لا أسود — يشعر بالعمق والذكاء
@@ -18,7 +19,7 @@ export const dark = {
   // ── الزجاج السائل ──
   glass: 'rgba(13,17,33,0.72)',
   glassBorder: 'rgba(255,255,255,0.09)',
-  glassTint: 'dark' as const,
+  glassTint: 'dark' as BlurTint,
   // ── النصوص ──
   t1: '#EDF0FF', // أساسي
   t2: '#8A90B8', // ثانوي
@@ -69,7 +70,7 @@ export const light = {
   b3: 'rgba(0,0,0,0.24)',
   glass: 'rgba(255,255,255,0.85)',
   glassBorder: 'rgba(0,0,0,0.07)',
-  glassTint: 'light' as const,
+  glassTint: 'light' as BlurTint,
   t1: '#0F1020',
   t2: '#5C6080',
   t3: '#A8ACCC',
