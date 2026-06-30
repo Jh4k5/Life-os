@@ -9,7 +9,20 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useRTL } from '@/hooks/useRTL';
+import { ProgressBar } from './ProgressBar';
+
+// Habit identity comes from a type Ionicon (no emoji) tinted by the habit's
+// own color — treated like an Area's own surface accent.
+const TYPE_ICON: Record<HabitData['type'], keyof typeof Ionicons.glyphMap> = {
+  checkbox: 'checkmark-done-outline',
+  counter: 'repeat-outline',
+  quantity: 'flask-outline',
+  timer: 'timer-outline',
+  stopwatch: 'stopwatch-outline',
+};
 
 export interface HabitData {
   id: string;
@@ -114,11 +127,7 @@ export const HabitCard = ({ habit, onUpdate }: Props) => {
             </View>
           </HabitRow>
           <View style={{ paddingHorizontal: 14, paddingBottom: 10, gap: 4 }}>
-            <View style={[S.pBg, { backgroundColor: c.b1 }]}>
-              <View
-                style={[S.pFill, { width: `${progress * 100}%`, backgroundColor: habit.color }]}
-              />
-            </View>
+            <ProgressBar progress={progress} color={habit.color} height={5} />
             <Text style={[S.pTxt, { color: c.t3 }]}>
               {habit.todayValue} / {habit.target} {habit.unit ?? ''}
             </Text>
@@ -209,11 +218,7 @@ export const HabitCard = ({ habit, onUpdate }: Props) => {
         </HabitRow>
         {habit.type === 'timer' && (
           <View style={{ paddingHorizontal: 14, paddingBottom: 10, gap: 4 }}>
-            <View style={[S.pBg, { backgroundColor: c.b1 }]}>
-              <View
-                style={[S.pFill, { width: `${progress * 100}%`, backgroundColor: habit.color }]}
-              />
-            </View>
+            <ProgressBar progress={progress} color={habit.color} height={5} />
             <Text style={[S.pTxt, { color: c.t3 }]}>
               {fmt(elapsed)} / {fmt(targetSec)}
             </Text>
@@ -232,39 +237,40 @@ const HabitRow = ({
   habit: HabitData;
   c: ReturnType<typeof useTheme>['c'];
   children: React.ReactNode;
-}) => (
-  <View
-    style={{
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 12,
-      padding: 14,
-      paddingBottom: habit.type === 'checkbox' ? 14 : 8,
-    }}
-  >
-    <View
-      style={{
-        width: 46,
-        height: 46,
-        borderRadius: 13,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: habit.color + '20',
-      }}
-    >
-      <Text style={{ fontSize: 22 }}>{habit.emoji}</Text>
+}) => {
+  const { t } = useTranslation();
+  const { rowDir, textAlign } = useRTL();
+  const isBest = habit.streak > 0 && habit.streak === habit.bestStreak;
+  return (
+    <View style={{ flexDirection: rowDir, alignItems: 'center', gap: 12, padding: 14, paddingBottom: habit.type === 'checkbox' ? 14 : 8 }}>
+      <View
+        style={{
+          width: 46,
+          height: 46,
+          borderRadius: 13,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: habit.color + '20',
+        }}
+      >
+        <Ionicons name={TYPE_ICON[habit.type]} size={22} color={habit.color} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontSize: 15, fontWeight: '600', color: c.t1, textAlign }}>{habit.name}</Text>
+        {habit.streak > 0 && (
+          <View style={{ flexDirection: rowDir, alignItems: 'center', gap: 4, marginTop: 3 }}>
+            <Ionicons name="flame" size={12} color={c.orange} />
+            <Text style={{ fontSize: 12, fontWeight: '600', color: c.orange }}>
+              {t('habits.streak', { n: habit.streak })}
+            </Text>
+            {isBest && <Ionicons name="trophy" size={11} color={c.yellow} />}
+          </View>
+        )}
+      </View>
+      {children}
     </View>
-    <View style={{ flex: 1 }}>
-      <Text style={{ fontSize: 15, fontWeight: '600', color: c.t1 }}>{habit.name}</Text>
-      {habit.streak > 0 && (
-        <Text style={{ fontSize: 12, fontWeight: '500', color: '#F59E0B', marginTop: 2 }}>
-          🔥 {habit.streak} يوم {habit.streak === habit.bestStreak ? '· 🏆 الأفضل' : ''}
-        </Text>
-      )}
-    </View>
-    {children}
-  </View>
-);
+  );
+};
 
 const S = StyleSheet.create({
   card: { borderRadius: 16, borderWidth: 1, marginVertical: 4, overflow: 'hidden' },
@@ -295,7 +301,5 @@ const S = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  pBg: { height: 5, borderRadius: 3, overflow: 'hidden' },
-  pFill: { height: 5, borderRadius: 3 },
   pTxt: { fontSize: 11 },
 });
