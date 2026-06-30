@@ -48,14 +48,14 @@ export default function FocusScreen() {
 
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
-      <Header title={t('sections.focus')} accent={c.focus} />
+      <Header title={t('sections.focus')} accent={c.accent} />
       <ScrollView contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: 110 }}>
         {/* Timer hero */}
-        <SmartCard accent={c.focus} elevated>
+        <SmartCard accent={c.accent} elevated>
           <View style={{ alignItems: 'center', gap: 16, paddingVertical: 14 }}>
-            <Text style={[S.timer, { color: running ? c.focus : c.t1 }]}>{fmt(elapsed)}</Text>
+            <Text style={[S.timer, { color: running ? c.accent : c.t1 }]}>{fmt(elapsed)}</Text>
             <View style={{ flexDirection: 'row', gap: 14 }}>
-              <Pressable onPress={toggle} style={[S.bigBtn, { backgroundColor: c.focus }]}>
+              <Pressable onPress={toggle} style={[S.bigBtn, { backgroundColor: c.accent }]}>
                 <Ionicons name={running ? 'pause' : 'play'} size={26} color="#FFF" />
               </Pressable>
               {elapsed > 0 && (
@@ -72,7 +72,7 @@ export default function FocusScreen() {
 
         {/* Setup */}
         <View style={[S.input, { backgroundColor: c.bg2, borderColor: c.b1 }]}>
-          <Ionicons name="bulb-outline" size={18} color={c.focus} />
+          <Ionicons name="bulb-outline" size={18} color={c.accent} />
           <TextInput
             style={{ flex: 1, color: c.t1 }}
             placeholder={t('focus.what_doing')}
@@ -90,7 +90,7 @@ export default function FocusScreen() {
               onPress={() => setEnergyBefore(n)}
               style={[
                 S.energyBtn,
-                { backgroundColor: energyBefore === n ? c.focus : c.bg2, borderColor: energyBefore === n ? c.focus : c.b1 },
+                { backgroundColor: energyBefore === n ? c.accent : c.bg2, borderColor: energyBefore === n ? c.accent : c.b1 },
               ]}
             >
               <Text style={{ color: energyBefore === n ? '#FFF' : c.t2, fontWeight: '700', fontSize: 16 }}>{n}</Text>
@@ -101,7 +101,7 @@ export default function FocusScreen() {
         {/* Stats */}
         <View style={{ flexDirection: 'row', gap: 8 }}>
           <SmartCard style={{ flex: 1, alignItems: 'center', paddingVertical: 16 }}>
-            <Text style={{ color: c.focus, fontWeight: '800', fontSize: 24 }}>{Math.round(totalMin / 60)}h</Text>
+            <Text style={{ color: c.accent, fontWeight: '800', fontSize: 24 }}>{Math.round(totalMin / 60)}h</Text>
             <Text style={{ color: c.t3, fontSize: 12, marginTop: 4 }}>{t('focus.total')}</Text>
           </SmartCard>
           <SmartCard style={{ flex: 1, alignItems: 'center', paddingVertical: 16 }}>
@@ -118,8 +118,8 @@ export default function FocusScreen() {
               key={f.id}
               style={[S.histRow, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.b0 }]}
             >
-              <View style={[S.histIcon, { backgroundColor: c.focus + '20' }]}>
-                <Text style={{ color: c.focus, fontWeight: '700', fontSize: 13 }}>{f.duration}m</Text>
+              <View style={[S.histIcon, { backgroundColor: c.accent + '20' }]}>
+                <Text style={{ color: c.accent, fontWeight: '700', fontSize: 13 }}>{f.duration}m</Text>
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{ color: c.t1, fontSize: 14 }} numberOfLines={1}>
@@ -127,9 +127,12 @@ export default function FocusScreen() {
                 </Text>
                 <Text style={{ color: c.t3, fontSize: 11, marginTop: 2 }}>{f.date}</Text>
               </View>
-              <Text style={{ color: c.t3, fontSize: 12 }}>
-                ⚡ {f.energyBefore}→{f.energyAfter}
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                <Ionicons name="flash-outline" size={12} color={c.t3} />
+                <Text style={{ color: c.t3, fontSize: 12, fontVariant: ['tabular-nums'] }}>
+                  {f.energyBefore}→{f.energyAfter}
+                </Text>
+              </View>
             </View>
           ))}
         </SmartCard>
