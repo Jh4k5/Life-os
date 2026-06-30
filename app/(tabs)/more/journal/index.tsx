@@ -8,6 +8,8 @@ import { useTranslation } from 'react-i18next';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { Header } from '@/components/layout/Header';
 import { mockJournals } from '@/data/mock';
+import { repository } from '@/services/repository';
+import { useAsync } from '@/hooks/useAsync';
 
 const MOOD_EMOJI: Record<string, string> = {
   great: '😄',
@@ -23,8 +25,9 @@ export default function JournalScreen() {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [filterMood, setFilterMood] = useState<string | null>(null);
+  const { data: journals } = useAsync(() => repository.listJournal(), mockJournals);
 
-  const filtered = mockJournals.filter(
+  const filtered = journals.filter(
     (j) =>
       (!search || j.title.includes(search) || j.preview.includes(search)) &&
       (!filterMood || j.mood === filterMood)
@@ -64,8 +67,8 @@ export default function JournalScreen() {
             🔥 سلسلة كتابة {streak} أيام متتالية
           </Text>
           <Text style={{ color: c.t2, fontSize: 12, marginTop: 2 }}>
-            {mockJournals.length} مدخلة · متوسط{' '}
-            {Math.round(mockJournals.reduce((s, j) => s + j.words, 0) / Math.max(mockJournals.length, 1))} كلمة
+            {journals.length} مدخلة · متوسط{' '}
+            {Math.round(journals.reduce((s, j) => s + j.words, 0) / Math.max(journals.length, 1))} كلمة
           </Text>
         </View>
       </View>

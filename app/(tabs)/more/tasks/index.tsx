@@ -11,6 +11,8 @@ import { TaskCard } from '@/components/ui/TaskCard';
 import { TabPill } from '@/components/ui/TabPill';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { mockTasks, type TaskData } from '@/data/mock';
+import { repository } from '@/services/repository';
+import { useAsync } from '@/hooks/useAsync';
 
 type TView = 'list' | 'board' | 'energy';
 const PRIORITY_ORDER: TaskData['priority'][] = ['urgent', 'high', 'medium', 'low', 'none'];
@@ -19,9 +21,15 @@ export default function TasksScreen() {
   const { c } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const { data: loaded } = useAsync(() => repository.listTasks(), mockTasks);
   const [tasks, setTasks] = useState<TaskData[]>(mockTasks);
   const [view, setView] = useState<TView>('list');
   const [quick, setQuick] = useState('');
+
+  // hydrate local working copy whenever the source list changes (load / focus)
+  React.useEffect(() => {
+    setTasks(loaded);
+  }, [loaded]);
 
   const toggle = (id: string) =>
     setTasks((p) => p.map((tk) => (tk.id === id ? { ...tk, done: !tk.done } : tk)));

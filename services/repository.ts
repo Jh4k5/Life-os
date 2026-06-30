@@ -5,6 +5,17 @@
 // { demo: true } so the UI can stay honest ("applied locally") — never faked.
 import type { DetectedItem, EntityType } from './types';
 import { getClient } from './supabase';
+import { mockJournals, mockTasks, type JournalEntry, type TaskData } from '@/data/mock';
+import { mockHabits } from '@/data/mock';
+import type { HabitData } from '@/components/ui/HabitCard';
+
+/** Returns the signed-in user id, or null when running in local/demo mode. */
+async function activeUser(): Promise<{ client: ReturnType<typeof getClient>; uid: string } | null> {
+  const client = getClient();
+  if (!client) return null;
+  const { data } = await client.auth.getUser();
+  return data.user ? { client, uid: data.user.id } : null;
+}
 
 export interface PersistResult {
   saved: number;
@@ -70,5 +81,78 @@ export const repository = {
       else saved += 1;
     }
     return { saved, demo: false, errors };
+  },
+
+  // ── reads (real DB when signed in, else mock) ──
+  async listJournal(): Promise<JournalEntry[]> {
+    const session = await activeUser();
+    if (!session) return mockJournals;
+    const { data, error } = await session.client!
+      .from('journal_entries')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error || !data) return mockJournals;
+    return data.map((r: any) => {
+      const content: string = r.content ?? '';
+      const words = content.trim() ? content.trim().split(/\s+/).length : 0;
+      return {
+        id: r.id,
+        title: r.title ?? '—',
+        preview: content.slice(0, 90),
+        date: (r.created_at ?? '').slice(0, 10),
+        mood: r.mood ?? 'neutral',
+        words,
+        chars: content.length,
+        pinned: !!r.pinned,
+        tags: r.tags ?? [],
+        areaId: r.area_id ?? null,
+        projectId: null,
+      };
+    });
+  },
+
+  async listTasks(): Promise<TaskData[]> {
+    const session = await activeUser();
+    if (!session) return mockTasks;
+    const { data, error } = await session.client!
+      .from('tasks')
+      .select('*')
+      .is('parent_id', null)
+      .order('created_at', { ascending: false });
+    if (error || !data) return mockTasks;
+    return data.map((r: any) => ({
+      id: r.id,
+      title: r.title,
+      priority: r.priority ?? 'medium',
+      energy: r.energy ?? 'medium',
+      due: r.due ?? null,
+      area: null,
+      project: null,
+      done: !!r.done,
+      subtasks: [],
+    }));
+  },
+
+  async listHabits(): Promise<HabitData[]> {
+    const session = await activeUser();
+    if (!session) return mockHabits;
+    const { data, error } = await session.client!.from('habits').select('*');
+    if (error || !data) return mockHabits;
+    return data.map((r: any) => ({
+      id: r.id,
+      name: r.name,
+      emoji: r.icon ?? '•',
+      color: '#7C6FFF',
+      type: r.type ?? 'checkbox',
+      target: Number(r.target ?? 1),
+      unit: r.unit ?? '',
+      streak: 0,
+      bestStreak: 0,
+      todayValue: 0,
+      done: false,
+      timePref: r.time_pref ?? 'anytime',
+      freq: r.freq ?? 'daily',
+      areaId: r.area_id ?? null,
+    }));
   },
 };

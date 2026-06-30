@@ -10,6 +10,7 @@ import { SmartCard } from '@/components/ui/SmartCard';
 import { HabitCard } from '@/components/ui/HabitCard';
 import { TabPill } from '@/components/ui/TabPill';
 import { useMockStore } from '@/store/mockStore';
+import { repository } from '@/services/repository';
 
 type HView = 'today' | 'all' | 'stats';
 
@@ -19,7 +20,19 @@ export default function HabitsScreen() {
   const router = useRouter();
   const habits = useMockStore((s) => s.habits);
   const update = useMockStore((s) => s.updateHabit);
+  const hydrate = useMockStore((s) => s.hydrate);
   const [view, setView] = useState<HView>('today');
+
+  // Load real habits from Supabase once (falls back to mock until they arrive).
+  React.useEffect(() => {
+    let alive = true;
+    repository.listHabits().then((list) => {
+      if (alive && list.length) hydrate(list);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [hydrate]);
 
   const done = habits.filter((h) => h.done).length;
   const total = habits.length;
