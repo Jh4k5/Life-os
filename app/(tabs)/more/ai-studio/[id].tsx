@@ -10,7 +10,8 @@ import { useRTL } from '@/hooks/useRTL';
 import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { mockWorkspaces, workspaceMeta } from '@/services/workspaces';
+import { workspaceMeta } from '@/services/workspaces';
+import { useWorkspaceStore } from '@/store/workspaceStore';
 import type { WorkspaceBlock } from '@/services/types';
 
 const BLOCK_ICON: Record<string, keyof typeof import('@expo/vector-icons').Ionicons.glyphMap> = {
@@ -36,7 +37,7 @@ export default function WorkspaceDetailScreen() {
   const { c } = useTheme();
   const { rowDir, textAlign } = useRTL();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const ws = mockWorkspaces.find((w) => w.id === id);
+  const ws = useWorkspaceStore((s) => s.workspaces).find((w) => w.id === id);
   const [grown, setGrown] = useState(false);
 
   if (!ws) {

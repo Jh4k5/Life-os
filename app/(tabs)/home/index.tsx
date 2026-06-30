@@ -24,10 +24,11 @@ import { useRTL } from '@/hooks/useRTL';
 import { ViewToggle } from '@/components/ui/ViewToggle';
 import { MicButton } from '@/components/ui/MicButton';
 import { ReviewLayer } from '@/components/ai/ReviewLayer';
-import { aiService } from '@/services/aiService';
+import { aiService, buildWorkspace } from '@/services/aiService';
 import { repository } from '@/services/repository';
 import { captureService } from '@/services/captureService';
-import type { ParsedDay, DetectedItem, ReviewAction } from '@/services/types';
+import { useWorkspaceStore } from '@/store/workspaceStore';
+import type { ParsedDay, DetectedItem, ReviewAction, WorkspaceType } from '@/services/types';
 import { useMockStore } from '@/store/mockStore';
 import { mockTasks } from '@/data/mock';
 import { DayTimeline } from '@/components/ui/DayTimeline';
@@ -78,6 +79,8 @@ const HomeHeader = ({ c, router }: any) => {
 // ── AI View ──────────────────────────────────────
 const AIView = ({ c, t }: any) => {
   const { rowDir, textAlign } = useRTL();
+  const router = useRouter();
+  const addWorkspace = useWorkspaceStore((s) => s.add);
   const mode = useModeStore((s) => s.mode);
   const mm = modeMeta(mode);
   const [input, setInput] = useState('');
@@ -85,6 +88,7 @@ const AIView = ({ c, t }: any) => {
   const [result, setResult] = useState<ParsedDay | null>(null);
   const [items, setItems] = useState<DetectedItem[]>([]);
   const [applied, setApplied] = useState<{ saved: number; demo: boolean } | null>(null);
+  const [proposal, setProposal] = useState<{ type: WorkspaceType; title: string } | null>(null);
 
   const greeting = new Date().getHours() < 12 ? 'صباح الخير' : new Date().getHours() < 18 ? 'مساء الخير' : 'مساء الخير';
 
@@ -96,6 +100,7 @@ const AIView = ({ c, t }: any) => {
     const parsed = await aiService.parseDay({ kind: 'text', text });
     setResult(parsed);
     setItems(parsed.items);
+    setProposal(await aiService.suggestWorkspace({ kind: 'text', text }));
     setApplied(null);
     setBusy(false);
   };
@@ -137,6 +142,15 @@ const AIView = ({ c, t }: any) => {
     setResult(null);
     setItems([]);
     setApplied(null);
+    setProposal(null);
+  };
+
+  const createWorkspace = () => {
+    if (!proposal) return;
+    const ws = buildWorkspace(proposal.type, proposal.title);
+    addWorkspace(ws);
+    setProposal(null);
+    router.push(`/(tabs)/more/ai-studio/${ws.id}`);
   };
 
   return (
@@ -175,6 +189,23 @@ const AIView = ({ c, t }: any) => {
         {result && !busy && (
           <View style={{ marginTop: 22, gap: 14 }}>
             <ReviewLayer items={items} reply={result.reply} onAction={onAction} onApplyAll={applyAll} />
+            {proposal && (
+              <Pressable
+                onPress={createWorkspace}
+                style={[S.proposal, { borderColor: c.accent + '55', backgroundColor: c.accentDim, flexDirection: rowDir }]}
+              >
+                <Ionicons name="sparkles" size={18} color={c.accent} />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: c.t1, fontSize: 14, fontWeight: '700', textAlign }}>
+                    هذا الطلب يستحق مساحته الخاصة
+                  </Text>
+                  <Text style={{ color: c.t2, fontSize: 12, marginTop: 2, textAlign }}>
+                    أنشئ مساحة «{proposal.title}» في استوديو الذكاء؟
+                  </Text>
+                </View>
+                <Ionicons name="arrow-forward" size={18} color={c.accent} />
+              </Pressable>
+            )}
             {applied && (
               <View style={[S.applied, { backgroundColor: c.greenDim, flexDirection: rowDir }]}>
                 <Ionicons name="checkmark-circle" size={18} color={c.green} />
@@ -276,6 +307,7 @@ const S = StyleSheet.create({
   heroHint: { fontSize: 14, marginTop: 6 },
   thinking: { alignItems: 'center', gap: 12, marginTop: 70 },
   applied: { alignItems: 'center', gap: 8, padding: 12, borderRadius: 14 },
+  proposal: { alignItems: 'center', gap: 12, padding: 14, borderRadius: 16, borderWidth: 1 },
   newBtn: { alignItems: 'center', justifyContent: 'center', gap: 6, padding: 12, borderRadius: 14, borderWidth: 1 },
   inputArea: { position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 16, paddingBottom: 95, paddingTop: 10 },
   inputRow: { alignItems: 'center', gap: 8, borderRadius: 18, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 6 },

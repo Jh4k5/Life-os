@@ -10,8 +10,9 @@ import { useTranslation } from 'react-i18next';
 import { useRTL } from '@/hooks/useRTL';
 import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
-import { mockWorkspaces, workspaceMeta } from '@/services/workspaces';
-import { aiService } from '@/services/aiService';
+import { workspaceMeta } from '@/services/workspaces';
+import { useWorkspaceStore } from '@/store/workspaceStore';
+import { aiService, buildWorkspace } from '@/services/aiService';
 
 export default function AIStudioScreen() {
   const { c } = useTheme();
@@ -19,13 +20,16 @@ export default function AIStudioScreen() {
   const { rowDir, textAlign } = useRTL();
   const router = useRouter();
   const [prompt, setPrompt] = useState('');
-  const [hint, setHint] = useState<string | null>(null);
+  const workspaces = useWorkspaceStore((s) => s.workspaces);
+  const addWorkspace = useWorkspaceStore((s) => s.add);
 
   const createWithAI = async () => {
     if (!prompt.trim()) return;
     const s = await aiService.suggestWorkspace({ kind: 'text', text: prompt });
-    setHint(s ? `سأبني مساحة «${s.title}» — افتحها بعد المراجعة.` : 'سأبني لك مساحة مناسبة.');
+    const ws = buildWorkspace(s?.type ?? 'goal', s?.title ?? prompt.trim().slice(0, 24));
+    addWorkspace(ws);
     setPrompt('');
+    router.push(`/(tabs)/more/ai-studio/${ws.id}`);
   };
 
   return (
@@ -53,13 +57,6 @@ export default function AIStudioScreen() {
             </Pressable>
           )}
         </View>
-        {hint && (
-          <View style={[S.hint, { backgroundColor: c.accentDim, flexDirection: rowDir }]}>
-            <Ionicons name="information-circle-outline" size={16} color={c.accent} />
-            <Text style={{ color: c.accent, fontSize: 13, flex: 1, textAlign }}>{hint}</Text>
-          </View>
-        )}
-
         {/* Quick create options */}
         <View style={[S.options, { flexDirection: rowDir }]}>
           {[
@@ -75,7 +72,7 @@ export default function AIStudioScreen() {
 
         {/* Gallery of living workspaces */}
         <Text style={[S.label, { color: c.t3, textAlign }]}>مساحاتك</Text>
-        {mockWorkspaces.map((ws) => {
+        {workspaces.map((ws) => {
           const meta = workspaceMeta(ws.type);
           return (
             <Pressable key={ws.id} onPress={() => router.push(`/(tabs)/more/ai-studio/${ws.id}`)}>
