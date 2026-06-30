@@ -2,12 +2,15 @@
 import React from 'react';
 import { ScrollView, Pressable, Text, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface Tab {
   key: string;
   label: string;
+  icon?: keyof typeof Ionicons.glyphMap;
+  /** @deprecated prefer `icon` (Ionicons); kept for back-compat. */
   emoji?: string;
 }
 interface Props {
@@ -63,7 +66,11 @@ const TabPillItem = ({
           },
         ]}
       >
-        {tab.emoji && <Text style={{ fontSize: 14 }}>{tab.emoji}</Text>}
+        {tab.icon ? (
+          <Ionicons name={tab.icon} size={15} color={active ? '#FFF' : c.t2} />
+        ) : tab.emoji ? (
+          <Text style={{ fontSize: 14 }}>{tab.emoji}</Text>
+        ) : null}
         <Text style={[S.txt, { color: active ? '#FFF' : c.t2 }]}>{tab.label}</Text>
       </Pressable>
     </Animated.View>

@@ -73,13 +73,12 @@ export default function TasksScreen() {
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
       <Header
         title={t('sections.tasks')}
-        accent={c.tasks}
         right={[{ icon: 'add', onPress: () => router.push('/(tabs)/more/tasks/new'), color: c.accent }]}
       />
 
       {/* Quick capture */}
       <View style={[S.quick, { backgroundColor: c.bg2, borderColor: c.b1 }]}>
-        <Ionicons name="flash-outline" size={18} color={c.tasks} />
+        <Ionicons name="flash-outline" size={18} color={c.accent} />
         <TextInput
           style={{ flex: 1, color: c.t1 }}
           placeholder={t('tasks.quick_ph')}
@@ -90,7 +89,7 @@ export default function TasksScreen() {
           returnKeyType="done"
         />
         {quick.trim().length > 0 && (
-          <Pressable onPress={addQuick} style={[S.quickBtn, { backgroundColor: c.tasks }]}>
+          <Pressable onPress={addQuick} style={[S.quickBtn, { backgroundColor: c.accent }]}>
             <Ionicons name="add" size={18} color="#FFF" />
           </Pressable>
         )}
@@ -98,18 +97,17 @@ export default function TasksScreen() {
 
       <TabPill
         tabs={[
-          { key: 'list', label: t('tasks.view_list'), emoji: '📋' },
-          { key: 'board', label: t('tasks.view_board'), emoji: '📊' },
-          { key: 'energy', label: t('tasks.view_energy'), emoji: '⚡' },
+          { key: 'list', label: t('tasks.view_list'), icon: 'list-outline' },
+          { key: 'board', label: t('tasks.view_board'), icon: 'grid-outline' },
+          { key: 'energy', label: t('tasks.view_energy'), icon: 'flash-outline' },
         ]}
         active={view}
         onChange={(v) => setView(v as TView)}
-        accent={c.tasks}
       />
 
       <ScrollView contentContainerStyle={{ padding: 16, gap: 10, paddingBottom: 110 }}>
         {active.length === 0 && tasks.every((tk) => tk.done) ? (
-          <EmptyState emoji="🎉" title={t('tasks.empty')} />
+          <EmptyState icon="checkmark-done-circle-outline" title={t('tasks.empty')} />
         ) : view === 'list' ? (
           PRIORITY_ORDER.filter((p) => tasks.some((tk) => tk.priority === p)).map((p) => (
             <View key={p} style={{ gap: 4 }}>
@@ -147,7 +145,7 @@ export default function TasksScreen() {
                 </Text>
                 {col.items.map((tk) => (
                   <Pressable key={tk.id} onPress={() => toggle(tk.id)}>
-                    <SmartCard accent={col.key === 'done' ? c.green : c.tasks} padSize="sm">
+                    <SmartCard accent={col.key === 'done' ? c.green : c.accent} padSize="sm">
                       <Text
                         style={{
                           color: tk.done ? c.t3 : c.t1,
