@@ -1,6 +1,12 @@
 {
-  "app": { "name": "Life OS", "tagline": "Dein smartes Lebens-Betriebssystem" },
-  "nav": { "home": "Start", "more": "Mehr" },
+  "app": {
+    "name": "Life OS",
+    "tagline": "Dein smartes Lebens-Betriebssystem"
+  },
+  "nav": {
+    "home": "Start",
+    "more": "Mehr"
+  },
   "home": {
     "ai": "KI",
     "dashboard": "Dashboard",
@@ -166,7 +172,15 @@
     "active": "Aktiv",
     "completed": "Abgeschlossen",
     "paused": "Pausiert",
-    "empty": "Keine Kurse — füge den ersten hinzu"
+    "empty": "Keine Kurse — füge den ersten hinzu",
+    "subjects": "Fächer",
+    "exams_count": "Prüfungen",
+    "hours_short": "Stunden",
+    "pct_complete": "{{pct}}% abgeschlossen",
+    "hours_studied": "{{n}} Std. gelernt",
+    "exam_in_days": "in {{n}} T",
+    "exam_today": "Heute",
+    "exam_past": "Vorbei"
   },
   "learning": {
     "new": "Zur Bibliothek hinzufügen",

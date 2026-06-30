@@ -1,6 +1,12 @@
 {
-  "app": { "name": "Life OS", "tagline": "Your smart life operating system" },
-  "nav": { "home": "Home", "more": "More" },
+  "app": {
+    "name": "Life OS",
+    "tagline": "Your smart life operating system"
+  },
+  "nav": {
+    "home": "Home",
+    "more": "More"
+  },
   "home": {
     "ai": "AI",
     "dashboard": "Dashboard",
@@ -173,7 +179,15 @@
     "active": "Active",
     "completed": "Completed",
     "paused": "Paused",
-    "empty": "No courses yet — add your first one"
+    "empty": "No courses yet — add your first one",
+    "subjects": "Subjects",
+    "exams_count": "Exams",
+    "hours_short": "Hours",
+    "pct_complete": "{{pct}}% complete",
+    "hours_studied": "{{n}}h studied",
+    "exam_in_days": "in {{n}}d",
+    "exam_today": "Today",
+    "exam_past": "Past"
   },
   "learning": {
     "new": "Add to library",

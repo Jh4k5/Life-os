@@ -1,6 +1,12 @@
 {
-  "app": { "name": "Life OS", "tagline": "Tu sistema operativo de vida inteligente" },
-  "nav": { "home": "Inicio", "more": "Más" },
+  "app": {
+    "name": "Life OS",
+    "tagline": "Tu sistema operativo de vida inteligente"
+  },
+  "nav": {
+    "home": "Inicio",
+    "more": "Más"
+  },
   "home": {
     "ai": "IA",
     "dashboard": "Panel",
@@ -166,7 +172,15 @@
     "active": "Activo",
     "completed": "Completado",
     "paused": "Pausado",
-    "empty": "Sin cursos — añade el primero"
+    "empty": "Sin cursos — añade el primero",
+    "subjects": "Materias",
+    "exams_count": "Exámenes",
+    "hours_short": "Horas",
+    "pct_complete": "{{pct}}% completado",
+    "hours_studied": "{{n}} h estudiadas",
+    "exam_in_days": "en {{n}} d",
+    "exam_today": "Hoy",
+    "exam_past": "Pasado"
   },
   "learning": {
     "new": "Añadir a biblioteca",

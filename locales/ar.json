@@ -1,6 +1,12 @@
 {
-  "app": { "name": "Life OS", "tagline": "نظام تشغيل حياتك الذكية" },
-  "nav": { "home": "الرئيسية", "more": "المزيد" },
+  "app": {
+    "name": "Life OS",
+    "tagline": "نظام تشغيل حياتك الذكية"
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "more": "المزيد"
+  },
   "home": {
     "ai": "الذكاء",
     "dashboard": "لوحتي",
@@ -173,7 +179,15 @@
     "active": "جارية",
     "completed": "مكتملة",
     "paused": "متوقفة",
-    "empty": "لا مواد بعد — أضف مادتك الأولى"
+    "empty": "لا مواد بعد — أضف مادتك الأولى",
+    "subjects": "مواد",
+    "exams_count": "امتحانات",
+    "hours_short": "ساعة",
+    "pct_complete": "{{pct}}% مكتمل",
+    "hours_studied": "{{n}} ساعة مذاكرة",
+    "exam_in_days": "خلال {{n}} يوم",
+    "exam_today": "اليوم",
+    "exam_past": "انتهى"
   },
   "learning": {
     "new": "إضافة للمكتبة",

@@ -1,6 +1,12 @@
 {
-  "app": { "name": "Life OS", "tagline": "آپ کا اسمارٹ لائف آپریٹنگ سسٹم" },
-  "nav": { "home": "ہوم", "more": "مزید" },
+  "app": {
+    "name": "Life OS",
+    "tagline": "آپ کا اسمارٹ لائف آپریٹنگ سسٹم"
+  },
+  "nav": {
+    "home": "ہوم",
+    "more": "مزید"
+  },
   "home": {
     "ai": "اے آئی",
     "dashboard": "ڈیش بورڈ",
@@ -166,7 +172,15 @@
     "active": "فعال",
     "completed": "مکمل",
     "paused": "روکا گیا",
-    "empty": "ابھی کوئی کورس نہیں — پہلا شامل کریں"
+    "empty": "ابھی کوئی کورس نہیں — پہلا شامل کریں",
+    "subjects": "مضامین",
+    "exams_count": "امتحانات",
+    "hours_short": "گھنٹے",
+    "pct_complete": "{{pct}}% مکمل",
+    "hours_studied": "{{n}} گھنٹے پڑھائی",
+    "exam_in_days": "{{n}} دن میں",
+    "exam_today": "آج",
+    "exam_past": "گزر گیا"
   },
   "learning": {
     "new": "لائبریری میں شامل کریں",
