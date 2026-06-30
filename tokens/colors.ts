@@ -1,121 +1,135 @@
 // tokens/colors.ts
+// ════════════════════════════════════════════════════
+// Life OS — Visual System v3 (redesign)
+// Dark-first · single restrained accent · near-black canvas
+// North star: Apple · Linear · Raycast · Arc · Nothing
+// No pastel rainbow. No per-section chrome colors.
+// ════════════════════════════════════════════════════
 type BlurTint = 'dark' | 'light';
-// ════════════════════════════════════════════════════
-// DARK — "Midnight Cosmos"
-// كحلي عميق لا أسود — يشعر بالعمق والذكاء
-// ════════════════════════════════════════════════════
+
+// ── DARK (designed first) — "Obsidian" ──
 export const dark = {
-  // ── الخلفيات (5 مستويات — عمق بصري حقيقي) ──
-  bg0: '#06080F', // خلفية التطبيق — الأعمق
-  bg1: '#0D1121', // خلفية البطاقات
-  bg2: '#141829', // بطاقة مرفوعة
-  bg3: '#1B2035', // modals / sheets
-  bg4: '#222741', // overlays / hover
-  // ── الحدود ──
+  // Backgrounds — deep neutral, not pure black
+  bg0: '#0A0B0D', // app canvas — deepest
+  bg1: '#101216', // cards / surfaces
+  bg2: '#161922', // elevated surface
+  bg3: '#1C2029', // sheets / modals
+  bg4: '#252A35', // overlay / hover
+  // Hairline borders (depth via lines, not shadows)
   b0: 'rgba(255,255,255,0.04)',
   b1: 'rgba(255,255,255,0.08)',
   b2: 'rgba(255,255,255,0.14)',
-  b3: 'rgba(255,255,255,0.24)',
-  // ── الزجاج السائل ──
-  glass: 'rgba(13,17,33,0.72)',
-  glassBorder: 'rgba(255,255,255,0.09)',
+  b3: 'rgba(255,255,255,0.22)',
+  // Frosted glass
+  glass: 'rgba(16,18,22,0.62)',
+  glassBorder: 'rgba(255,255,255,0.08)',
   glassTint: 'dark' as BlurTint,
-  // ── النصوص ──
-  t1: '#EDF0FF', // أساسي
-  t2: '#8A90B8', // ثانوي
-  t3: '#4A5080', // ثالثي
-  t4: '#2C3260', // placeholder
-  // ── لون النبرة الرئيسي (يختاره المستخدم) ──
-  accent: '#5B6EF5',
-  accentL: '#7B8EFF',
-  accentDim: 'rgba(91,110,245,0.16)',
-  accentGlow: 'rgba(91,110,245,0.32)',
-  // ── الألوان الدلالية ──
-  green: '#2ECC71',
-  greenDim: 'rgba(46,204,113,0.15)',
-  red: '#E74C3C',
-  redDim: 'rgba(231,76,60,0.15)',
-  yellow: '#F1C40F',
-  yellowDim: 'rgba(241,196,15,0.15)',
-  blue: '#3498DB',
-  blueDim: 'rgba(52,152,219,0.15)',
-  orange: '#E67E22',
-  orangeDim: 'rgba(230,126,34,0.15)',
-  // ── هوية الأقسام العشرة (كل قسم له بصمة لونية فريدة) ──
-  areas: '#00D084', // زمردي ← حياة، نمو، انتماء
-  habits: '#A855F7', // بنفسجي ← تطور، انضباط، استمرار
-  tasks: '#3B82F6', // أزرق ← وضوح، تنفيذ، إجراء
-  journal: '#06B6D4', // سماوي ← وعي، تأمل، تعبير
-  study: '#F59E0B', // ذهبي ← معرفة، استثمار، مستقبل
-  learning: '#EC4899', // وردي ← اكتشاف، فضول، نمو
-  focus: '#EF4444', // أحمر ← طاقة، كثافة، عزم
-  schedule: '#14B8A6', // فيروزي ← ترتيب، وقت، التزام
-  dopamine: '#D97706', // برتقالي ← وعي، صحة، إرادة
-  ai_hub: '#8B5CF6', // بنفسجي ← أتمتة، ذكاء، مستقبل
+  // Text — off-white, muted grays
+  t1: '#F5F5F7', // primary
+  t2: '#9C9FAA', // secondary (muted gray)
+  t3: '#5C606C', // tertiary
+  t4: '#3A3E48', // placeholder
+  // THE single accent — electric violet/indigo (whole-app chrome)
+  accent: '#7C6FFF',
+  accentL: '#9C92FF',
+  accentDim: 'rgba(124,111,255,0.14)',
+  accentGlow: 'rgba(124,111,255,0.42)',
+  // Quiet semantic colors — used only where required, never decoration
+  green: '#32D74B',
+  greenDim: 'rgba(50,215,75,0.14)',
+  red: '#FF453A',
+  redDim: 'rgba(255,69,58,0.14)',
+  yellow: '#FFD60A',
+  yellowDim: 'rgba(255,214,10,0.14)',
+  blue: '#0A84FF',
+  blueDim: 'rgba(10,132,255,0.14)',
+  orange: '#FF9F0A',
+  orangeDim: 'rgba(255,159,10,0.14)',
+  // Section identity — kept for per-Area personalization & data only.
+  // NOT used in default chrome (single accent rules the UI).
+  areas: '#7C6FFF',
+  habits: '#7C6FFF',
+  tasks: '#7C6FFF',
+  journal: '#7C6FFF',
+  study: '#7C6FFF',
+  learning: '#7C6FFF',
+  focus: '#7C6FFF',
+  schedule: '#7C6FFF',
+  dopamine: '#7C6FFF',
+  ai_hub: '#7C6FFF',
 };
 
-// ════════════════════════════════════════════════════
-// LIGHT — "Pearl"
-// أبيض كريمي دافئ — نظيف وهادئ
-// ════════════════════════════════════════════════════
+// ── LIGHT (clean mirror) — "Paper" ──
 export const light = {
-  bg0: '#F1F2F8',
+  bg0: '#F4F4F6',
   bg1: '#FFFFFF',
   bg2: '#FFFFFF',
-  bg3: '#F1F2F8',
-  bg4: '#E4E6F0',
+  bg3: '#F4F4F6',
+  bg4: '#E9E9EF',
   b0: 'rgba(0,0,0,0.04)',
   b1: 'rgba(0,0,0,0.08)',
   b2: 'rgba(0,0,0,0.14)',
-  b3: 'rgba(0,0,0,0.24)',
-  glass: 'rgba(255,255,255,0.85)',
-  glassBorder: 'rgba(0,0,0,0.07)',
+  b3: 'rgba(0,0,0,0.22)',
+  glass: 'rgba(255,255,255,0.7)',
+  glassBorder: 'rgba(0,0,0,0.06)',
   glassTint: 'light' as BlurTint,
-  t1: '#0F1020',
-  t2: '#5C6080',
-  t3: '#A8ACCC',
-  t4: '#D0D3E8',
-  accent: '#4A5CE8',
-  accentL: '#6A7AFF',
-  accentDim: 'rgba(74,92,232,0.10)',
-  accentGlow: 'rgba(74,92,232,0.20)',
-  green: '#16A34A',
-  greenDim: 'rgba(22,163,74,0.10)',
-  red: '#DC2626',
-  redDim: 'rgba(220,38,38,0.10)',
-  yellow: '#CA8A04',
-  yellowDim: 'rgba(202,138,4,0.10)',
-  blue: '#2563EB',
-  blueDim: 'rgba(37,99,235,0.10)',
-  orange: '#EA580C',
-  orangeDim: 'rgba(234,88,12,0.10)',
-  // ألوان الأقسام (أغمق قليلاً للفاتح)
-  areas: '#059669',
-  habits: '#9333EA',
-  tasks: '#2563EB',
-  journal: '#0891B2',
-  study: '#D97706',
-  learning: '#DB2777',
-  focus: '#DC2626',
-  schedule: '#0D9488',
-  dopamine: '#B45309',
-  ai_hub: '#7C3AED',
+  t1: '#0A0B0D',
+  t2: '#62656F',
+  t3: '#9A9DA8',
+  t4: '#C4C7D0',
+  accent: '#5B4BE6',
+  accentL: '#7C6FFF',
+  accentDim: 'rgba(91,75,230,0.10)',
+  accentGlow: 'rgba(91,75,230,0.22)',
+  green: '#28A745',
+  greenDim: 'rgba(40,167,69,0.10)',
+  red: '#E5484D',
+  redDim: 'rgba(229,72,77,0.10)',
+  yellow: '#C8A200',
+  yellowDim: 'rgba(200,162,0,0.10)',
+  blue: '#0A6CFF',
+  blueDim: 'rgba(10,108,255,0.10)',
+  orange: '#E07A00',
+  orangeDim: 'rgba(224,122,0,0.10)',
+  areas: '#5B4BE6',
+  habits: '#5B4BE6',
+  tasks: '#5B4BE6',
+  journal: '#5B4BE6',
+  study: '#5B4BE6',
+  learning: '#5B4BE6',
+  focus: '#5B4BE6',
+  schedule: '#5B4BE6',
+  dopamine: '#5B4BE6',
+  ai_hub: '#5B4BE6',
 };
 
 export type Palette = typeof dark;
 
-// ── 12 خيار accent ──
+// ── Per-Area personalization palette (jewel tones, not pastel) ──
+// Allowed ONLY inside an Area's own surfaces — never in app chrome.
+export const areaAccents = [
+  { id: 'violet', dark: '#7C6FFF', light: '#5B4BE6', name: 'بنفسجي' },
+  { id: 'blue', dark: '#0A84FF', light: '#0A6CFF', name: 'أزرق' },
+  { id: 'teal', dark: '#2BD4C4', light: '#0E9E92', name: 'فيروزي' },
+  { id: 'green', dark: '#32D74B', light: '#28A745', name: 'أخضر' },
+  { id: 'amber', dark: '#FF9F0A', light: '#E07A00', name: 'كهرماني' },
+  { id: 'rose', dark: '#FF6482', light: '#E5485F', name: 'وردي' },
+  { id: 'slate', dark: '#8E94A3', light: '#62656F', name: 'رمادي' },
+];
+
+// 12 accent presets kept for Settings compatibility (single-accent system,
+// but the user may still pick the chrome accent hue).
 export const accentPresets = [
-  { id: 'indigo', dark: '#5B6EF5', light: '#4A5CE8', name: 'إنديجو' },
-  { id: 'blue', dark: '#3B82F6', light: '#2563EB', name: 'أزرق' },
-  { id: 'cyan', dark: '#06B6D4', light: '#0891B2', name: 'سماوي' },
-  { id: 'teal', dark: '#14B8A6', light: '#0D9488', name: 'فيروزي' },
-  { id: 'green', dark: '#10B981', light: '#059669', name: 'أخضر' },
-  { id: 'purple', dark: '#A855F7', light: '#9333EA', name: 'بنفسجي' },
-  { id: 'pink', dark: '#EC4899', light: '#DB2777', name: 'وردي' },
-  { id: 'red', dark: '#EF4444', light: '#DC2626', name: 'أحمر' },
-  { id: 'orange', dark: '#F97316', light: '#EA580C', name: 'برتقالي' },
-  { id: 'amber', dark: '#F59E0B', light: '#D97706', name: 'ذهبي' },
-  { id: 'rose', dark: '#FB7185', light: '#E11D48', name: 'وردي داكن' },
-  { id: 'custom', dark: '#5B6EF5', light: '#4A5CE8', name: 'مخصص' },
+  { id: 'violet', dark: '#7C6FFF', light: '#5B4BE6', name: 'بنفسجي' },
+  { id: 'indigo', dark: '#6366F1', light: '#4F46E5', name: 'إنديجو' },
+  { id: 'blue', dark: '#0A84FF', light: '#0A6CFF', name: 'أزرق' },
+  { id: 'sky', dark: '#38BDF8', light: '#0EA5E9', name: 'سماوي' },
+  { id: 'teal', dark: '#2BD4C4', light: '#0E9E92', name: 'فيروزي' },
+  { id: 'green', dark: '#32D74B', light: '#28A745', name: 'أخضر' },
+  { id: 'amber', dark: '#FF9F0A', light: '#E07A00', name: 'كهرماني' },
+  { id: 'orange', dark: '#FF9F0A', light: '#E07A00', name: 'برتقالي' },
+  { id: 'rose', dark: '#FF6482', light: '#E5485F', name: 'وردي' },
+  { id: 'red', dark: '#FF453A', light: '#E5484D', name: 'أحمر' },
+  { id: 'mono', dark: '#E6E7EB', light: '#1A1B1F', name: 'أحادي' },
+  { id: 'custom', dark: '#7C6FFF', light: '#5B4BE6', name: 'مخصص' },
 ];

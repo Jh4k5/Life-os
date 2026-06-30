@@ -29,8 +29,15 @@
     "learning": "التعلم",
     "focus": "التركيز",
     "schedule": "الجدول",
-    "dopamine": "الدوبامين",
-    "ai_hub": "مركز الذكاء"
+    "dopamine": "الصحة الرقمية",
+    "wellbeing": "الصحة الرقمية",
+    "ai_hub": "مركز الذكاء",
+    "ai_studio": "استوديو الذكاء"
+  },
+  "groups": {
+    "life": "حياتك",
+    "focus_learn": "التركيز والتعلّم",
+    "intelligence": "الذكاء"
   },
   "areas": {
     "new": "منطقة جديدة",

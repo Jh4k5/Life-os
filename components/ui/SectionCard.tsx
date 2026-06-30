@@ -1,17 +1,19 @@
 // components/ui/SectionCard.tsx
+// Refined monochrome tile — single accent, line icon, hairline border.
+// No rainbow top-bar, no emoji/clip-art.
 import React from 'react';
 import { Pressable, View, Text, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
 
 export interface Section {
   key: string;
-  emoji: string;
-  colorKey: keyof ReturnType<typeof useTheme>['c'];
+  icon: keyof typeof Ionicons.glyphMap;
   badge?: number;
-  sub?: string; // نص وصفي صغير
+  sub?: string;
 }
 
 export const SectionCard = ({ section, onPress }: { section: Section; onPress: () => void }) => {
@@ -19,12 +21,11 @@ export const SectionCard = ({ section, onPress }: { section: Section; onPress: (
   const { t } = useTranslation();
   const sc = useSharedValue(1);
   const anim = useAnimatedStyle(() => ({ transform: [{ scale: sc.value }] }));
-  const color = c[section.colorKey] as string;
 
   const press = async () => {
     await Haptics.selectionAsync().catch(() => {});
-    sc.value = withSpring(0.91, { damping: 6 }, () => {
-      sc.value = withSpring(1, { damping: 12 });
+    sc.value = withSpring(0.96, { damping: 14 }, () => {
+      sc.value = withSpring(1, { damping: 16 });
     });
     onPress();
   };
@@ -35,34 +36,26 @@ export const SectionCard = ({ section, onPress }: { section: Section; onPress: (
         onPress={press}
         style={[
           S.card,
-          {
-            backgroundColor: isDark ? c.bg1 : '#FFFFFF',
-            borderColor: color + '35',
-            shadowColor: color,
-          },
+          { backgroundColor: isDark ? c.bg1 : '#FFFFFF', borderColor: c.b1 },
         ]}
       >
-        {/* شريط لون علوي */}
-        <View style={[S.topBar, { backgroundColor: color }]} />
-        {/* الأيقونة */}
-        <View style={[S.iconWrap, { backgroundColor: color + '22' }]}>
-          <Text style={{ fontSize: 24 }}>{section.emoji}</Text>
+        <View style={S.top}>
+          <View style={[S.iconWrap, { backgroundColor: isDark ? c.bg3 : c.bg0 }]}>
+            <Ionicons name={section.icon} size={20} color={c.t1} />
+          </View>
+          {!!section.badge && section.badge > 0 && (
+            <View style={[S.badge, { backgroundColor: c.accent }]}>
+              <Text style={S.badgeTxt}>{section.badge > 99 ? '99+' : section.badge}</Text>
+            </View>
+          )}
         </View>
-        {/* الاسم */}
         <Text style={[S.name, { color: c.t1 }]} numberOfLines={1}>
           {t(`sections.${section.key}`)}
         </Text>
-        {/* وصف صغير */}
         {section.sub && (
           <Text style={[S.sub, { color: c.t3 }]} numberOfLines={1}>
             {section.sub}
           </Text>
-        )}
-        {/* Badge */}
-        {!!section.badge && section.badge > 0 && (
-          <View style={[S.badge, { backgroundColor: color }]}>
-            <Text style={S.badgeTxt}>{section.badge > 99 ? '99+' : section.badge}</Text>
-          </View>
         )}
       </Pressable>
     </Animated.View>
@@ -71,38 +64,16 @@ export const SectionCard = ({ section, onPress }: { section: Section; onPress: (
 
 const S = StyleSheet.create({
   card: {
-    borderRadius: 18,
+    borderRadius: 20,
     borderWidth: 1,
-    overflow: 'hidden',
-    height: 112,
-    paddingBottom: 14,
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.16,
-    shadowRadius: 12,
-    elevation: 4,
+    height: 124,
+    padding: 16,
+    justifyContent: 'space-between',
   },
-  topBar: { height: 3 },
-  iconWrap: {
-    width: 46,
-    height: 46,
-    borderRadius: 13,
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: 12,
-    marginBottom: 6,
-  },
-  name: { fontSize: 13, fontWeight: '700', paddingHorizontal: 12 },
-  sub: { fontSize: 11, paddingHorizontal: 12, marginTop: 2 },
-  badge: {
-    position: 'absolute',
-    top: 10,
-    end: 10,
-    minWidth: 22,
-    height: 22,
-    borderRadius: 11,
-    paddingHorizontal: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  iconWrap: { width: 44, height: 44, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  name: { fontSize: 16, fontWeight: '700', marginTop: 'auto' },
+  sub: { fontSize: 12, marginTop: 3 },
+  badge: { minWidth: 22, height: 22, borderRadius: 11, paddingHorizontal: 6, alignItems: 'center', justifyContent: 'center' },
   badgeTxt: { color: '#FFF', fontSize: 11, fontWeight: '700' },
 });

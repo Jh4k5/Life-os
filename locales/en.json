@@ -29,8 +29,15 @@
     "learning": "Learning",
     "focus": "Focus",
     "schedule": "Schedule",
-    "dopamine": "Dopamine",
-    "ai_hub": "AI Hub"
+    "dopamine": "Wellbeing",
+    "wellbeing": "Wellbeing",
+    "ai_hub": "AI Hub",
+    "ai_studio": "AI Studio"
+  },
+  "groups": {
+    "life": "Your life",
+    "focus_learn": "Focus & learning",
+    "intelligence": "Intelligence"
   },
   "areas": {
     "new": "New area",

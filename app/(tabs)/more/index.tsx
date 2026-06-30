@@ -1,42 +1,63 @@
 // app/(tabs)/more/index.tsx
+// Not a settings page. Quiet grouped hierarchy, monochrome line icons,
+// single accent, live secondary metadata. No rainbow, no clip-art.
 import React from 'react';
-import { View, FlatList, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useRouter, type Href } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
+import { useRTL } from '@/hooks/useRTL';
 import { SectionCard } from '@/components/ui/SectionCard';
 import { Header } from '@/components/layout/Header';
 import { mockHabits, mockTasks } from '@/data/mock';
 
-const SECTIONS = [
-  { key: 'areas', emoji: '🗺', colorKey: 'areas', route: '/(tabs)/more/areas', sub: 'مجالات حياتك' },
+type Item = {
+  key: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  route: string;
+  sub: string;
+  badge?: number;
+};
+
+const habitsLeft = mockHabits.filter((h) => !h.done).length;
+const tasksLeft = mockTasks.filter((t) => !t.done).length;
+
+const GROUPS: { title: string; items: Item[] }[] = [
   {
-    key: 'habits',
-    emoji: '💎',
-    colorKey: 'habits',
-    route: '/(tabs)/more/habits',
-    sub: `${mockHabits.filter((h) => !h.done).length} متبقية اليوم`,
+    title: 'life',
+    items: [
+      { key: 'areas', icon: 'map-outline', route: '/(tabs)/more/areas', sub: 'مجالات حياتك' },
+      { key: 'habits', icon: 'repeat-outline', route: '/(tabs)/more/habits', sub: `${habitsLeft} متبقية اليوم`, badge: habitsLeft },
+      { key: 'tasks', icon: 'checkmark-circle-outline', route: '/(tabs)/more/tasks', sub: `${tasksLeft} مهام`, badge: tasksLeft },
+      { key: 'journal', icon: 'book-outline', route: '/(tabs)/more/journal', sub: 'سلسلة ١٢ يوم' },
+    ],
   },
   {
-    key: 'tasks',
-    emoji: '✅',
-    colorKey: 'tasks',
-    route: '/(tabs)/more/tasks',
-    sub: `${mockTasks.filter((t) => !t.done).length} مهام`,
+    title: 'focus_learn',
+    items: [
+      { key: 'study', icon: 'school-outline', route: '/(tabs)/more/study', sub: 'امتحانان قادمان' },
+      { key: 'learning', icon: 'library-outline', route: '/(tabs)/more/learning', sub: '٢ قيد القراءة' },
+      { key: 'focus', icon: 'timer-outline', route: '/(tabs)/more/focus', sub: '٣ ساعات هذا الأسبوع' },
+      { key: 'schedule', icon: 'calendar-outline', route: '/(tabs)/more/schedule', sub: 'تقويمك الذكي' },
+    ],
   },
-  { key: 'journal', emoji: '📖', colorKey: 'journal', route: '/(tabs)/more/journal', sub: 'يومياتك الشخصية' },
-  { key: 'study', emoji: '🎓', colorKey: 'study', route: '/(tabs)/more/study', sub: 'كورسات وامتحانات' },
-  { key: 'learning', emoji: '📚', colorKey: 'learning', route: '/(tabs)/more/learning', sub: 'كتب وبودكاست' },
-  { key: 'focus', emoji: '⚡', colorKey: 'focus', route: '/(tabs)/more/focus', sub: 'جلسات تركيز عميق' },
-  { key: 'schedule', emoji: '📅', colorKey: 'schedule', route: '/(tabs)/more/schedule', sub: 'تقويمك الذكي' },
-  { key: 'dopamine', emoji: '🔋', colorKey: 'dopamine', route: '/(tabs)/more/dopamine', sub: 'صحتك الرقمية' },
-  { key: 'ai_hub', emoji: '🤖', colorKey: 'ai_hub', route: '/(tabs)/more/ai-hub', sub: 'مركز القيادة AI' },
-] as const;
+  {
+    title: 'intelligence',
+    items: [
+      { key: 'ai_studio', icon: 'sparkles-outline', route: '/(tabs)/more/ai-studio', sub: 'مساحات ذكية' },
+      { key: 'ai_hub', icon: 'git-network-outline', route: '/(tabs)/more/ai-hub', sub: 'ذاكرة + خصوصية' },
+      { key: 'wellbeing', icon: 'pulse-outline', route: '/(tabs)/more/dopamine', sub: 'إشارات هادئة' },
+    ],
+  },
+];
 
 export default function MoreScreen() {
   const { c } = useTheme();
   const { t } = useTranslation();
+  const { textAlign } = useRTL();
   const router = useRouter();
+
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
       <Header
@@ -44,32 +65,30 @@ export default function MoreScreen() {
         back={false}
         right={[{ icon: 'settings-outline', onPress: () => router.push('/settings'), color: c.t2 }]}
       />
-      <FlatList
-        data={SECTIONS}
-        numColumns={2}
-        keyExtractor={(i) => i.key}
-        contentContainerStyle={{ padding: 14, gap: 10, paddingBottom: 110 }}
-        columnWrapperStyle={{ gap: 10 }}
-        renderItem={({ item: sec }) => (
-          <SectionCard
-            section={{
-              key: sec.key,
-              emoji: sec.emoji,
-              colorKey: sec.colorKey as any,
-              badge:
-                sec.key === 'habits'
-                  ? mockHabits.filter((h) => !h.done).length
-                  : sec.key === 'tasks'
-                    ? mockTasks.filter((t) => !t.done).length
-                    : 0,
-              sub: sec.sub,
-            }}
-            onPress={() => router.push(sec.route as Href)}
-          />
-        )}
-      />
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 110, gap: 24 }}>
+        {GROUPS.map((group) => (
+          <View key={group.title} style={{ gap: 10 }}>
+            <Text style={[S.groupTitle, { color: c.t3, textAlign }]}>{t(`groups.${group.title}`)}</Text>
+            <View style={S.grid}>
+              {group.items.map((it) => (
+                <View key={it.key} style={S.cell}>
+                  <SectionCard
+                    section={{ key: it.key, icon: it.icon, sub: it.sub, badge: it.badge }}
+                    onPress={() => router.push(it.route as Href)}
+                  />
+                </View>
+              ))}
+            </View>
+          </View>
+        ))}
+      </ScrollView>
     </View>
   );
 }
 
-const S = StyleSheet.create({ screen: { flex: 1 } });
+const S = StyleSheet.create({
+  screen: { flex: 1 },
+  groupTitle: { fontSize: 13, fontWeight: '700', paddingHorizontal: 4, letterSpacing: 0.2 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  cell: { width: '48%' },
+});

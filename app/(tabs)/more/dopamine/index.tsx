@@ -1,161 +1,151 @@
-// app/(tabs)/more/dopamine/index.tsx
+// app/(tabs)/more/dopamine/index.tsx  → "Wellbeing"
+// Calm digital-wellbeing signal. No green/red candlesticks, no XP rank,
+// no trading-dashboard. A gentle weekly sense of healthy vs. draining,
+// and AI nudges in the app's own warm voice with an Apply action.
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
+import { useRTL } from '@/hooks/useRTL';
 import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { mockDopamine } from '@/data/mock';
 
-const RANKS = [
-  { min: 0, max: 99, tkey: 'dopamine.rank_rookie' },
-  { min: 100, max: 299, tkey: 'dopamine.rank_aware' },
-  { min: 300, max: 699, tkey: 'dopamine.rank_disc' },
-  { min: 700, max: 1499, tkey: 'dopamine.rank_master' },
-  { min: 1500, max: Infinity, tkey: 'dopamine.rank_lord' },
+const DAYS = ['أحد', 'إثن', 'ثلا', 'أرب', 'خمي', 'جمع', 'سبت'];
+
+const NUDGES = [
+  {
+    id: 'n1',
+    icon: 'phone-portrait-outline' as const,
+    text: 'ذكرت السوشيال ميديا ٣ مرات هذا الأسبوع. أحدّد لك ساعة يومياً مقابل ١٥ دقيقة قراءة؟',
+  },
+  {
+    id: 'n2',
+    icon: 'moon-outline' as const,
+    text: 'نومك تأخّر ليلتين. أهيّئ لك تذكير هدوء الساعة ١٠:٣٠ هذا الأسبوع؟',
+  },
 ];
 
-export default function DopamineScreen() {
+export default function WellbeingScreen() {
   const { c } = useTheme();
   const { t } = useTranslation();
+  const { rowDir, textAlign } = useRTL();
   const [activities, setActivities] = useState(mockDopamine.activities);
-  const [challenges, setChallenges] = useState(mockDopamine.challenges);
+  const [applied, setApplied] = useState<string[]>([]);
 
-  const rank = RANKS.find((r) => mockDopamine.totalXP >= r.min && mockDopamine.totalXP <= r.max) ?? RANKS[0];
-  const next = RANKS[RANKS.indexOf(rank) + 1];
-  const rankProg = next ? (mockDopamine.totalXP - rank.min) / (next.min - rank.min) : 1;
-
-  const toggleActivity = (id: string) =>
+  const toggle = (id: string) =>
     setActivities((p) => p.map((a) => (a.id === id ? { ...a, logged: !a.logged } : a)));
-  const acceptChallenge = (id: string) =>
-    setChallenges((p) => p.map((ch) => (ch.id === id ? { ...ch, active: !ch.active } : ch)));
 
-  const maxAbs = Math.max(...mockDopamine.weekProgress.map((v) => Math.abs(v)), 1);
+  // weekly sense — soft balance, not candlesticks
+  const week = mockDopamine.weekProgress;
+  const maxAbs = Math.max(...week.map((v) => Math.abs(v)), 1);
+  const healthyShare = Math.round(
+    (week.filter((v) => v > 0).reduce((s, v) => s + v, 0) /
+      Math.max(week.reduce((s, v) => s + Math.abs(v), 0), 1)) *
+      100
+  );
 
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
-      <Header
-        title={t('sections.dopamine')}
-        accent={c.dopamine}
-        right={[{ icon: 'add', onPress: () => {}, color: c.accent }]}
-      />
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: 110 }}>
-        {/* Rank + XP */}
-        <SmartCard accent={c.dopamine} elevated>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-            <View style={[S.xpRing, { borderColor: c.dopamine, backgroundColor: c.dopamine + '18' }]}>
-              <Text style={{ color: c.dopamine, fontWeight: '800', fontSize: 20 }}>{mockDopamine.totalXP}</Text>
-              <Text style={{ color: c.t3, fontSize: 10 }}>XP</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: c.t1, fontWeight: '800', fontSize: 18 }}>{t(rank.tkey)}</Text>
-              {next && (
-                <>
-                  <View style={[S.pBg, { backgroundColor: c.b1, marginTop: 8 }]}>
-                    <View style={[S.pFill, { width: `${rankProg * 100}%`, backgroundColor: c.dopamine }]} />
-                  </View>
-                  <Text style={{ color: c.t3, fontSize: 11, marginTop: 4 }}>
-                    {next.min - mockDopamine.totalXP} XP للرتبة التالية
-                  </Text>
-                </>
-              )}
-            </View>
-          </View>
-        </SmartCard>
+      <Header title={t('sections.wellbeing')} accent={c.accent} right={[{ icon: 'add', onPress: () => {}, color: c.accent }]} />
+      <ScrollView contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: 110 }}>
+        {/* Calm state line */}
+        <Text style={[S.state, { color: c.t1, textAlign }]}>
+          أسبوعك متوازن — {healthyShare}% من طاقتك ذهبت لأشياء تغذّيك.
+        </Text>
 
-        {/* Week chart */}
-        <Text style={[S.label, { color: c.t2 }]}>{t('dopamine.weekly')}</Text>
+        {/* Soft weekly signal (rounded pills, not candlesticks) */}
         <SmartCard>
-          <View style={S.chart}>
-            {mockDopamine.weekProgress.map((v, i) => (
-              <View key={i} style={S.chartCol}>
-                <View style={S.barArea}>
-                  {v >= 0 ? (
+          <View style={[S.week, { flexDirection: rowDir }]}>
+            {week.map((v, i) => {
+              const h = 8 + (Math.abs(v) / maxAbs) * 60;
+              const healthy = v >= 0;
+              return (
+                <View key={i} style={S.dayCol}>
+                  <View style={S.track}>
                     <View
-                      style={[
-                        S.bar,
-                        { height: `${(Math.abs(v) / maxAbs) * 50}%`, backgroundColor: c.green, alignSelf: 'flex-end' },
-                      ]}
+                      style={{
+                        width: 8,
+                        height: h,
+                        borderRadius: 4,
+                        backgroundColor: healthy ? c.accent : c.b2,
+                        opacity: healthy ? 0.9 : 0.6,
+                      }}
                     />
-                  ) : (
-                    <View
-                      style={[
-                        S.bar,
-                        { height: `${(Math.abs(v) / maxAbs) * 50}%`, backgroundColor: c.red, marginTop: '50%' },
-                      ]}
-                    />
-                  )}
+                  </View>
+                  <Text style={{ color: c.t3, fontSize: 10 }}>{DAYS[i]}</Text>
                 </View>
-                <Text style={{ color: v >= 0 ? c.green : c.red, fontSize: 10, fontWeight: '700' }}>{v > 0 ? `+${v}` : v}</Text>
-              </View>
-            ))}
+              );
+            })}
           </View>
         </SmartCard>
 
-        {/* Activities */}
-        <Text style={[S.label, { color: c.t2 }]}>{t('dopamine.activities')}</Text>
-        {activities.map((a) => (
-          <Pressable key={a.id} onPress={() => toggleActivity(a.id)}>
-            <SmartCard accent={a.type === 'healthy' ? c.green : c.red} padSize="sm">
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                <View
-                  style={[
-                    S.actIcon,
-                    { backgroundColor: (a.type === 'healthy' ? c.green : c.red) + '20' },
-                  ]}
-                >
-                  <Text style={{ fontSize: 22 }}>{a.emoji}</Text>
+        {/* AI nudges — the point of this screen */}
+        <Text style={[S.label, { color: c.t3, textAlign }]}>من الذكاء</Text>
+        {NUDGES.map((n) => {
+          const done = applied.includes(n.id);
+          return (
+            <SmartCard key={n.id}>
+              <View style={[S.nudge, { flexDirection: rowDir }]}>
+                <View style={[S.nIcon, { backgroundColor: c.bg3 }]}>
+                  <Ionicons name={n.icon} size={18} color={c.t1} />
                 </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ color: c.t1, fontWeight: '600', fontSize: 15 }}>{a.name}</Text>
-                  <Text style={{ color: a.type === 'healthy' ? c.green : c.red, fontSize: 12, marginTop: 2 }}>
-                    {a.type === 'healthy' ? t('dopamine.healthy') : t('dopamine.addictive')} · {a.xp > 0 ? `+${a.xp}` : a.xp} XP
-                  </Text>
-                </View>
-                <View
-                  style={[
-                    S.logBtn,
-                    {
-                      backgroundColor: a.logged ? (a.type === 'healthy' ? c.green : c.red) : 'transparent',
-                      borderColor: a.type === 'healthy' ? c.green : c.red,
-                    },
-                  ]}
-                >
-                  <Text style={{ color: a.logged ? '#FFF' : a.type === 'healthy' ? c.green : c.red, fontSize: 12, fontWeight: '700' }}>
-                    {a.logged ? '✓' : '+'}
-                  </Text>
-                </View>
-              </View>
-            </SmartCard>
-          </Pressable>
-        ))}
-
-        {/* Challenges */}
-        <Text style={[S.label, { color: c.t2 }]}>{t('dopamine.challenges')}</Text>
-        {challenges.map((ch) => (
-          <SmartCard key={ch.id} accent={c.dopamine}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <Text style={{ fontSize: 26 }}>{ch.icon}</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={{ color: c.t1, fontWeight: '600', fontSize: 14 }}>{ch.title}</Text>
-                <Text style={{ color: c.dopamine, fontSize: 12, marginTop: 2 }}>
-                  🏆 {ch.reward} XP · {ch.days} أيام
-                </Text>
+                <Text style={{ flex: 1, color: c.t1, fontSize: 14, lineHeight: 22, textAlign }}>{n.text}</Text>
               </View>
               <Pressable
-                onPress={() => acceptChallenge(ch.id)}
+                onPress={() => setApplied((p) => (p.includes(n.id) ? p : [...p, n.id]))}
                 style={[
-                  S.acceptBtn,
-                  { backgroundColor: ch.active ? c.dopamine : 'transparent', borderColor: c.dopamine },
+                  S.applyBtn,
+                  { backgroundColor: done ? c.greenDim : c.accentDim, borderColor: done ? c.green : c.accent + '55' },
                 ]}
               >
-                <Text style={{ color: ch.active ? '#FFF' : c.dopamine, fontWeight: '600', fontSize: 13 }}>
-                  {ch.active ? t('dopamine.accepted') : t('dopamine.accept')}
+                <Ionicons name={done ? 'checkmark' : 'sparkles-outline'} size={15} color={done ? c.green : c.accent} />
+                <Text style={{ color: done ? c.green : c.accent, fontWeight: '700', fontSize: 13 }}>
+                  {done ? 'تم التطبيق' : 'طبّق'}
                 </Text>
               </Pressable>
-            </View>
-          </SmartCard>
-        ))}
+            </SmartCard>
+          );
+        })}
+
+        {/* Activities — calm log, healthy vs draining (no XP scoreboard) */}
+        <Text style={[S.label, { color: c.t3, textAlign }]}>{t('dopamine.activities')}</Text>
+        <SmartCard noPad>
+          {activities.map((a, i) => (
+            <Pressable
+              key={a.id}
+              onPress={() => toggle(a.id)}
+              style={[
+                S.actRow,
+                { flexDirection: rowDir },
+                i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.b0 },
+              ]}
+            >
+              <View style={[S.nIcon, { backgroundColor: c.bg3 }]}>
+                <Ionicons
+                  name={a.type === 'healthy' ? 'leaf-outline' : 'hourglass-outline'}
+                  size={16}
+                  color={a.type === 'healthy' ? c.accent : c.t3}
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: c.t1, fontSize: 14, fontWeight: '600', textAlign }}>{a.name}</Text>
+                <Text style={{ color: c.t3, fontSize: 11, marginTop: 2, textAlign }}>
+                  {a.type === 'healthy' ? 'يغذّيك' : 'يستنزفك'}
+                </Text>
+              </View>
+              <View
+                style={[
+                  S.check,
+                  { backgroundColor: a.logged ? c.accent : 'transparent', borderColor: a.logged ? c.accent : c.b2 },
+                ]}
+              >
+                {a.logged && <Ionicons name="checkmark" size={13} color="#FFF" />}
+              </View>
+            </Pressable>
+          ))}
+        </SmartCard>
       </ScrollView>
     </View>
   );
@@ -163,15 +153,23 @@ export default function DopamineScreen() {
 
 const S = StyleSheet.create({
   screen: { flex: 1 },
-  label: { fontSize: 14, fontWeight: '700', marginTop: 4 },
-  xpRing: { width: 70, height: 70, borderRadius: 35, borderWidth: 3, alignItems: 'center', justifyContent: 'center' },
-  pBg: { height: 6, borderRadius: 3, overflow: 'hidden' },
-  pFill: { height: 6, borderRadius: 3 },
-  chart: { flexDirection: 'row', height: 120, alignItems: 'stretch', gap: 6 },
-  chartCol: { flex: 1, alignItems: 'center', gap: 4 },
-  barArea: { flex: 1, width: '100%', justifyContent: 'center' },
-  bar: { width: '70%', borderRadius: 4, alignSelf: 'center' },
-  actIcon: { width: 44, height: 44, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
-  logBtn: { width: 32, height: 32, borderRadius: 10, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
-  acceptBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, borderWidth: 1.5 },
+  state: { fontSize: 19, fontWeight: '700', lineHeight: 28 },
+  week: { justifyContent: 'space-between', alignItems: 'flex-end', height: 90, paddingHorizontal: 4 },
+  dayCol: { alignItems: 'center', gap: 8, flex: 1 },
+  track: { height: 70, justifyContent: 'flex-end' },
+  label: { fontSize: 13, fontWeight: '700', marginTop: 4 },
+  nudge: { gap: 12, alignItems: 'flex-start' },
+  nIcon: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  applyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 12,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  actRow: { alignItems: 'center', gap: 12, padding: 14 },
+  check: { width: 26, height: 26, borderRadius: 13, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
 });

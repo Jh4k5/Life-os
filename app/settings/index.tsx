@@ -169,7 +169,12 @@ export default function SettingsScreen() {
           <Row icon="person-outline" label="الملف الشخصي" onPress={() => {}} iconColor={c.accent} />
           <Row icon="diamond-outline" label="الاشتراك" value="تجربة مجانية" onPress={() => {}} iconColor={c.habits} />
           <Row icon="download-outline" label="تصدير البيانات" onPress={() => {}} iconColor={c.tasks} />
-          <Row icon="shield-checkmark-outline" label="الخصوصية" onPress={() => {}} iconColor={c.green} />
+          <Row
+            icon="shield-checkmark-outline"
+            label="مركز الثقة والخصوصية"
+            onPress={() => router.push('/trust-center')}
+            iconColor={c.green}
+          />
         </SmartCard>
 
         {/* Sign Out */}

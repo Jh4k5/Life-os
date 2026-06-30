@@ -1,361 +1,250 @@
 // app/(tabs)/home/index.tsx
+// The hero. Opening this should feel like an intelligence is present —
+// never a dead empty chat. Ambient mic, time-aware greeting, a quiet
+// "today at a glance" whisper, and the polished "I understood your day"
+// result state powered by the real AI service + reusable Review Layer.
 import React, { useState } from 'react';
 import {
   View,
   Text,
   ScrollView,
-  FlatList,
   Pressable,
   TextInput,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
+import { useRTL } from '@/hooks/useRTL';
 import { ViewToggle } from '@/components/ui/ViewToggle';
 import { MicButton } from '@/components/ui/MicButton';
-import { SmartCard } from '@/components/ui/SmartCard';
-import { HabitCard } from '@/components/ui/HabitCard';
+import { ReviewLayer } from '@/components/ai/ReviewLayer';
+import { aiService } from '@/services/aiService';
+import type { ParsedDay, DetectedItem, ReviewAction } from '@/services/types';
 import { useMockStore } from '@/store/mockStore';
 import { mockTasks } from '@/data/mock';
+import { DayTimeline } from '@/components/ui/DayTimeline';
 
 type HomeView = 'ai' | 'dashboard';
+const USER_NAME = 'محمد';
 
-const CHAT_INIT = [
-  {
-    id: '1',
-    role: 'assistant',
-    text: 'مرحباً! 🎤 حدّثني عن يومك بحرية — سجّل بصوتك أو اكتب — وسأنظّم كل شيء',
-  },
-];
+const SAMPLE =
+  'كان يوم طويل. عندي امتحان كيمياء الأسبوع الجاي، ولازم أراجع الفصل الأول. ذكرني أكلم المشرف بكرة الساعة ١٠. وحابب أبدأ عادة أشرب ماء كل يوم.';
 
 export default function HomeScreen() {
   const { c } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
   const [view, setView] = useState<HomeView>('ai');
-  const habits = useMockStore((s) => s.habits);
-  const updateHabit = useMockStore((s) => s.updateHabit);
-  const [msgs, setMsgs] = useState(CHAT_INIT);
-  const [input, setInput] = useState('');
-
-  const sendMsg = () => {
-    if (!input.trim()) return;
-    const userMsg = { id: Date.now().toString(), role: 'user', text: input };
-    const aiReply = {
-      id: (Date.now() + 1).toString(),
-      role: 'assistant',
-      text: 'فهمت كلامك الآن. سأستخرج المهام والعادات من ما تقول.',
-    };
-    setMsgs((p) => [...p, userMsg, aiReply]);
-    setInput('');
-  };
-
-  const completedToday = habits.filter((h) => h.done).length;
-  const totalHabits = habits.length;
-  const urgentTasks = mockTasks.filter((tk) => tk.priority === 'urgent' && !tk.done);
 
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
       <HomeHeader c={c} router={router} />
       <ViewToggle
         options={[
-          { key: 'ai', label: t('home.ai'), emoji: '✨' },
-          { key: 'dashboard', label: t('home.dashboard'), emoji: '📊' },
+          { key: 'ai', label: t('home.ai') },
+          { key: 'dashboard', label: t('home.dashboard') },
         ]}
         active={view}
         onChange={(v) => setView(v as HomeView)}
       />
-      {view === 'ai' ? (
-        <AIView msgs={msgs} input={input} setInput={setInput} sendMsg={sendMsg} c={c} t={t} />
-      ) : (
-        <DashView
-          habits={habits}
-          updateHabit={updateHabit}
-          completedToday={completedToday}
-          totalHabits={totalHabits}
-          urgentTasks={urgentTasks}
-          c={c}
-          t={t}
-          router={router}
-        />
-      )}
+      {view === 'ai' ? <AIView c={c} t={t} /> : <DashView c={c} t={t} router={router} />}
     </View>
   );
 }
 
 const HomeHeader = ({ c, router }: any) => {
   const { top } = useSafeAreaInsets();
+  const { rowDir } = useRTL();
   return (
-    <View style={[S.header, { paddingTop: top + 12 }]}>
-      <View>
-        <Text style={[S.logo, { color: c.t1 }]}>Life OS</Text>
-        <Text style={[S.greeting, { color: c.t2 }]}>
-          {new Date().getHours() < 12 ? '☀ صباح الخير' : '🌙 مساء الخير'}
-        </Text>
-      </View>
-      <View style={{ flexDirection: 'row', gap: 8 }}>
-        <Pressable
-          onPress={() => router.push('/settings')}
-          style={[S.iconBtn, { backgroundColor: c.bg2 }]}
-        >
-          <Ionicons name="settings-outline" size={20} color={c.t2} />
-        </Pressable>
-      </View>
+    <View style={[S.header, { paddingTop: top + 12, flexDirection: rowDir }]}>
+      <Text style={[S.logo, { color: c.t1 }]}>Life OS</Text>
+      <Pressable onPress={() => router.push('/settings')} style={[S.iconBtn, { backgroundColor: c.bg2 }]}>
+        <Ionicons name="settings-outline" size={20} color={c.t2} />
+      </Pressable>
     </View>
   );
 };
 
 // ── AI View ──────────────────────────────────────
-const AIView = ({ msgs, input, setInput, sendMsg, c, t }: any) => (
-  <KeyboardAvoidingView
-    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    style={{ flex: 1 }}
-  >
-    <FlatList
-      data={msgs}
-      contentContainerStyle={{ padding: 16, gap: 10, paddingBottom: 180 }}
-      keyExtractor={(m) => m.id}
-      renderItem={({ item: m }) => (
-        <View
-          style={{ alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '82%' }}
-        >
-          <View
-            style={[
-              S.bubble,
-              {
-                backgroundColor: m.role === 'user' ? c.accent : c.bg2,
-                borderBottomEndRadius: m.role === 'user' ? 4 : 18,
-                borderBottomStartRadius: m.role === 'assistant' ? 4 : 18,
-              },
-            ]}
-          >
-            <Text style={{ color: m.role === 'user' ? '#FFF' : c.t1, fontSize: 15, lineHeight: 23 }}>
-              {m.text}
-            </Text>
+const AIView = ({ c, t }: any) => {
+  const { rowDir, textAlign } = useRTL();
+  const [input, setInput] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<ParsedDay | null>(null);
+  const [items, setItems] = useState<DetectedItem[]>([]);
+  const [applied, setApplied] = useState(false);
+
+  const greeting = new Date().getHours() < 12 ? 'صباح الخير' : new Date().getHours() < 18 ? 'مساء الخير' : 'مساء الخير';
+
+  const capture = async (text: string) => {
+    if (!text.trim()) return;
+    setBusy(true);
+    setApplied(false);
+    setInput('');
+    const parsed = await aiService.parseDay({ kind: 'text', text });
+    setResult(parsed);
+    setItems(parsed.items);
+    setBusy(false);
+  };
+
+  const onAction = (id: string, action: ReviewAction) => {
+    setItems((p) =>
+      p
+        .map((it) =>
+          it.id === id
+            ? { ...it, status: action === 'accept' ? 'accepted' : action === 'ignore' ? 'ignored' : it.status }
+            : it
+        )
+        .filter((it) => !(it.id === id && action === 'delete'))
+    );
+  };
+
+  const applyAll = () => {
+    setItems((p) => p.map((it) => (it.status === 'pending' ? { ...it, status: 'accepted' } : it)));
+    setApplied(true);
+  };
+
+  const reset = () => {
+    setResult(null);
+    setItems([]);
+    setApplied(false);
+  };
+
+  return (
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 200 }} keyboardShouldPersistTaps="handled">
+        {/* Greeting — presence, never empty */}
+        <Text style={[S.greetBig, { color: c.t1, textAlign }]}>
+          {greeting}، {USER_NAME}
+        </Text>
+        <GlanceWhisper c={c} textAlign={textAlign} rowDir={rowDir} />
+
+        {!result && !busy && (
+          <View style={S.heroMic}>
+            <MicButton size="large" onDone={() => capture(SAMPLE)} />
+            <Text style={[S.heroHint, { color: c.t3 }]}>سجّل يومك أو اكتبه — وأنا أرتّبه لك</Text>
           </View>
-        </View>
-      )}
-    />
-    <View style={[S.inputArea, { backgroundColor: c.bg0 }]}>
-      <MicButton
-        size="large"
-        onDone={(text) => {
-          if (text) console.log('recorded:', text);
-        }}
-      />
-      <View style={[S.inputRow, { backgroundColor: c.bg2, borderColor: c.b1 }]}>
-        <TextInput
-          style={[S.textInput, { color: c.t1 }]}
-          placeholder={t('home.type_here')}
-          placeholderTextColor={c.t4}
-          value={input}
-          onChangeText={setInput}
-          onSubmitEditing={sendMsg}
-          returnKeyType="send"
-        />
-        {input.trim().length > 0 && (
-          <Pressable onPress={sendMsg} style={[S.sendBtn, { backgroundColor: c.accent }]}>
-            <Ionicons name="send" size={16} color="#FFF" />
+        )}
+
+        {busy && (
+          <View style={S.thinking}>
+            <ActivityIndicator color={c.accent} />
+            <Text style={{ color: c.t2, fontSize: 14 }}>{t('home.mic_proc')}</Text>
+          </View>
+        )}
+
+        {result && !busy && (
+          <View style={{ marginTop: 22, gap: 14 }}>
+            <ReviewLayer items={items} reply={result.reply} onAction={onAction} onApplyAll={applyAll} />
+            {applied && (
+              <View style={[S.applied, { backgroundColor: c.greenDim, flexDirection: rowDir }]}>
+                <Ionicons name="checkmark-circle" size={18} color={c.green} />
+                <Text style={{ color: c.green, fontSize: 13, fontWeight: '600' }}>
+                  تم التطبيق ووُزّع على أقسامك
+                </Text>
+              </View>
+            )}
+            <Pressable onPress={reset} style={[S.newBtn, { borderColor: c.b1, flexDirection: rowDir }]}>
+              <Ionicons name="add" size={18} color={c.t2} />
+              <Text style={{ color: c.t2, fontSize: 14, fontWeight: '600' }}>التقاط جديد</Text>
+            </Pressable>
+          </View>
+        )}
+      </ScrollView>
+
+      {/* Input bar — universal capture: attach · text · mic */}
+      <View style={[S.inputArea, { backgroundColor: c.bg0 }]}>
+        <View style={[S.inputRow, { backgroundColor: c.bg2, borderColor: c.b1, flexDirection: rowDir }]}>
+          <Pressable style={S.iconGhost} onPress={() => capture(SAMPLE)}>
+            <Ionicons name="add-circle-outline" size={22} color={c.t3} />
           </Pressable>
+          <TextInput
+            style={[S.textInput, { color: c.t1, textAlign }]}
+            placeholder={t('home.type_here')}
+            placeholderTextColor={c.t4}
+            value={input}
+            onChangeText={setInput}
+            onSubmitEditing={() => capture(input)}
+            returnKeyType="send"
+          />
+          {input.trim().length > 0 ? (
+            <Pressable onPress={() => capture(input)} style={[S.sendBtn, { backgroundColor: c.accent }]}>
+              <Ionicons name="arrow-up" size={18} color="#FFF" />
+            </Pressable>
+          ) : (
+            <Pressable style={S.iconGhost} onPress={() => capture(SAMPLE)}>
+              <Ionicons name="mic-outline" size={22} color={c.accent} />
+            </Pressable>
+          )}
+        </View>
+      </View>
+    </KeyboardAvoidingView>
+  );
+};
+
+const GlanceWhisper = ({ c, textAlign, rowDir }: any) => {
+  const urgent = mockTasks.filter((tk) => tk.priority === 'urgent' && !tk.done).length;
+  const habits = useMockStore((s) => s.habits).filter((h) => !h.done).length;
+  return (
+    <View style={[S.glance, { flexDirection: rowDir }]}>
+      <Ionicons name="ellipse" size={6} color={c.accent} />
+      <Text style={{ color: c.t2, fontSize: 13, textAlign }}>
+        {`${habits} عادات متبقية · ${urgent} مهمة عاجلة · يومك تحت السيطرة`}
+      </Text>
+    </View>
+  );
+};
+
+// ── Dashboard View — vertical timeline, not a card grid ──
+const DashView = ({ c, t, router }: any) => {
+  const { textAlign, rowDir } = useRTL();
+  return (
+    <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 120 }}>
+      <Text style={[S.stateLine, { color: c.t1, textAlign }]}>يومك يسير بهدوء — ٣ من ٦ عادات مكتملة.</Text>
+
+      <DayTimeline />
+
+      {/* quiet conversational AI insights */}
+      <View style={{ gap: 10, marginTop: 22 }}>
+        <Text style={[S.insightLabel, { color: c.t3, textAlign }]}>من الذكاء</Text>
+        {['تركيزك أفضل بعد العصر — جدولت أصعب مهمة وقتها.', 'الثلاثاء عادةً يتأخر عليك — خفّفت مهامه.'].map(
+          (line, i) => (
+            <View key={i} style={[S.insightRow, { flexDirection: rowDir }]}>
+              <View style={[S.insightDot, { backgroundColor: c.accent }]} />
+              <Text style={{ color: c.t2, fontSize: 14, lineHeight: 21, flex: 1, textAlign }}>{line}</Text>
+            </View>
+          )
         )}
       </View>
-    </View>
-  </KeyboardAvoidingView>
-);
-
-// ── Dashboard View ────────────────────────────────
-const DashView = ({
-  habits,
-  updateHabit,
-  completedToday,
-  totalHabits,
-  urgentTasks,
-  c,
-  t,
-  router,
-}: any) => (
-  <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 110 }}>
-    {/* Life OS Score */}
-    <SmartCard accent={c.accent}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-        <View
-          style={{
-            width: 60,
-            height: 60,
-            borderRadius: 30,
-            borderWidth: 3,
-            borderColor: c.accent,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: c.accentDim,
-          }}
-        >
-          <Text style={{ fontSize: 22, fontWeight: '800', color: c.accent }}>82</Text>
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 16, fontWeight: '700', color: c.t1 }}>Life OS Score</Text>
-          <Text style={{ fontSize: 13, color: c.t2, marginTop: 3 }}>
-            أداؤك هذا الأسبوع رائع — استمر! 🔥
-          </Text>
-        </View>
-      </View>
-    </SmartCard>
-
-    {/* عادات اليوم */}
-    <View
-      style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
-    >
-      <Text style={[S.secTitle, { color: c.t2 }]}>{t('dash.habits')}</Text>
-      <Pressable onPress={() => router.push('/(tabs)/more/habits')}>
-        <Text style={{ color: c.accent, fontSize: 13, fontWeight: '600' }}>{t('habits.all')}</Text>
-      </Pressable>
-    </View>
-
-    {/* Progress Bar */}
-    <SmartCard accent={c.habits} padSize="sm">
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 10,
-        }}
-      >
-        <Text style={{ color: c.t1, fontWeight: '600', fontSize: 15 }}>
-          {completedToday} / {totalHabits} مكتملة
-        </Text>
-        <Text style={{ color: c.habits, fontWeight: '800', fontSize: 18 }}>
-          {Math.round((completedToday / Math.max(totalHabits, 1)) * 100)}%
-        </Text>
-      </View>
-      <View style={[S.pBg, { backgroundColor: c.b1 }]}>
-        <View
-          style={[
-            S.pFill,
-            {
-              width: `${(completedToday / Math.max(totalHabits, 1)) * 100}%`,
-              backgroundColor: c.habits,
-            },
-          ]}
-        />
-      </View>
-    </SmartCard>
-
-    {/* أول 3 عادات */}
-    {habits.slice(0, 3).map((h: any) => (
-      <HabitCard key={h.id} habit={h} onUpdate={updateHabit} />
-    ))}
-
-    {/* مهام عاجلة */}
-    {urgentTasks.length > 0 && (
-      <>
-        <Text style={[S.secTitle, { color: c.t2, marginTop: 4 }]}>{t('dash.tasks_urgent')}</Text>
-        <SmartCard accent={c.tasks}>
-          {urgentTasks.map((task: any, i: number) => (
-            <View
-              key={task.id}
-              style={[
-                S.taskRow,
-                i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.b0 },
-              ]}
-            >
-              <View style={[S.tDot, { backgroundColor: c.red }]} />
-              <Text style={{ flex: 1, color: c.t1, fontSize: 14 }}>{task.title}</Text>
-              {task.due && <Text style={{ color: c.t3, fontSize: 12 }}>{task.due}</Text>}
-            </View>
-          ))}
-        </SmartCard>
-      </>
-    )}
-
-    {/* Streaks */}
-    <Text style={[S.secTitle, { color: c.t2, marginTop: 4 }]}>🔥 {t('dash.streaks')}</Text>
-    <SmartCard>
-      {habits
-        .filter((h: any) => h.streak > 0)
-        .slice(0, 4)
-        .map((h: any, i: number) => (
-          <View
-            key={h.id}
-            style={[
-              S.streakRow,
-              i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.b0 },
-            ]}
-          >
-            <Text style={{ fontSize: 18 }}>{h.emoji}</Text>
-            <Text style={{ color: c.t1, fontSize: 14, width: 100 }} numberOfLines={1}>
-              {h.name}
-            </Text>
-            <View style={[S.pBg, { flex: 1, backgroundColor: c.b1 }]}>
-              <View
-                style={[
-                  S.pFill,
-                  { width: `${Math.min(h.streak / 30, 1) * 100}%`, backgroundColor: h.color },
-                ]}
-              />
-            </View>
-            <Text
-              style={{
-                color: '#F59E0B',
-                fontWeight: '700',
-                fontSize: 13,
-                minWidth: 40,
-                textAlign: 'right',
-              }}
-            >
-              🔥 {h.streak}
-            </Text>
-          </View>
-        ))}
-    </SmartCard>
-  </ScrollView>
-);
+    </ScrollView>
+  );
+};
 
 const S = StyleSheet.create({
   screen: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    paddingHorizontal: 20,
-    paddingBottom: 8,
-  },
-  logo: { fontSize: 24, fontWeight: '800', letterSpacing: -0.5 },
-  greeting: { fontSize: 13, marginTop: 2 },
+  header: { justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 6 },
+  logo: { fontSize: 22, fontWeight: '800', letterSpacing: -0.5 },
   iconBtn: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  bubble: { padding: 14, borderRadius: 18 },
-  inputArea: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 16,
-    paddingBottom: 100,
-    paddingTop: 10,
-    gap: 12,
-    alignItems: 'center',
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    width: '100%',
-    borderRadius: 16,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 11,
-  },
-  textInput: { flex: 1, fontSize: 15 },
-  sendBtn: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  secTitle: { fontSize: 13, fontWeight: '600' },
-  pBg: { height: 6, borderRadius: 3, overflow: 'hidden' },
-  pFill: { height: 6, borderRadius: 3 },
-  taskRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10 },
-  tDot: { width: 7, height: 7, borderRadius: 3.5 },
-  streakRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10 },
+  greetBig: { fontSize: 30, fontWeight: '800', letterSpacing: -0.6, marginTop: 6 },
+  glance: { alignItems: 'center', gap: 8, marginTop: 10 },
+  heroMic: { alignItems: 'center', gap: 16, marginTop: 60 },
+  heroHint: { fontSize: 14, marginTop: 6 },
+  thinking: { alignItems: 'center', gap: 12, marginTop: 70 },
+  applied: { alignItems: 'center', gap: 8, padding: 12, borderRadius: 14 },
+  newBtn: { alignItems: 'center', justifyContent: 'center', gap: 6, padding: 12, borderRadius: 14, borderWidth: 1 },
+  inputArea: { position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 16, paddingBottom: 95, paddingTop: 10 },
+  inputRow: { alignItems: 'center', gap: 8, borderRadius: 18, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 6 },
+  iconGhost: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center' },
+  textInput: { flex: 1, fontSize: 15, paddingHorizontal: 4 },
+  sendBtn: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  stateLine: { fontSize: 20, fontWeight: '700', lineHeight: 28, marginBottom: 18 },
+  insightLabel: { fontSize: 12, fontWeight: '700' },
+  insightRow: { alignItems: 'flex-start', gap: 10 },
+  insightDot: { width: 6, height: 6, borderRadius: 3, marginTop: 7 },
 });

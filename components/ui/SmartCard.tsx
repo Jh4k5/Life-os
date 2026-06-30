@@ -1,4 +1,6 @@
 // components/ui/SmartCard.tsx
+// Restrained surface: hairline border + frosted glass (dark), clean white (light).
+// No colored card borders, no heavy drop shadows — depth via lines & translucency.
 import React from 'react';
 import { View, Platform, ViewStyle, StyleProp } from 'react-native';
 import { BlurView } from 'expo-blur';
@@ -7,35 +9,45 @@ import { useTheme } from '@/contexts/ThemeContext';
 interface Props {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
-  accent?: string; // لون border مميز
+  /** Optional accent — rendered ONLY as a subtle tint, never a loud border. */
+  accent?: string;
   elevated?: boolean;
   noPad?: boolean;
   padSize?: 'sm' | 'md' | 'lg';
+  radius?: number;
 }
 
-export const SmartCard = ({ children, style, accent, elevated, noPad, padSize = 'md' }: Props) => {
+export const SmartCard = ({
+  children,
+  style,
+  accent,
+  elevated,
+  noPad,
+  padSize = 'md',
+  radius = 20,
+}: Props) => {
   const { isDark, c } = useTheme();
-  const padMap = { sm: 10, md: 16, lg: 22 };
+  const padMap = { sm: 12, md: 16, lg: 22 };
   const pad = noPad ? 0 : padMap[padSize];
-  const border = accent ? accent + '55' : c.b1;
+  // Hairline border — single restrained look regardless of section.
+  const border = c.b1;
 
-  // Light mode → بطاقة بيضاء نظيفة مع ظل ناعم
   if (!isDark) {
     return (
       <View
         style={[
           {
-            backgroundColor: elevated ? c.bg1 : c.bg1,
-            borderRadius: 18,
+            backgroundColor: c.bg1,
+            borderRadius: radius,
             borderWidth: 1,
             borderColor: border,
             padding: pad,
-            marginVertical: 4,
-            shadowColor: accent ?? '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.06,
-            shadowRadius: 8,
-            elevation: 2,
+            marginVertical: 5,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 6 },
+            shadowOpacity: 0.05,
+            shadowRadius: 16,
+            elevation: 1,
           },
           style,
         ]}
@@ -45,18 +57,17 @@ export const SmartCard = ({ children, style, accent, elevated, noPad, padSize = 
     );
   }
 
-  // Dark mode → زجاج سائل
   if (Platform.OS === 'web') {
     return (
       <View
         style={[
           {
-            backgroundColor: c.glass,
-            borderRadius: 18,
+            backgroundColor: elevated ? c.bg2 : c.bg1,
+            borderRadius: radius,
             borderWidth: 1,
             borderColor: border,
             padding: pad,
-            marginVertical: 4,
+            marginVertical: 5,
           } as ViewStyle,
           style,
         ]}
@@ -68,17 +79,14 @@ export const SmartCard = ({ children, style, accent, elevated, noPad, padSize = 
 
   return (
     <View
-      style={[
-        { borderRadius: 18, overflow: 'hidden', marginVertical: 4 },
-        style,
-      ]}
+      style={[{ borderRadius: radius, overflow: 'hidden', marginVertical: 5 }, style]}
     >
       <BlurView
-        intensity={elevated ? 55 : 35}
+        intensity={elevated ? 40 : 22}
         tint="dark"
         style={{
           backgroundColor: c.glass,
-          borderRadius: 18,
+          borderRadius: radius,
           borderWidth: 1,
           borderColor: border,
           padding: pad,
