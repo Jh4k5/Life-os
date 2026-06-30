@@ -36,11 +36,31 @@ export const captureService = {
     return { uri: a.uri, base64: a.base64 ?? undefined, mimeType: a.mimeType ?? 'image/jpeg' };
   },
 
-  async uploadVoice(_uri: string): Promise<VoiceResult> {
+  /** Voice → text via the Gemini audio Edge Function (server-side key). */
+  async transcribe(audioBase64: string, mimeType = 'audio/m4a'): Promise<VoiceResult> {
     const client = getClient();
-    if (client && isSupabaseConfigured()) {
-      // Live: upload to BUCKETS.voice → invoke('transcribe'). Filled in when ready.
+    if (client && audioBase64) {
+      try {
+        const { data, error } = await client.functions.invoke('transcribe', {
+          body: { audioBase64, mimeType },
+        });
+        if (!error && data?.transcript) return { transcript: data.transcript, durationSec: 0 };
+      } catch {
+        // fall through
+      }
+    }
+    return { transcript: '', durationSec: 0 };
+  },
+
+  /** Optionally archive the raw audio to private storage, then transcribe. */
+  async uploadVoice(uri: string, audioBase64?: string): Promise<VoiceResult> {
+    const client = getClient();
+    if (client && isSupabaseConfigured() && audioBase64) {
+      // (optional) archive raw audio for later re-processing:
+      //   await client.storage.from(BUCKETS.voice).upload(path, blob)
       void BUCKETS.voice;
+      void uri;
+      return this.transcribe(audioBase64);
     }
     return { transcript: '', durationSec: 0 };
   },

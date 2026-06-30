@@ -5,9 +5,19 @@
 // { demo: true } so the UI can stay honest ("applied locally") — never faked.
 import type { DetectedItem, EntityType } from './types';
 import { getClient } from './supabase';
+import { notifications } from './notifications';
 import { mockJournals, mockTasks, type JournalEntry, type TaskData } from '@/data/mock';
 import { mockHabits } from '@/data/mock';
 import type { HabitData } from '@/components/ui/HabitCard';
+
+/** Best-effort proactive reminders for time-bound items (device only). */
+function scheduleReminders(items: DetectedItem[]) {
+  for (const it of items) {
+    if (it.type === 'reminder' || it.type === 'appointment') {
+      notifications.nudgeIn(60, 'تذكير من Life OS', it.title).catch(() => {});
+    }
+  }
+}
 
 /** Returns the signed-in user id, or null when running in local/demo mode. */
 async function activeUser(): Promise<{ client: ReturnType<typeof getClient>; uid: string } | null> {
@@ -61,6 +71,7 @@ export const repository = {
   /** Persist every accepted item. Suggestions are skipped (they're nudges). */
   async persistAccepted(items: DetectedItem[]): Promise<PersistResult> {
     const accepted = items.filter((i) => i.status === 'accepted' && i.type !== 'suggestion');
+    scheduleReminders(accepted);
     const client = getClient();
 
     if (!client) {

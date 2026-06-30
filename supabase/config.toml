@@ -7,3 +7,6 @@ verify_jwt = true
 
 [functions.ocr]
 verify_jwt = true
+
+[functions.transcribe]
+verify_jwt = true
