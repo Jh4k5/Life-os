@@ -1,141 +1,191 @@
 // app/(tabs)/more/learning/index.tsx
-import React, { useState } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+// Learning Hub — rebuilt on the design system (ui-ux-pro-max).
+// Sibling language to Study: single-accent chrome, Ionicons, token colors, RTL.
+import React, { useMemo, useState } from 'react';
+import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
-import { SmartCard } from '@/components/ui/SmartCard';
+import { useRTL } from '@/hooks/useRTL';
 import { Header } from '@/components/layout/Header';
-import { TabPill } from '@/components/ui/TabPill';
-import { mockLibrary } from '@/data/mock';
+import { SmartCard, StatRow, IconTile, Badge, ProgressRing, Chip, EmptyState } from '@/components/ui';
+import { mockLibrary, type LibraryItem } from '@/data/mock';
 
 type LibFilter = 'all' | 'in_progress' | 'want_to_read' | 'completed';
 
-const TYPE_EMOJI: Record<string, string> = {
-  book: '📖',
-  podcast: '🎙',
-  article: '📄',
-  video: '🎬',
-  course: '🎓',
-  link: '🔗',
+const TYPE_ICON: Record<LibraryItem['type'], keyof typeof Ionicons.glyphMap> = {
+  book: 'book-outline',
+  podcast: 'mic-outline',
+  article: 'document-text-outline',
+  video: 'play-circle-outline',
+  course: 'school-outline',
+  link: 'link-outline',
+};
+
+const STATUS_TONE: Record<LibraryItem['status'], 'neutral' | 'accent' | 'green' | 'red'> = {
+  want_to_read: 'neutral',
+  in_progress: 'accent',
+  completed: 'green',
+  dropped: 'red',
 };
 
 export default function LearningScreen() {
   const { c } = useTheme();
   const { t } = useTranslation();
+  const { rowDir, textAlign } = useRTL();
   const router = useRouter();
   const [filter, setFilter] = useState<LibFilter>('all');
 
-  const STATUS_LABEL: Record<string, string> = {
+  // Mock-backed pending learningRepo swap (Workstream A).
+  const library = mockLibrary;
+  const filtered = useMemo(
+    () => library.filter((l) => filter === 'all' || l.status === filter),
+    [library, filter],
+  );
+  const inProgress = library.filter((l) => l.status === 'in_progress').length;
+  const completed = library.filter((l) => l.status === 'completed').length;
+
+  const statusLabel: Record<LibraryItem['status'], string> = {
     want_to_read: t('learning.status_want'),
     in_progress: t('learning.status_prog'),
     completed: t('learning.status_done'),
     dropped: t('learning.status_drop'),
   };
 
-  const filtered = mockLibrary.filter((l) => filter === 'all' || l.status === filter);
-  const inProgress = mockLibrary.filter((l) => l.status === 'in_progress').length;
-  const completed = mockLibrary.filter((l) => l.status === 'completed').length;
-
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
       <Header
         title={t('sections.learning')}
-        accent={c.learning}
         right={[{ icon: 'add', onPress: () => router.push('/(tabs)/more/learning/new'), color: c.accent }]}
       />
-      {/* Stats */}
-      <View style={[S.statsRow, { backgroundColor: c.learning + '15', borderBottomColor: c.learning + '30' }]}>
-        <StatItem val={mockLibrary.length} label="في المكتبة" color={c.learning} c={c} />
-        <StatItem val={inProgress} label={t('learning.status_prog')} color={c.schedule} c={c} />
-        <StatItem val={completed} label={t('learning.status_done')} color={c.green} c={c} />
-      </View>
-      <TabPill
-        tabs={[
-          { key: 'all', label: t('learning.all'), emoji: '📚' },
-          { key: 'in_progress', label: t('learning.status_prog'), emoji: '📖' },
-          { key: 'want_to_read', label: t('learning.status_want'), emoji: '🔖' },
-          { key: 'completed', label: t('learning.status_done'), emoji: '✅' },
-        ]}
-        active={filter}
-        onChange={(f) => setFilter(f as LibFilter)}
-        accent={c.learning}
-      />
+
       <FlatList
         data={filtered}
-        contentContainerStyle={{ padding: 16, gap: 8, paddingBottom: 110 }}
         keyExtractor={(l) => l.id}
-        renderItem={({ item: lib }) => (
-          <SmartCard>
-            <View style={S.libRow}>
-              <View style={[S.typeIcon, { backgroundColor: c.learning + '22' }]}>
-                <Text style={{ fontSize: 26 }}>{TYPE_EMOJI[lib.type] ?? '📄'}</Text>
-              </View>
-              <View style={{ flex: 1, gap: 4 }}>
-                <Text style={{ color: c.t1, fontWeight: '700', fontSize: 15 }} numberOfLines={2}>
-                  {lib.title}
-                </Text>
-                {!!lib.author && <Text style={{ color: c.t2, fontSize: 12 }}>{lib.author}</Text>}
-                <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                  <View style={[S.statusChip, { backgroundColor: c.learning + '20' }]}>
-                    <Text style={{ color: c.learning, fontSize: 11, fontWeight: '600' }}>
-                      {STATUS_LABEL[lib.status]}
-                    </Text>
-                  </View>
-                  {lib.rating > 0 && (
-                    <Text style={{ fontSize: 11, color: c.t3 }}>{'⭐'.repeat(lib.rating)}</Text>
-                  )}
-                  {lib.tags.map((tag) => (
-                    <Text key={tag} style={{ color: c.t3, fontSize: 11 }}>
-                      #{tag}
-                    </Text>
-                  ))}
-                </View>
-              </View>
-              {lib.progress > 0 && (
-                <View style={{ alignItems: 'center', gap: 4 }}>
-                  <Text style={{ color: c.learning, fontWeight: '800', fontSize: 17 }}>{lib.progress}%</Text>
-                  <View style={[S.pBg, { width: 40, backgroundColor: c.b1 }]}>
-                    <View style={[S.pFill, { width: `${lib.progress}%`, backgroundColor: c.learning }]} />
-                  </View>
-                </View>
-              )}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <View>
+            <SmartCard style={{ marginTop: 8 }}>
+              <StatRow
+                stats={[
+                  { icon: 'library-outline', value: library.length, label: t('learning.in_library') },
+                  { icon: 'book-outline', value: inProgress, label: t('learning.status_prog') },
+                  { icon: 'checkmark-done-outline', value: completed, label: t('learning.status_done') },
+                ]}
+              />
+            </SmartCard>
+            <View style={[S.filters, { flexDirection: rowDir }]}>
+              <Chip label={t('learning.all')} selected={filter === 'all'} onPress={() => setFilter('all')} />
+              <Chip
+                label={t('learning.status_prog')}
+                selected={filter === 'in_progress'}
+                onPress={() => setFilter('in_progress')}
+              />
+              <Chip
+                label={t('learning.status_want')}
+                selected={filter === 'want_to_read'}
+                onPress={() => setFilter('want_to_read')}
+              />
+              <Chip
+                label={t('learning.status_done')}
+                selected={filter === 'completed'}
+                onPress={() => setFilter('completed')}
+              />
             </View>
-            {lib.notes && (
-              <View style={[S.noteRow, { borderTopColor: c.b0 }]}>
-                <Text style={{ color: c.t3, fontSize: 12 }} numberOfLines={2}>
-                  💡 {lib.notes}
-                </Text>
-              </View>
-            )}
-          </SmartCard>
+          </View>
+        }
+        renderItem={({ item: lib }) => (
+          <LibraryCard
+            item={lib}
+            c={c}
+            statusLabel={statusLabel[lib.status]}
+            statusTone={STATUS_TONE[lib.status]}
+            rowDir={rowDir}
+            textAlign={textAlign}
+          />
         )}
         ListEmptyComponent={
-          <View style={S.empty}>
-            <Text style={{ fontSize: 50 }}>📚</Text>
-            <Text style={{ color: c.t3, fontSize: 15, textAlign: 'center' }}>{t('learning.empty')}</Text>
-          </View>
+          <EmptyState
+            icon="library-outline"
+            title={t('learning.empty')}
+            action={{ label: t('learning.new'), icon: 'add', onPress: () => router.push('/(tabs)/more/learning/new') }}
+          />
         }
       />
     </View>
   );
 }
 
-const StatItem = ({ val, label, color, c }: any) => (
-  <View style={{ flex: 1, alignItems: 'center', gap: 2 }}>
-    <Text style={{ color, fontWeight: '800', fontSize: 22 }}>{val}</Text>
-    <Text style={{ color: c.t3, fontSize: 12 }}>{label}</Text>
+const LibraryCard = ({
+  item: lib,
+  c,
+  statusLabel,
+  statusTone,
+  rowDir,
+  textAlign,
+}: {
+  item: LibraryItem;
+  c: ReturnType<typeof useTheme>['c'];
+  statusLabel: string;
+  statusTone: 'neutral' | 'accent' | 'green' | 'red';
+  rowDir: 'row' | 'row-reverse';
+  textAlign: 'left' | 'right';
+}) => (
+  <SmartCard style={{ marginVertical: 5 }}>
+    <View style={[S.row, { flexDirection: rowDir }]}>
+      <IconTile icon={TYPE_ICON[lib.type] ?? 'document-text-outline'} size="lg" />
+      <View style={{ flex: 1, gap: 5 }}>
+        <Text style={{ color: c.t1, fontWeight: '700', fontSize: 15, textAlign }} numberOfLines={2}>
+          {lib.title}
+        </Text>
+        {!!lib.author && (
+          <Text style={{ color: c.t2, fontSize: 12.5, textAlign }} numberOfLines={1}>
+            {lib.author}
+          </Text>
+        )}
+        <View style={[S.metaRow, { flexDirection: rowDir }]}>
+          <Badge label={statusLabel} tone={statusTone} size="sm" />
+          {lib.rating > 0 && <Stars n={lib.rating} c={c} />}
+          {lib.tags.slice(0, 2).map((tag) => (
+            <Text key={tag} style={{ color: c.t3, fontSize: 11.5 }}>
+              #{tag}
+            </Text>
+          ))}
+        </View>
+      </View>
+      {lib.progress > 0 && <ProgressRing progress={lib.progress / 100} size={44} />}
+    </View>
+    {!!lib.notes && (
+      <View style={[S.noteRow, { borderTopColor: c.b0, flexDirection: rowDir }]}>
+        <Ionicons name="bulb-outline" size={14} color={c.t3} />
+        <Text style={{ color: c.t3, fontSize: 12.5, flex: 1, textAlign }} numberOfLines={2}>
+          {lib.notes}
+        </Text>
+      </View>
+    )}
+  </SmartCard>
+);
+
+const Stars = ({ n, c }: { n: number; c: ReturnType<typeof useTheme>['c'] }) => (
+  <View style={{ flexDirection: 'row', gap: 1 }}>
+    {Array.from({ length: Math.min(n, 5) }).map((_, i) => (
+      <Ionicons key={i} name="star" size={11} color={c.yellow} />
+    ))}
   </View>
 );
 
 const S = StyleSheet.create({
   screen: { flex: 1 },
-  statsRow: { flexDirection: 'row', paddingVertical: 14, borderBottomWidth: 1 },
-  libRow: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
-  typeIcon: { width: 54, height: 54, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  statusChip: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
-  pBg: { height: 4, borderRadius: 2, overflow: 'hidden' },
-  pFill: { height: 4, borderRadius: 2 },
-  noteRow: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 10, marginTop: 8 },
-  empty: { alignItems: 'center', paddingVertical: 60, gap: 14 },
+  filters: { gap: 8, marginTop: 14, marginBottom: 4, flexWrap: 'wrap' },
+  row: { gap: 12, alignItems: 'flex-start' },
+  metaRow: { alignItems: 'center', gap: 8, flexWrap: 'wrap' },
+  noteRow: {
+    alignItems: 'center',
+    gap: 7,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingTop: 10,
+    marginTop: 10,
+  },
 });

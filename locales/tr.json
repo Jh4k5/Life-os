@@ -201,7 +201,8 @@
     "daily_log": "Bugün öğrendim…",
     "goal": "Aylık okuma hedefi",
     "all": "Tümü",
-    "empty": "Kütüphane boş — ilk öğeni ekle"
+    "empty": "Kütüphane boş — ilk öğeni ekle",
+    "in_library": "Kütüphanede"
   },
   "focus": {
     "start": "Oturumu başlat",

@@ -208,7 +208,8 @@
     "daily_log": "Learned today…",
     "goal": "Monthly reading goal",
     "all": "All",
-    "empty": "Your library is empty — add your first item"
+    "empty": "Your library is empty — add your first item",
+    "in_library": "In library"
   },
   "focus": {
     "start": "Start session",

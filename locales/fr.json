@@ -201,7 +201,8 @@
     "daily_log": "Appris aujourd'hui…",
     "goal": "Objectif de lecture mensuel",
     "all": "Tout",
-    "empty": "Bibliothèque vide — ajoutez votre premier élément"
+    "empty": "Bibliothèque vide — ajoutez votre premier élément",
+    "in_library": "Bibliothèque"
   },
   "focus": {
     "start": "Démarrer la session",

@@ -201,7 +201,8 @@
     "daily_log": "Heute gelernt…",
     "goal": "Monatliches Leseziel",
     "all": "Alle",
-    "empty": "Bibliothek leer — füge dein erstes Element hinzu"
+    "empty": "Bibliothek leer — füge dein erstes Element hinzu",
+    "in_library": "In Bibliothek"
   },
   "focus": {
     "start": "Einheit starten",

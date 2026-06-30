@@ -201,7 +201,8 @@
     "daily_log": "Aprendí hoy…",
     "goal": "Meta de lectura mensual",
     "all": "Todo",
-    "empty": "Biblioteca vacía — añade tu primer elemento"
+    "empty": "Biblioteca vacía — añade tu primer elemento",
+    "in_library": "En biblioteca"
   },
   "focus": {
     "start": "Iniciar sesión",
