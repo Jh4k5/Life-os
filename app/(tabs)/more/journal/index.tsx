@@ -1,31 +1,40 @@
 // app/(tabs)/more/journal/index.tsx
+// Journal — v3 premium: mood as a semantic dot (not emoji-as-icon), neutral
+// glass surfaces, single accent, monochrome Ionicons. No chrome tints.
 import React, { useState } from 'react';
 import { View, Text, FlatList, Pressable, TextInput, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
+import { useRTL } from '@/hooks/useRTL';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { Header } from '@/components/layout/Header';
 import { mockJournals } from '@/data/mock';
 import { repository } from '@/services/repository';
 import { useAsync } from '@/hooks/useAsync';
 
-const MOOD_EMOJI: Record<string, string> = {
-  great: '😄',
-  good: '🙂',
-  neutral: '😐',
-  bad: '😔',
-  awful: '😢',
+// Mood is data, not chrome: a semantic dot + label (green→red scale is allowed).
+const MOODS = ['great', 'good', 'neutral', 'bad', 'awful'] as const;
+type Mood = (typeof MOODS)[number];
+const MOOD_LABEL: Record<Mood, string> = {
+  great: 'رائع',
+  good: 'جيد',
+  neutral: 'عادي',
+  bad: 'سيئ',
+  awful: 'متعب',
 };
+const moodColor = (m: string, c: any) =>
+  m === 'great' || m === 'good' ? c.green : m === 'neutral' ? c.t3 : m === 'bad' ? c.orange : c.red;
 
 export default function JournalScreen() {
   const { c } = useTheme();
   const { t } = useTranslation();
+  const { rowDir, textAlign } = useRTL();
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [filterMood, setFilterMood] = useState<string | null>(null);
-  const { data: journals } = useAsync(() => repository.listJournal(), mockJournals);
+  const { data: journals, loading } = useAsync(() => repository.listJournal(), mockJournals);
 
   const filtered = journals.filter(
     (j) =>
@@ -36,6 +45,7 @@ export default function JournalScreen() {
   const regular = filtered.filter((j) => !j.pinned);
 
   const streak = 5;
+  const avgWords = Math.round(journals.reduce((s, j) => s + j.words, 0) / Math.max(journals.length, 1));
 
   const listData: any[] = [
     ...(pinned.length > 0 ? [{ type: 'header', label: t('journal.pinned') }] : []),
@@ -48,35 +58,30 @@ export default function JournalScreen() {
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
       <Header
         title={t('sections.journal')}
-        accent={c.journal}
         right={[
-          { icon: 'flash-outline', onPress: () => router.push('/(tabs)/more/journal/new?quick=true'), color: c.journal },
+          { icon: 'flash-outline', onPress: () => router.push('/(tabs)/more/journal/new?quick=true'), color: c.accent },
           { icon: 'add', onPress: () => router.push('/(tabs)/more/journal/new'), color: c.accent },
         ]}
       />
-      {/* Streak banner */}
-      <View
-        style={[
-          S.streakBanner,
-          { backgroundColor: c.journal + '15', borderBottomColor: c.journal + '30' },
-        ]}
-      >
-        <Text style={{ fontSize: 22 }}>✍</Text>
+      {/* Streak banner — monochrome, hairline */}
+      <View style={[S.streakBanner, { flexDirection: rowDir, backgroundColor: c.bg1, borderBottomColor: c.b1 }]}>
+        <View style={[S.streakIcon, { backgroundColor: c.accentDim }]}>
+          <Ionicons name="flame-outline" size={18} color={c.accent} />
+        </View>
         <View style={{ flex: 1 }}>
-          <Text style={{ color: c.journal, fontWeight: '700', fontSize: 14 }}>
-            🔥 سلسلة كتابة {streak} أيام متتالية
+          <Text style={{ color: c.t1, fontWeight: '700', fontSize: 14, textAlign }}>
+            سلسلة كتابة {streak} أيام متتالية
           </Text>
-          <Text style={{ color: c.t2, fontSize: 12, marginTop: 2 }}>
-            {journals.length} مدخلة · متوسط{' '}
-            {Math.round(journals.reduce((s, j) => s + j.words, 0) / Math.max(journals.length, 1))} كلمة
+          <Text style={{ color: c.t3, fontSize: 12, marginTop: 2, textAlign }}>
+            {journals.length} مدخلة · متوسط {avgWords} كلمة
           </Text>
         </View>
       </View>
       {/* Search */}
-      <View style={[S.search, { backgroundColor: c.bg2, borderColor: c.b1 }]}>
+      <View style={[S.search, { flexDirection: rowDir, backgroundColor: c.bg2, borderColor: c.b1 }]}>
         <Ionicons name="search-outline" size={16} color={c.t3} />
         <TextInput
-          style={[S.searchInput, { color: c.t1 }]}
+          style={[S.searchInput, { color: c.t1, textAlign }]}
           placeholder={t('journal.search_ph')}
           placeholderTextColor={c.t4}
           value={search}
@@ -88,24 +93,24 @@ export default function JournalScreen() {
           </Pressable>
         )}
       </View>
-      {/* Mood filter */}
-      <View style={S.moodFilter}>
-        {(['great', 'good', 'neutral', 'bad', 'awful'] as const).map((mood) => (
-          <Pressable
-            key={mood}
-            onPress={() => setFilterMood(filterMood === mood ? null : mood)}
-            style={[
-              S.moodBtn,
-              {
-                backgroundColor: filterMood === mood ? c.journal + '30' : c.bg2,
-                borderColor: filterMood === mood ? c.journal : c.b1,
-                borderWidth: filterMood === mood ? 2 : 1,
-              },
-            ]}
-          >
-            <Text style={{ fontSize: 20 }}>{MOOD_EMOJI[mood]}</Text>
-          </Pressable>
-        ))}
+      {/* Mood filter — semantic dots */}
+      <View style={[S.moodFilter, { flexDirection: rowDir }]}>
+        {MOODS.map((mood) => {
+          const on = filterMood === mood;
+          return (
+            <Pressable
+              key={mood}
+              onPress={() => setFilterMood(on ? null : mood)}
+              style={[
+                S.moodBtn,
+                { flexDirection: rowDir, backgroundColor: on ? c.accentDim : c.bg2, borderColor: on ? c.accent : c.b1 },
+              ]}
+            >
+              <View style={[S.moodDot, { backgroundColor: moodColor(mood, c) }]} />
+              <Text style={{ color: on ? c.accent : c.t2, fontSize: 12, fontWeight: '600' }}>{MOOD_LABEL[mood]}</Text>
+            </Pressable>
+          );
+        })}
       </View>
 
       <FlatList
@@ -114,25 +119,28 @@ export default function JournalScreen() {
         contentContainerStyle={{ padding: 16, gap: 6, paddingBottom: 110 }}
         renderItem={({ item }: any) => {
           if (item.type === 'header') {
-            return <Text style={[S.secTitle, { color: c.t2 }]}>{item.label}</Text>;
+            return <Text style={[S.secTitle, { color: c.t2, textAlign }]}>{item.label}</Text>;
           }
           return (
             <Pressable onPress={() => router.push(`/(tabs)/more/journal/${item.id}`)}>
-              <SmartCard accent={item.pinned ? c.journal : undefined}>
-                <View style={S.entryHeader}>
-                  <Text style={[S.entryTitle, { color: c.t1 }]} numberOfLines={1}>
+              <SmartCard accent={item.pinned ? c.accent : undefined}>
+                <View style={[S.entryHeader, { flexDirection: rowDir }]}>
+                  <Text style={[S.entryTitle, { color: c.t1, textAlign }]} numberOfLines={1}>
                     {item.title}
                   </Text>
-                  <Text style={{ fontSize: 22 }}>{MOOD_EMOJI[item.mood]}</Text>
+                  <View style={[S.moodChip, { flexDirection: rowDir, backgroundColor: c.bg3 }]}>
+                    <View style={[S.moodDot, { backgroundColor: moodColor(item.mood, c) }]} />
+                    <Text style={{ color: c.t3, fontSize: 11 }}>{MOOD_LABEL[item.mood as Mood] ?? ''}</Text>
+                  </View>
                 </View>
-                <Text style={[S.entryPreview, { color: c.t2 }]} numberOfLines={2}>
+                <Text style={[S.entryPreview, { color: c.t2, textAlign }]} numberOfLines={2}>
                   {item.preview}
                 </Text>
-                <View style={S.entryFooter}>
-                  <View style={{ flexDirection: 'row', gap: 5, flex: 1, flexWrap: 'wrap' }}>
+                <View style={[S.entryFooter, { flexDirection: rowDir }]}>
+                  <View style={{ flexDirection: rowDir, gap: 5, flex: 1, flexWrap: 'wrap' }}>
                     {item.tags.map((tag: string) => (
-                      <View key={tag} style={[S.tag, { backgroundColor: c.journal + '22' }]}>
-                        <Text style={{ color: c.journal, fontSize: 11, fontWeight: '600' }}>#{tag}</Text>
+                      <View key={tag} style={[S.tag, { backgroundColor: c.bg3 }]}>
+                        <Text style={{ color: c.t2, fontSize: 11, fontWeight: '600' }}>#{tag}</Text>
                       </View>
                     ))}
                   </View>
@@ -145,10 +153,20 @@ export default function JournalScreen() {
           );
         }}
         ListEmptyComponent={
-          <View style={S.empty}>
-            <Text style={{ fontSize: 50 }}>📖</Text>
-            <Text style={{ color: c.t3, fontSize: 16, textAlign: 'center' }}>{t('journal.empty')}</Text>
-          </View>
+          loading ? (
+            <View style={{ gap: 8 }}>
+              {[0, 1, 2].map((k) => (
+                <View key={k} style={[S.skeleton, { backgroundColor: c.bg2 }]} />
+              ))}
+            </View>
+          ) : (
+            <View style={S.empty}>
+              <View style={[S.emptyIcon, { backgroundColor: c.bg2 }]}>
+                <Ionicons name="book-outline" size={32} color={c.t3} />
+              </View>
+              <Text style={{ color: c.t3, fontSize: 15, textAlign: 'center' }}>{t('journal.empty')}</Text>
+            </View>
+          )
         }
       />
     </View>
@@ -157,16 +175,9 @@ export default function JournalScreen() {
 
 const S = StyleSheet.create({
   screen: { flex: 1 },
-  streakBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-  },
+  streakBanner: { alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
+  streakIcon: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   search: {
-    flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     margin: 16,
@@ -177,13 +188,17 @@ const S = StyleSheet.create({
     paddingVertical: 10,
   },
   searchInput: { flex: 1, fontSize: 15 },
-  moodFilter: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingBottom: 8 },
-  moodBtn: { width: 42, height: 42, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  moodFilter: { gap: 6, paddingHorizontal: 16, paddingBottom: 8, flexWrap: 'wrap' },
+  moodBtn: { alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 999, borderWidth: 1 },
+  moodDot: { width: 8, height: 8, borderRadius: 4 },
+  moodChip: { alignItems: 'center', gap: 5, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
   secTitle: { fontSize: 13, fontWeight: '600', marginVertical: 4 },
-  entryHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  entryHeader: { justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 },
   entryTitle: { fontSize: 16, fontWeight: '700', flex: 1 },
   entryPreview: { fontSize: 13, lineHeight: 19, marginBottom: 8 },
-  entryFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', gap: 8 },
+  entryFooter: { justifyContent: 'space-between', alignItems: 'flex-end', gap: 8 },
   tag: { paddingHorizontal: 7, paddingVertical: 3, borderRadius: 8 },
-  empty: { alignItems: 'center', paddingVertical: 60, gap: 14 },
+  skeleton: { height: 88, borderRadius: 16, opacity: 0.6 },
+  empty: { alignItems: 'center', paddingVertical: 60, gap: 16 },
+  emptyIcon: { width: 72, height: 72, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
 });

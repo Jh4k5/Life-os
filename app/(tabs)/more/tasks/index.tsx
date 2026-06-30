@@ -98,18 +98,17 @@ export default function TasksScreen() {
 
       <TabPill
         tabs={[
-          { key: 'list', label: t('tasks.view_list'), emoji: '📋' },
-          { key: 'board', label: t('tasks.view_board'), emoji: '📊' },
-          { key: 'energy', label: t('tasks.view_energy'), emoji: '⚡' },
+          { key: 'list', label: t('tasks.view_list'), icon: 'list-outline' },
+          { key: 'board', label: t('tasks.view_board'), icon: 'grid-outline' },
+          { key: 'energy', label: t('tasks.view_energy'), icon: 'flash-outline' },
         ]}
         active={view}
         onChange={(v) => setView(v as TView)}
-        accent={c.tasks}
       />
 
       <ScrollView contentContainerStyle={{ padding: 16, gap: 10, paddingBottom: 110 }}>
         {active.length === 0 && tasks.every((tk) => tk.done) ? (
-          <EmptyState emoji="🎉" title={t('tasks.empty')} />
+          <EmptyState icon="checkmark-done-circle-outline" title={t('tasks.empty')} />
         ) : view === 'list' ? (
           PRIORITY_ORDER.filter((p) => tasks.some((tk) => tk.priority === p)).map((p) => (
             <View key={p} style={{ gap: 4 }}>

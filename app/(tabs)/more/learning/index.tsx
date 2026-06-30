@@ -1,9 +1,13 @@
 // app/(tabs)/more/learning/index.tsx
+// Learning library — v3 premium: monochrome type icons, single accent,
+// neutral glass surfaces, semantic status. No emoji-as-icons, no chrome tints.
 import React, { useState } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
+import { useRTL } from '@/hooks/useRTL';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { Header } from '@/components/layout/Header';
 import { TabPill } from '@/components/ui/TabPill';
@@ -11,18 +15,19 @@ import { mockLibrary } from '@/data/mock';
 
 type LibFilter = 'all' | 'in_progress' | 'want_to_read' | 'completed';
 
-const TYPE_EMOJI: Record<string, string> = {
-  book: '📖',
-  podcast: '🎙',
-  article: '📄',
-  video: '🎬',
-  course: '🎓',
-  link: '🔗',
+const TYPE_ICON: Record<string, keyof typeof Ionicons.glyphMap> = {
+  book: 'book-outline',
+  podcast: 'mic-outline',
+  article: 'document-text-outline',
+  video: 'film-outline',
+  course: 'school-outline',
+  link: 'link-outline',
 };
 
 export default function LearningScreen() {
   const { c } = useTheme();
   const { t } = useTranslation();
+  const { rowDir, textAlign } = useRTL();
   const router = useRouter();
   const [filter, setFilter] = useState<LibFilter>('all');
 
@@ -32,6 +37,7 @@ export default function LearningScreen() {
     completed: t('learning.status_done'),
     dropped: t('learning.status_drop'),
   };
+  const statusColor = (s: string) => (s === 'completed' ? c.green : s === 'in_progress' ? c.accent : c.t3);
 
   const filtered = mockLibrary.filter((l) => filter === 'all' || l.status === filter);
   const inProgress = mockLibrary.filter((l) => l.status === 'in_progress').length;
@@ -41,25 +47,25 @@ export default function LearningScreen() {
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
       <Header
         title={t('sections.learning')}
-        accent={c.learning}
         right={[{ icon: 'add', onPress: () => router.push('/(tabs)/more/learning/new'), color: c.accent }]}
       />
-      {/* Stats */}
-      <View style={[S.statsRow, { backgroundColor: c.learning + '15', borderBottomColor: c.learning + '30' }]}>
-        <StatItem val={mockLibrary.length} label="في المكتبة" color={c.learning} c={c} />
-        <StatItem val={inProgress} label={t('learning.status_prog')} color={c.schedule} c={c} />
-        <StatItem val={completed} label={t('learning.status_done')} color={c.green} c={c} />
+      {/* Stats — neutral, hairline */}
+      <View style={[S.statsRow, { flexDirection: rowDir, backgroundColor: c.bg1, borderBottomColor: c.b1 }]}>
+        <StatItem val={mockLibrary.length} label="في المكتبة" c={c} />
+        <View style={[S.vline, { backgroundColor: c.b1 }]} />
+        <StatItem val={inProgress} label={t('learning.status_prog')} c={c} />
+        <View style={[S.vline, { backgroundColor: c.b1 }]} />
+        <StatItem val={completed} label={t('learning.status_done')} c={c} />
       </View>
       <TabPill
         tabs={[
-          { key: 'all', label: t('learning.all'), emoji: '📚' },
-          { key: 'in_progress', label: t('learning.status_prog'), emoji: '📖' },
-          { key: 'want_to_read', label: t('learning.status_want'), emoji: '🔖' },
-          { key: 'completed', label: t('learning.status_done'), emoji: '✅' },
+          { key: 'all', label: t('learning.all'), icon: 'albums-outline' },
+          { key: 'in_progress', label: t('learning.status_prog'), icon: 'play-outline' },
+          { key: 'want_to_read', label: t('learning.status_want'), icon: 'bookmark-outline' },
+          { key: 'completed', label: t('learning.status_done'), icon: 'checkmark-done-outline' },
         ]}
         active={filter}
         onChange={(f) => setFilter(f as LibFilter)}
-        accent={c.learning}
       />
       <FlatList
         data={filtered}
@@ -67,23 +73,26 @@ export default function LearningScreen() {
         keyExtractor={(l) => l.id}
         renderItem={({ item: lib }) => (
           <SmartCard>
-            <View style={S.libRow}>
-              <View style={[S.typeIcon, { backgroundColor: c.learning + '22' }]}>
-                <Text style={{ fontSize: 26 }}>{TYPE_EMOJI[lib.type] ?? '📄'}</Text>
+            <View style={[S.libRow, { flexDirection: rowDir }]}>
+              <View style={[S.typeIcon, { backgroundColor: c.bg3 }]}>
+                <Ionicons name={TYPE_ICON[lib.type] ?? 'document-text-outline'} size={24} color={c.t1} />
               </View>
               <View style={{ flex: 1, gap: 4 }}>
-                <Text style={{ color: c.t1, fontWeight: '700', fontSize: 15 }} numberOfLines={2}>
+                <Text style={{ color: c.t1, fontWeight: '700', fontSize: 15, textAlign }} numberOfLines={2}>
                   {lib.title}
                 </Text>
-                {!!lib.author && <Text style={{ color: c.t2, fontSize: 12 }}>{lib.author}</Text>}
-                <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                  <View style={[S.statusChip, { backgroundColor: c.learning + '20' }]}>
-                    <Text style={{ color: c.learning, fontSize: 11, fontWeight: '600' }}>
-                      {STATUS_LABEL[lib.status]}
-                    </Text>
+                {!!lib.author && <Text style={{ color: c.t2, fontSize: 12, textAlign }}>{lib.author}</Text>}
+                <View style={{ flexDirection: rowDir, gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <View style={[S.statusChip, { flexDirection: rowDir, backgroundColor: c.bg3 }]}>
+                    <View style={[S.dot, { backgroundColor: statusColor(lib.status) }]} />
+                    <Text style={{ color: c.t2, fontSize: 11, fontWeight: '600' }}>{STATUS_LABEL[lib.status]}</Text>
                   </View>
                   {lib.rating > 0 && (
-                    <Text style={{ fontSize: 11, color: c.t3 }}>{'⭐'.repeat(lib.rating)}</Text>
+                    <View style={{ flexDirection: rowDir, gap: 1 }}>
+                      {Array.from({ length: lib.rating }).map((_, i) => (
+                        <Ionicons key={i} name="star" size={11} color={c.t3} />
+                      ))}
+                    </View>
                   )}
                   {lib.tags.map((tag) => (
                     <Text key={tag} style={{ color: c.t3, fontSize: 11 }}>
@@ -94,17 +103,18 @@ export default function LearningScreen() {
               </View>
               {lib.progress > 0 && (
                 <View style={{ alignItems: 'center', gap: 4 }}>
-                  <Text style={{ color: c.learning, fontWeight: '800', fontSize: 17 }}>{lib.progress}%</Text>
+                  <Text style={{ color: c.accent, fontWeight: '800', fontSize: 17 }}>{lib.progress}%</Text>
                   <View style={[S.pBg, { width: 40, backgroundColor: c.b1 }]}>
-                    <View style={[S.pFill, { width: `${lib.progress}%`, backgroundColor: c.learning }]} />
+                    <View style={[S.pFill, { width: `${lib.progress}%`, backgroundColor: c.accent }]} />
                   </View>
                 </View>
               )}
             </View>
             {lib.notes && (
-              <View style={[S.noteRow, { borderTopColor: c.b0 }]}>
-                <Text style={{ color: c.t3, fontSize: 12 }} numberOfLines={2}>
-                  💡 {lib.notes}
+              <View style={[S.noteRow, { flexDirection: rowDir, borderTopColor: c.b0 }]}>
+                <Ionicons name="bulb-outline" size={14} color={c.t3} />
+                <Text style={{ color: c.t3, fontSize: 12, flex: 1, textAlign }} numberOfLines={2}>
+                  {lib.notes}
                 </Text>
               </View>
             )}
@@ -112,7 +122,9 @@ export default function LearningScreen() {
         )}
         ListEmptyComponent={
           <View style={S.empty}>
-            <Text style={{ fontSize: 50 }}>📚</Text>
+            <View style={[S.emptyIcon, { backgroundColor: c.bg2 }]}>
+              <Ionicons name="library-outline" size={32} color={c.t3} />
+            </View>
             <Text style={{ color: c.t3, fontSize: 15, textAlign: 'center' }}>{t('learning.empty')}</Text>
           </View>
         }
@@ -121,21 +133,26 @@ export default function LearningScreen() {
   );
 }
 
-const StatItem = ({ val, label, color, c }: any) => (
+const StatItem = ({ val, label, c }: any) => (
   <View style={{ flex: 1, alignItems: 'center', gap: 2 }}>
-    <Text style={{ color, fontWeight: '800', fontSize: 22 }}>{val}</Text>
-    <Text style={{ color: c.t3, fontSize: 12 }}>{label}</Text>
+    <Text style={{ color: c.t1, fontWeight: '800', fontSize: 22 }}>{val}</Text>
+    <Text style={{ color: c.t3, fontSize: 12 }} numberOfLines={1}>
+      {label}
+    </Text>
   </View>
 );
 
 const S = StyleSheet.create({
   screen: { flex: 1 },
-  statsRow: { flexDirection: 'row', paddingVertical: 14, borderBottomWidth: 1 },
-  libRow: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
+  statsRow: { paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, alignItems: 'center' },
+  vline: { width: StyleSheet.hairlineWidth, height: 32 },
+  libRow: { gap: 12, alignItems: 'flex-start' },
   typeIcon: { width: 54, height: 54, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  statusChip: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
+  statusChip: { alignItems: 'center', gap: 5, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999 },
+  dot: { width: 7, height: 7, borderRadius: 3.5 },
   pBg: { height: 4, borderRadius: 2, overflow: 'hidden' },
   pFill: { height: 4, borderRadius: 2 },
-  noteRow: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 10, marginTop: 8 },
-  empty: { alignItems: 'center', paddingVertical: 60, gap: 14 },
+  noteRow: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 10, marginTop: 8, gap: 6, alignItems: 'center' },
+  empty: { alignItems: 'center', paddingVertical: 60, gap: 16 },
+  emptyIcon: { width: 72, height: 72, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
 });

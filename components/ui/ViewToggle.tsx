@@ -3,12 +3,15 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface Opt {
   key: string;
   label: string;
   emoji?: string;
+  /** Monochrome Ionicon (v3) — preferred over emoji. */
+  icon?: keyof typeof Ionicons.glyphMap;
 }
 interface Props {
   options: Opt[];
@@ -50,7 +53,11 @@ export const ViewToggle = ({ options, active, onChange }: Props) => {
           const isActive = opt.key === active;
           return (
             <Pressable key={opt.key} onPress={() => press(opt.key)} style={S.opt}>
-              {opt.emoji && <Text style={{ fontSize: 14 }}>{opt.emoji}</Text>}
+              {opt.icon ? (
+                <Ionicons name={opt.icon} size={15} color={isActive ? '#FFF' : c.t2} />
+              ) : (
+                opt.emoji && <Text style={{ fontSize: 14 }}>{opt.emoji}</Text>
+              )}
               <Text
                 style={[
                   S.optTxt,
