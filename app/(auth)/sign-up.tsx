@@ -7,6 +7,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { auth } from '@/services/auth';
 
 export default function SignUpScreen() {
   const { c } = useTheme();
@@ -16,6 +17,17 @@ export default function SignUpScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const submit = async () => {
+    setLoading(true);
+    setError(null);
+    const res = await auth.signUp(email.trim(), password, name.trim());
+    setLoading(false);
+    if (res.ok) router.replace('/(tabs)/home');
+    else setError(res.error ?? 'تعذّر إنشاء الحساب');
+  };
 
   return (
     <View style={[S.screen, { backgroundColor: c.bg0, paddingTop: top + 40 }]}>
@@ -29,7 +41,9 @@ export default function SignUpScreen() {
         <Input label={t('auth.email')} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
         <Input label={t('auth.password')} value={password} onChangeText={setPassword} secureTextEntry />
 
-        <Button label={t('auth.sign_up')} onPress={() => router.replace('/(tabs)/home')} />
+        {error && <Text style={{ color: c.red, fontSize: 13, textAlign: 'center' }}>{error}</Text>}
+
+        <Button label={t('auth.sign_up')} onPress={submit} loading={loading} />
 
         <Pressable onPress={() => router.replace('/(auth)/sign-in')} style={{ alignItems: 'center', paddingVertical: 6 }}>
           <Text style={{ color: c.t2, fontSize: 14 }}>

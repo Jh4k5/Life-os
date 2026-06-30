@@ -10,6 +10,7 @@ import { SmartCard } from '@/components/ui/SmartCard';
 import { accentPresets } from '@/tokens/colors';
 import { LANGS, changeLang } from '@/lib/i18n';
 import { useSettingsStore } from '@/store/settingsStore';
+import { auth } from '@/services/auth';
 
 export default function SettingsScreen() {
   const { c, isDark, mode, setMode, accent, setAccent } = useTheme();
@@ -179,7 +180,10 @@ export default function SettingsScreen() {
 
         {/* Sign Out */}
         <Pressable
-          onPress={() => router.replace('/(auth)/sign-in')}
+          onPress={async () => {
+            await auth.signOut();
+            router.replace('/(auth)/sign-in');
+          }}
           style={[S.signOutBtn, { borderColor: c.red + '50' }]}
         >
           <Ionicons name="log-out-outline" size={20} color={c.red} />

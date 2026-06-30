@@ -1,0 +1,6 @@
+# Supabase CLI config. Link with:
+#   supabase link --project-ref jlwmpyhiitgdklrbmxrh
+project_id = "jlwmpyhiitgdklrbmxrh"
+
+[functions.ai-parse]
+verify_jwt = true

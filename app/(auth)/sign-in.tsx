@@ -7,6 +7,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { auth } from '@/services/auth';
 
 export default function SignInScreen() {
   const { c } = useTheme();
@@ -15,6 +16,17 @@ export default function SignInScreen() {
   const { top } = useSafeAreaInsets();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const submit = async () => {
+    setLoading(true);
+    setError(null);
+    const res = await auth.signIn(email.trim(), password);
+    setLoading(false);
+    if (res.ok) router.replace('/(tabs)/home');
+    else setError(res.error ?? 'تعذّر تسجيل الدخول');
+  };
 
   return (
     <View style={[S.screen, { backgroundColor: c.bg0, paddingTop: top + 40 }]}>
@@ -27,7 +39,9 @@ export default function SignInScreen() {
         <Input label={t('auth.email')} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
         <Input label={t('auth.password')} value={password} onChangeText={setPassword} secureTextEntry />
 
-        <Button label={t('auth.sign_in')} onPress={() => router.replace('/(tabs)/home')} />
+        {error && <Text style={{ color: c.red, fontSize: 13, textAlign: 'center' }}>{error}</Text>}
+
+        <Button label={t('auth.sign_in')} onPress={submit} loading={loading} />
 
         <Pressable onPress={() => router.replace('/(auth)/sign-up')} style={{ alignItems: 'center', paddingVertical: 6 }}>
           <Text style={{ color: c.t2, fontSize: 14 }}>

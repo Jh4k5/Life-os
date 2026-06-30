@@ -13,6 +13,20 @@ import type {
   Workspace,
   WorkspaceType,
 } from './types';
+import { getClient } from './supabase';
+
+/** Try the server AI (Gemini via Edge Function) first; null on any failure. */
+async function remoteParse(text: string): Promise<ParsedDay | null> {
+  const client = getClient();
+  if (!client) return null;
+  try {
+    const { data, error } = await client.functions.invoke('ai-parse', { body: { text } });
+    if (error || !data || !Array.isArray(data.items) || data.items.length === 0) return null;
+    return data as ParsedDay;
+  } catch {
+    return null;
+  }
+}
 
 let counter = 0;
 const uid = () => `it_${Date.now()}_${counter++}`;
@@ -60,6 +74,11 @@ export interface AIService {
 const localAI: AIService = {
   async parseDay(input) {
     const text = input.text ?? '';
+
+    // Prefer the server AI (Gemini) when the backend is live; else local parse.
+    const remote = await remoteParse(text);
+    if (remote) return remote;
+
     const lines = segment(text);
     const items: DetectedItem[] = [];
 

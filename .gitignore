@@ -8,3 +8,13 @@ npm-debug.*
 expo-env.d.ts
 .idea/
 .vscode/
+
+# Secrets / local env — never commit
+.env
+.env.local
+.env*.local
+
+# Supabase CLI local state
+supabase/.branches
+supabase/.temp
+supabase/.env
