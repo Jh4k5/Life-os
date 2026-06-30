@@ -34,12 +34,10 @@ import { mockTasks } from '@/data/mock';
 import { DayTimeline } from '@/components/ui/DayTimeline';
 import { ModeSwitcher } from '@/components/ui/ModeSwitcher';
 import { useModeStore, modeMeta } from '@/store/modeStore';
+import { useVoice } from '@/hooks/useVoice';
 
 type HomeView = 'ai' | 'dashboard';
 const USER_NAME = 'محمد';
-
-const SAMPLE =
-  'كان يوم طويل. عندي امتحان كيمياء الأسبوع الجاي، ولازم أراجع الفصل الأول. ذكرني أكلم المشرف بكرة الساعة ١٠. وحابب أبدأ عادة أشرب ماء كل يوم.';
 
 export default function HomeScreen() {
   const { c } = useTheme();
@@ -104,6 +102,9 @@ const AIView = ({ c, t }: any) => {
     setApplied(null);
     setBusy(false);
   };
+
+  // Real voice: transcript flows into capture — we never fabricate text.
+  const voice = useVoice((text) => capture(text));
 
   // Universal Capture: attach an image/PDF → OCR → parse into typed items.
   const captureImage = async () => {
@@ -174,8 +175,12 @@ const AIView = ({ c, t }: any) => {
 
         {!result && !busy && (
           <View style={S.heroMic}>
-            <MicButton size="large" onDone={() => capture(SAMPLE)} />
-            <Text style={[S.heroHint, { color: c.t3 }]}>سجّل يومك أو اكتبه — وأنا أرتّبه لك</Text>
+            <MicButton size="large" state={voice.state} onPress={voice.toggle} />
+            {voice.state === 'recording' && voice.partial ? (
+              <Text style={[S.partial, { color: c.t1, textAlign }]}>{voice.partial}</Text>
+            ) : (
+              <Text style={[S.heroHint, { color: c.t3 }]}>سجّل يومك أو اكتبه — وأنا أرتّبه لك</Text>
+            )}
           </View>
         )}
 
@@ -244,8 +249,12 @@ const AIView = ({ c, t }: any) => {
               <Ionicons name="arrow-up" size={18} color="#FFF" />
             </Pressable>
           ) : (
-            <Pressable style={S.iconGhost} onPress={() => capture(SAMPLE)}>
-              <Ionicons name="mic-outline" size={22} color={c.accent} />
+            <Pressable style={S.iconGhost} onPress={voice.toggle}>
+              <Ionicons
+                name={voice.state === 'recording' ? 'stop-circle' : 'mic-outline'}
+                size={22}
+                color={voice.state === 'recording' ? c.red : c.accent}
+              />
             </Pressable>
           )}
         </View>
@@ -305,6 +314,7 @@ const S = StyleSheet.create({
   glance: { alignItems: 'center', gap: 8, marginTop: 10 },
   heroMic: { alignItems: 'center', gap: 16, marginTop: 60 },
   heroHint: { fontSize: 14, marginTop: 6 },
+  partial: { fontSize: 17, fontWeight: '600', lineHeight: 26, paddingHorizontal: 12 },
   thinking: { alignItems: 'center', gap: 12, marginTop: 70 },
   applied: { alignItems: 'center', gap: 8, padding: 12, borderRadius: 14 },
   proposal: { alignItems: 'center', gap: 12, padding: 14, borderRadius: 16, borderWidth: 1 },

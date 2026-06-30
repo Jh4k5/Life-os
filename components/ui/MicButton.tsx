@@ -1,7 +1,7 @@
 // components/ui/MicButton.tsx
 // The hero anchor — must feel alive. Ambient breathing glow at rest,
 // a real animated waveform while recording, a calm "thinking" state after.
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Pressable, View, Text, StyleSheet } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -23,15 +23,16 @@ type MicState = 'idle' | 'recording' | 'processing';
 
 interface Props {
   size?: 'large' | 'medium';
-  onDone?: (text: string) => void;
+  /** Controlled state from the real voice hook. */
+  state: MicState;
+  onPress: () => void;
 }
 
 const BARS = [0, 1, 2, 3, 4, 5, 6];
 
-export const MicButton = ({ size = 'large', onDone }: Props) => {
+export const MicButton = ({ size = 'large', state, onPress: onPressProp }: Props) => {
   const { c } = useTheme();
   const { t } = useTranslation();
-  const [state, setState] = useState<MicState>('idle');
   const btnSize = size === 'large' ? 96 : 64;
   const iconSize = size === 'large' ? 34 : 24;
 
@@ -64,35 +65,30 @@ export const MicButton = ({ size = 'large', onDone }: Props) => {
     };
   }, []);
 
-  const startRings = () => {
-    ring1.value = withRepeat(withTiming(2.2, { duration: 1400, easing: Easing.out(Easing.ease) }), -1);
-    op1.value = withRepeat(
-      withSequence(withTiming(0.4, { duration: 200 }), withTiming(0, { duration: 1200 })),
-      -1
-    );
-  };
-  const stopRings = () => {
-    cancelAnimation(ring1);
-    cancelAnimation(op1);
-    ring1.value = withSpring(1);
-    op1.value = withTiming(0);
-  };
+  // Drive recording rings from the controlled state.
+  useEffect(() => {
+    if (state === 'recording') {
+      ring1.value = withRepeat(withTiming(2.2, { duration: 1400, easing: Easing.out(Easing.ease) }), -1);
+      op1.value = withRepeat(
+        withSequence(withTiming(0.4, { duration: 200 }), withTiming(0, { duration: 1200 })),
+        -1
+      );
+    } else {
+      cancelAnimation(ring1);
+      cancelAnimation(op1);
+      ring1.value = withSpring(1);
+      op1.value = withTiming(0);
+    }
+  }, [state]);
 
   const onPress = async () => {
     press.value = withSequence(withSpring(0.92, { damping: 12 }), withSpring(1, { damping: 14 }));
     if (state === 'idle') {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy).catch(() => {});
-      setState('recording');
-      startRings();
     } else if (state === 'recording') {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-      setState('processing');
-      stopRings();
-      setTimeout(() => {
-        setState('idle');
-        onDone?.('SAMPLE');
-      }, 1500);
     }
+    onPressProp();
   };
 
   const color = state === 'recording' ? c.accentL : c.accent;
