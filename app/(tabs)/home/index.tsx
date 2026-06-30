@@ -31,6 +31,8 @@ import type { ParsedDay, DetectedItem, ReviewAction } from '@/services/types';
 import { useMockStore } from '@/store/mockStore';
 import { mockTasks } from '@/data/mock';
 import { DayTimeline } from '@/components/ui/DayTimeline';
+import { ModeSwitcher } from '@/components/ui/ModeSwitcher';
+import { useModeStore, modeMeta } from '@/store/modeStore';
 
 type HomeView = 'ai' | 'dashboard';
 const USER_NAME = 'محمد';
@@ -76,6 +78,8 @@ const HomeHeader = ({ c, router }: any) => {
 // ── AI View ──────────────────────────────────────
 const AIView = ({ c, t }: any) => {
   const { rowDir, textAlign } = useRTL();
+  const mode = useModeStore((s) => s.mode);
+  const mm = modeMeta(mode);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<ParsedDay | null>(null);
@@ -142,7 +146,17 @@ const AIView = ({ c, t }: any) => {
         <Text style={[S.greetBig, { color: c.t1, textAlign }]}>
           {greeting}، {USER_NAME}
         </Text>
-        <GlanceWhisper c={c} textAlign={textAlign} rowDir={rowDir} />
+        {mode === 'normal' ? (
+          <GlanceWhisper c={c} textAlign={textAlign} rowDir={rowDir} />
+        ) : (
+          <View style={[S.glance, { flexDirection: rowDir }]}>
+            <Ionicons name="ellipse" size={6} color={c.accent} />
+            <Text style={{ color: c.t2, fontSize: 13, textAlign, flex: 1 }}>{mm.greeting}</Text>
+          </View>
+        )}
+        <View style={{ marginHorizontal: -20, marginTop: 6 }}>
+          <ModeSwitcher />
+        </View>
 
         {!result && !busy && (
           <View style={S.heroMic}>
@@ -225,13 +239,16 @@ const GlanceWhisper = ({ c, textAlign, rowDir }: any) => {
 // ── Dashboard View — vertical timeline, not a card grid ──
 const DashView = ({ c, t, router }: any) => {
   const { textAlign, rowDir } = useRTL();
+  const mode = useModeStore((s) => s.mode);
+  const mm = modeMeta(mode);
   return (
     <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 120 }}>
-      <Text style={[S.stateLine, { color: c.t1, textAlign }]}>يومك يسير بهدوء — ٣ من ٦ عادات مكتملة.</Text>
+      <Text style={[S.stateLine, { color: c.t1, textAlign }]}>{mm.state}</Text>
 
       <DayTimeline />
 
-      {/* quiet conversational AI insights */}
+      {/* quiet conversational AI insights — hidden in high-focus (minimal) */}
+      {!mm.minimal && (
       <View style={{ gap: 10, marginTop: 22 }}>
         <Text style={[S.insightLabel, { color: c.t3, textAlign }]}>من الذكاء</Text>
         {['تركيزك أفضل بعد العصر — جدولت أصعب مهمة وقتها.', 'الثلاثاء عادةً يتأخر عليك — خفّفت مهامه.'].map(
@@ -243,6 +260,7 @@ const DashView = ({ c, t, router }: any) => {
           )
         )}
       </View>
+      )}
     </ScrollView>
   );
 };
