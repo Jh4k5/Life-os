@@ -1,17 +1,26 @@
 // app/(tabs)/more/study/index.tsx
+// Study hub — v3 premium: monochrome Ionicons, single accent, hairline glass.
+// No emoji-as-icons, no per-section chrome tints. Exam countdown + readiness.
 import React from 'react';
 import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
+import { useRTL } from '@/hooks/useRTL';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { Header } from '@/components/layout/Header';
 import { mockCourses } from '@/data/mock';
 
+const daysUntil = (date: string) => {
+  const d = new Date(date).getTime() - Date.now();
+  return Math.ceil(d / 86_400_000);
+};
+
 export default function StudyScreen() {
   const { c } = useTheme();
   const { t } = useTranslation();
+  const { rowDir, textAlign } = useRTL();
   const router = useRouter();
 
   const totalHours = mockCourses.reduce((s, co) => s + co.totalStudyHours, 0);
@@ -21,73 +30,100 @@ export default function StudyScreen() {
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
       <Header
         title={t('sections.study')}
-        accent={c.study}
         right={[{ icon: 'add', onPress: () => router.push('/(tabs)/more/study/new-course'), color: c.accent }]}
       />
-      {/* Stats bar */}
-      <View style={[S.statsBar, { backgroundColor: c.study + '15', borderBottomColor: c.study + '30' }]}>
-        <StatChip icon="📚" val={mockCourses.length} label="مادة" color={c.study} c={c} />
-        <View style={[S.divider, { backgroundColor: c.study + '40' }]} />
-        <StatChip icon="🎓" val={totalExams} label="امتحان" color={c.study} c={c} />
-        <View style={[S.divider, { backgroundColor: c.study + '40' }]} />
-        <StatChip icon="⏱" val={totalHours} label="ساعة مذاكرة" color={c.study} c={c} />
-      </View>
+
       <FlatList
         data={mockCourses}
-        contentContainerStyle={{ padding: 16, gap: 10, paddingBottom: 110 }}
+        contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 110 }}
         keyExtractor={(co) => co.id}
-        renderItem={({ item: co }) => (
-          <Pressable onPress={() => router.push(`/(tabs)/more/study/${co.id}`)}>
-            <SmartCard accent={co.color}>
-              {/* Course Header */}
-              <View style={S.courseHeader}>
-                <View style={[S.courseIcon, { backgroundColor: co.color + '22' }]}>
-                  <Text style={{ fontSize: 26 }}>{co.emoji}</Text>
+        ListHeaderComponent={
+          <SmartCard style={{ marginBottom: 4 }}>
+            <View style={[S.stats, { flexDirection: rowDir }]}>
+              <Stat icon="library-outline" val={mockCourses.length} label={t('study.course_name')} c={c} />
+              <View style={[S.divider, { backgroundColor: c.b1 }]} />
+              <Stat icon="school-outline" val={totalExams} label={t('study.exam_name')} c={c} />
+              <View style={[S.divider, { backgroundColor: c.b1 }]} />
+              <Stat icon="time-outline" val={`${totalHours}h`} label={t('study.total_hours')} c={c} />
+            </View>
+          </SmartCard>
+        }
+        renderItem={({ item: co }) => {
+          const nextExam = [...co.exams].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+          const dleft = nextExam ? daysUntil(nextExam.date) : null;
+          return (
+            <Pressable onPress={() => router.push(`/(tabs)/more/study/${co.id}`)}>
+              <SmartCard>
+                <View style={[S.head, { flexDirection: rowDir }]}>
+                  <View style={[S.icon, { backgroundColor: c.bg3 }]}>
+                    <Ionicons name="book-outline" size={22} color={c.t1} />
+                    <View style={[S.iconDot, { backgroundColor: co.color }]} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[S.name, { color: c.t1, textAlign }]} numberOfLines={1}>
+                      {co.name}
+                    </Text>
+                    <Text style={[S.teacher, { color: c.t3, textAlign }]} numberOfLines={1}>
+                      {co.teacher}
+                    </Text>
+                  </View>
+                  <View style={[S.statusPill, { flexDirection: rowDir, backgroundColor: c.bg3 }]}>
+                    <View
+                      style={[S.dot, { backgroundColor: co.status === 'active' ? c.green : c.t3 }]}
+                    />
+                    <Text style={{ color: c.t2, fontSize: 11, fontWeight: '600' }}>
+                      {co.status === 'active' ? t('study.active') : t('study.completed')}
+                    </Text>
+                  </View>
                 </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[S.courseName, { color: c.t1 }]}>{co.name}</Text>
-                  <Text style={[S.courseTeacher, { color: c.t2 }]}>{co.teacher}</Text>
+
+                {/* progress */}
+                <View style={[S.pBg, { backgroundColor: c.b1, marginTop: 14 }]}>
+                  <View style={[S.pFill, { width: `${co.progress}%`, backgroundColor: c.accent }]} />
                 </View>
-                <View style={[S.statusBadge, { backgroundColor: c.study + '22' }]}>
-                  <Text style={{ color: c.study, fontSize: 12, fontWeight: '600' }}>
-                    {co.status === 'active' ? '🟢 جارية' : '✅ مكتملة'}
+                <View style={[S.progRow, { flexDirection: rowDir }]}>
+                  <Text style={{ color: c.t3, fontSize: 12 }}>
+                    {co.progress}% · {co.totalStudyHours}h
                   </Text>
+                  {dleft != null && (
+                    <View style={[S.countdown, { flexDirection: rowDir, backgroundColor: dleft <= 7 ? c.accentDim : c.bg3 }]}>
+                      <Ionicons name="hourglass-outline" size={12} color={dleft <= 7 ? c.accent : c.t3} />
+                      <Text style={{ color: dleft <= 7 ? c.accent : c.t3, fontSize: 11, fontWeight: '700' }}>
+                        {dleft > 0 ? `بعد ${dleft} يوم` : 'اليوم'}
+                      </Text>
+                    </View>
+                  )}
                 </View>
-              </View>
-              {/* Progress */}
-              <View style={[S.pBg, { backgroundColor: c.b1, marginVertical: 10 }]}>
-                <View style={[S.pFill, { width: `${co.progress}%`, backgroundColor: co.color }]} />
-              </View>
-              <Text style={{ color: c.t2, fontSize: 12, marginBottom: 10 }}>
-                {co.progress}% مكتمل · {co.totalStudyHours} ساعة مذاكرة
-              </Text>
-              {/* Exams */}
-              {co.exams.map((exam) => (
-                <View key={exam.id} style={[S.examRow, { borderTopColor: c.b0 }]}>
-                  <Ionicons name="calendar-outline" size={14} color={c.study} />
-                  <Text style={{ color: c.t1, flex: 1, fontSize: 14 }}>{exam.name}</Text>
-                  <Text style={{ color: c.study, fontSize: 12, fontWeight: '600' }}>📅 {exam.date}</Text>
-                </View>
-              ))}
-              {/* AI Plan Button */}
-              <Pressable style={[S.aiPlanBtn, { backgroundColor: c.study + '22', borderColor: c.study + '55' }]}>
-                <Text style={{ fontSize: 14 }}>🤖</Text>
-                <Text style={{ color: c.study, fontWeight: '600', fontSize: 14 }}>
-                  توليد خطة مراجعة بالذكاء الاصطناعي
-                </Text>
-              </Pressable>
-            </SmartCard>
-          </Pressable>
-        )}
+
+                {/* exams */}
+                {co.exams.map((exam) => (
+                  <View key={exam.id} style={[S.examRow, { flexDirection: rowDir, borderTopColor: c.b0 }]}>
+                    <Ionicons name="calendar-clear-outline" size={15} color={c.t3} />
+                    <Text style={{ color: c.t1, flex: 1, fontSize: 14, textAlign }} numberOfLines={1}>
+                      {exam.name}
+                    </Text>
+                    <Text style={{ color: c.t3, fontSize: 12, fontVariant: ['tabular-nums'] }}>{exam.date}</Text>
+                  </View>
+                ))}
+
+                {/* AI plan */}
+                <Pressable style={[S.aiBtn, { flexDirection: rowDir, backgroundColor: c.accentDim, borderColor: c.accent + '40' }]}>
+                  <Ionicons name="sparkles-outline" size={15} color={c.accent} />
+                  <Text style={{ color: c.accent, fontWeight: '600', fontSize: 14 }}>{t('study.gen_plan')}</Text>
+                </Pressable>
+              </SmartCard>
+            </Pressable>
+          );
+        }}
         ListEmptyComponent={
           <View style={S.empty}>
-            <Text style={{ fontSize: 50 }}>🎓</Text>
-            <Text style={{ color: c.t3, fontSize: 16, textAlign: 'center' }}>{t('study.empty')}</Text>
-            <Pressable
-              onPress={() => router.push('/(tabs)/more/study/new-course')}
-              style={[S.addBtn, { backgroundColor: c.study }]}
-            >
-              <Text style={{ color: '#FFF', fontWeight: '700' }}>+ إضافة مادة</Text>
+            <View style={[S.emptyIcon, { backgroundColor: c.bg2 }]}>
+              <Ionicons name="school-outline" size={32} color={c.t3} />
+            </View>
+            <Text style={{ color: c.t3, fontSize: 15, textAlign: 'center' }}>{t('study.empty')}</Text>
+            <Pressable onPress={() => router.push('/(tabs)/more/study/new-course')} style={[S.addBtn, { backgroundColor: c.accent }]}>
+              <Ionicons name="add" size={18} color="#FFF" />
+              <Text style={{ color: '#FFF', fontWeight: '700' }}>{t('study.new_course')}</Text>
             </Pressable>
           </View>
         }
@@ -96,42 +132,48 @@ export default function StudyScreen() {
   );
 }
 
-const StatChip = ({ icon, val, label, color, c }: any) => (
-  <View style={{ alignItems: 'center', flex: 1, gap: 2 }}>
-    <Text style={{ fontSize: 20 }}>{icon}</Text>
-    <Text style={{ color, fontWeight: '800', fontSize: 18 }}>{val}</Text>
-    <Text style={{ color: c.t3, fontSize: 11 }}>{label}</Text>
+const Stat = ({ icon, val, label, c }: any) => (
+  <View style={{ alignItems: 'center', flex: 1, gap: 4 }}>
+    <Ionicons name={icon} size={18} color={c.t2} />
+    <Text style={{ color: c.t1, fontWeight: '800', fontSize: 19 }}>{val}</Text>
+    <Text style={{ color: c.t3, fontSize: 11 }} numberOfLines={1}>
+      {label}
+    </Text>
   </View>
 );
 
 const S = StyleSheet.create({
   screen: { flex: 1 },
-  statsBar: { flexDirection: 'row', alignItems: 'center', padding: 16, borderBottomWidth: 1 },
-  divider: { width: 1, height: 40, marginHorizontal: 8 },
-  courseHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 4 },
-  courseIcon: { width: 52, height: 52, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
-  courseName: { fontSize: 16, fontWeight: '700' },
-  courseTeacher: { fontSize: 13, marginTop: 2 },
-  statusBadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10 },
+  stats: { alignItems: 'center' },
+  divider: { width: StyleSheet.hairlineWidth, height: 38, marginHorizontal: 6 },
+  head: { alignItems: 'center', gap: 12 },
+  icon: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  iconDot: { position: 'absolute', bottom: 7, end: 7, width: 8, height: 8, borderRadius: 4 },
+  name: { fontSize: 16, fontWeight: '700' },
+  teacher: { fontSize: 13, marginTop: 2 },
+  statusPill: { alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999 },
+  dot: { width: 7, height: 7, borderRadius: 3.5 },
   pBg: { height: 6, borderRadius: 3, overflow: 'hidden' },
   pFill: { height: 6, borderRadius: 3 },
+  progRow: { justifyContent: 'space-between', alignItems: 'center', marginTop: 8 },
+  countdown: { alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
   examRow: {
-    flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingVertical: 8,
+    paddingVertical: 10,
+    marginTop: 4,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
-  aiPlanBtn: {
-    flexDirection: 'row',
+  aiBtn: {
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    marginTop: 10,
+    marginTop: 12,
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
   },
-  empty: { alignItems: 'center', paddingVertical: 60, gap: 14 },
-  addBtn: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 14 },
+  empty: { alignItems: 'center', paddingVertical: 70, gap: 16 },
+  emptyIcon: { width: 72, height: 72, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  addBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 14 },
 });
