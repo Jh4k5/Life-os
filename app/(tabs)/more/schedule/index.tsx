@@ -8,6 +8,8 @@ import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { ViewToggle } from '@/components/ui/ViewToggle';
 import { mockEvents } from '@/data/mock';
+import { repository } from '@/services/repository';
+import { useAsync } from '@/hooks/useAsync';
 
 type SView = 'week' | 'day' | 'agenda';
 
@@ -27,9 +29,10 @@ export default function ScheduleScreen() {
   const router = useRouter();
   const [view, setView] = useState<SView>('day');
   const [selectedDay, setSelectedDay] = useState(3);
+  const { data: events } = useAsync(() => repository.listEvents(), mockEvents);
 
-  const timed = mockEvents.filter((e) => !e.allDay).sort((a, b) => a.start.localeCompare(b.start));
-  const allDay = mockEvents.filter((e) => e.allDay);
+  const timed = events.filter((e) => !e.allDay).sort((a, b) => a.start.localeCompare(b.start));
+  const allDay = events.filter((e) => e.allDay);
 
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
@@ -112,7 +115,7 @@ export default function ScheduleScreen() {
           </View>
         ))}
 
-        {mockEvents.length === 0 && (
+        {events.length === 0 && (
           <View style={{ alignItems: 'center', paddingVertical: 60, gap: 14 }}>
             <Text style={{ fontSize: 50 }}>📅</Text>
             <Text style={{ color: c.t3, fontSize: 16 }}>{t('schedule.no_events')}</Text>

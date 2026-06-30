@@ -6,7 +6,7 @@
 import type { DetectedItem, EntityType } from './types';
 import { getClient } from './supabase';
 import { notifications } from './notifications';
-import { mockJournals, mockTasks, type JournalEntry, type TaskData } from '@/data/mock';
+import { mockJournals, mockTasks, mockEvents, type JournalEntry, type TaskData, type ScheduleEvent } from '@/data/mock';
 import { mockHabits } from '@/data/mock';
 import type { HabitData } from '@/components/ui/HabitCard';
 
@@ -44,15 +44,23 @@ function tableFor(type: EntityType): { table: string; row: (i: DetectedItem, uid
       };
     case 'task':
     case 'checklist':
+      return {
+        table: 'tasks',
+        row: (i, uid) => ({ user_id: uid, title: i.title, priority: 'medium' }),
+      };
+    // Time-bound items land in the calendar (events), not the task wall.
     case 'appointment':
     case 'reminder':
     case 'exam':
       return {
-        table: 'tasks',
+        table: 'events',
         row: (i, uid) => ({
           user_id: uid,
-          title: i.type === 'exam' ? `مراجعة: ${i.title}` : i.title,
-          priority: i.type === 'appointment' || i.type === 'reminder' ? 'high' : 'medium',
+          title: i.type === 'exam' ? `امتحان: ${i.title}` : i.title,
+          // best-effort: place an hour out; real date parsing fills this later
+          starts_at: new Date(Date.now() + 3600_000).toISOString(),
+          all_day: i.type === 'exam',
+          source: i.type === 'exam' ? 'exam' : 'event',
         }),
       };
     case 'habit':
@@ -164,6 +172,27 @@ export const repository = {
       timePref: r.time_pref ?? 'anytime',
       freq: r.freq ?? 'daily',
       areaId: r.area_id ?? null,
+    }));
+  },
+
+  async listEvents(): Promise<ScheduleEvent[]> {
+    const session = await activeUser();
+    if (!session) return mockEvents;
+    const { data, error } = await session.client!
+      .from('events')
+      .select('*')
+      .order('starts_at', { ascending: true });
+    if (error || !data) return mockEvents;
+    const hhmm = (iso?: string) => (iso ? new Date(iso).toTimeString().slice(0, 5) : '00:00');
+    return data.map((r: any) => ({
+      id: r.id,
+      title: r.title,
+      start: hhmm(r.starts_at),
+      end: hhmm(r.ends_at ?? r.starts_at),
+      color: r.color ?? '#7C6FFF',
+      allDay: !!r.all_day,
+      source: r.source ?? 'event',
+      location: r.location ?? undefined,
     }));
   },
 };

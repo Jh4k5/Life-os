@@ -13,13 +13,20 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_…
 ```
 The anon/publishable key is public by design (protected by Row-Level Security).
 
-## 2) Apply the database schema
+## 2) Apply the database schema (migration-based)
 ```
 supabase login
 supabase link --project-ref jlwmpyhiitgdklrbmxrh
-supabase db push            # applies supabase/schema.sql (tables + RLS + buckets)
+supabase db push            # applies supabase/migrations/* in order:
+                            #   0001_init        — base (areas→projects, habits,
+                            #                      tasks, journal, workspaces,
+                            #                      captures, files, memory, RLS, buckets)
+                            #   0002_phase2_*    — study, learning, health/nutrition/
+                            #                      exercise, events (calendar), analytics,
+                            #                      wellbeing, app_usage (+RLS, indexes)
 ```
-(Or paste `supabase/schema.sql` into the Supabase SQL editor.)
+(`supabase/schema.sql` is kept as a readable single-file reference; the
+canonical source for `db push` is `supabase/migrations/`.)
 
 ## 3) AI (Gemini) — server-side only, NEVER in the app
 The Gemini key is a **secret**. It lives only as an Edge Function secret:
