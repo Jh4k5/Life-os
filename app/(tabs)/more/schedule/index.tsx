@@ -1,6 +1,7 @@
 // app/(tabs)/more/schedule/index.tsx
 import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/layout/Header';
@@ -23,6 +24,7 @@ const DAYS = ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس'
 export default function ScheduleScreen() {
   const { c } = useTheme();
   const { t } = useTranslation();
+  const router = useRouter();
   const [view, setView] = useState<SView>('day');
   const [selectedDay, setSelectedDay] = useState(3);
 
@@ -31,7 +33,14 @@ export default function ScheduleScreen() {
 
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
-      <Header title={t('sections.schedule')} accent={c.schedule} right={[{ icon: 'add', onPress: () => {}, color: c.accent }]} />
+      <Header
+        title={t('sections.schedule')}
+        accent={c.schedule}
+        right={[
+          { icon: 'scan-outline', onPress: () => router.push('/(tabs)/more/schedule/build'), color: c.accent },
+          { icon: 'add', onPress: () => {}, color: c.accent },
+        ]}
+      />
       <ViewToggle
         options={[
           { key: 'week', label: t('schedule.week'), emoji: '🗓' },

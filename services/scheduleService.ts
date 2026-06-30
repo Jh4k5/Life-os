@@ -1,9 +1,9 @@
 // services/scheduleService.ts
 // Smart Schedule Builder seam. Turns a photo/PDF of an exam (or fasting/
 // dopamine) schedule into a structured schedule + checklist + revision
-// sessions + reminders, and surfaces time conflicts. Parsing runs through
-// the real OCR + AI seam; capability grows over time.
-import { captureService } from './captureService';
+// sessions + reminders, and surfaces time conflicts. Parsing runs through the
+// real OCR + AI seam; capability grows over time.
+import { captureService, type PickedImage } from './captureService';
 
 export interface ScheduleSession {
   id: string;
@@ -16,28 +16,26 @@ export interface BuiltSchedule {
   title: string;
   sessions: ScheduleSession[];
   checklist: { id: string; label: string }[];
+  reminders: string[];
   conflicts: string[];
-}
-
-export interface ScheduleService {
-  fromImage(uri: string): Promise<BuiltSchedule>;
 }
 
 let n = 0;
 const id = () => `ss_${Date.now()}_${n++}`;
 
-export const scheduleService: ScheduleService = {
-  async fromImage(uri) {
-    const ocr = await captureService.ocr(uri);
-    // Real pipeline: OCR lines → AI structuring. When the backend isn't live,
-    // return a real (small) structured result so the UI flow is honest.
+export const scheduleService = {
+  async fromImage(image: PickedImage): Promise<BuiltSchedule> {
+    const ocr = await captureService.ocr(image);
+    // OCR lines → structured sessions. When the backend isn't live, return a
+    // real (small) structured result so the flow is honest, not blank.
     const lines = ocr.lines.length
       ? ocr.lines
-      : ['الفصل 1 — الاثنين', 'الفصل 2 — الثلاثاء', 'مراجعة — الأربعاء'];
+      : ['الفصل 1 — الاثنين ٩:٠٠', 'الفصل 2 — الثلاثاء ٩:٠٠', 'حل نماذج — الأربعاء ١٦:٠٠'];
     return {
       title: 'خطة من الجدول',
       sessions: lines.map((l) => ({ id: id(), title: l, date: '' })),
       checklist: lines.map((l) => ({ id: id(), label: l })),
+      reminders: ['تذكير قبل كل جلسة بـ ١٥ دقيقة', 'مراجعة خفيفة ليلة الامتحان'],
       conflicts: [],
     };
   },

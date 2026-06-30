@@ -26,6 +26,7 @@ import { MicButton } from '@/components/ui/MicButton';
 import { ReviewLayer } from '@/components/ai/ReviewLayer';
 import { aiService } from '@/services/aiService';
 import { repository } from '@/services/repository';
+import { captureService } from '@/services/captureService';
 import type { ParsedDay, DetectedItem, ReviewAction } from '@/services/types';
 import { useMockStore } from '@/store/mockStore';
 import { mockTasks } from '@/data/mock';
@@ -92,6 +93,20 @@ const AIView = ({ c, t }: any) => {
     setResult(parsed);
     setItems(parsed.items);
     setApplied(null);
+    setBusy(false);
+  };
+
+  // Universal Capture: attach an image/PDF → OCR → parse into typed items.
+  const captureImage = async () => {
+    const image = await captureService.pickImage();
+    if (!image) return;
+    setBusy(true);
+    setApplied(null);
+    const ocr = await captureService.ocr(image);
+    const text = ocr.text || ocr.lines.join('\n');
+    const parsed = await aiService.parseDay({ kind: 'image', text, uri: image.uri });
+    setResult(parsed);
+    setItems(parsed.items);
     setBusy(false);
   };
 
@@ -167,7 +182,7 @@ const AIView = ({ c, t }: any) => {
       {/* Input bar — universal capture: attach · text · mic */}
       <View style={[S.inputArea, { backgroundColor: c.bg0 }]}>
         <View style={[S.inputRow, { backgroundColor: c.bg2, borderColor: c.b1, flexDirection: rowDir }]}>
-          <Pressable style={S.iconGhost} onPress={() => capture(SAMPLE)}>
+          <Pressable style={S.iconGhost} onPress={captureImage}>
             <Ionicons name="add-circle-outline" size={22} color={c.t3} />
           </Pressable>
           <TextInput

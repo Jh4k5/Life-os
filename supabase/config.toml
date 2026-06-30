@@ -4,3 +4,6 @@ project_id = "jlwmpyhiitgdklrbmxrh"
 
 [functions.ai-parse]
 verify_jwt = true
+
+[functions.ocr]
+verify_jwt = true
