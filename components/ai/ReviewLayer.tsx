@@ -24,6 +24,9 @@ const ICON: Record<EntityType, keyof typeof Ionicons.glyphMap> = {
   reminder: 'notifications-outline',
   note: 'document-text-outline',
   suggestion: 'sparkles-outline',
+  meal: 'nutrition-outline',
+  workout: 'barbell-outline',
+  study_session: 'time-outline',
 };
 
 const LABEL: Record<EntityType, string> = {
@@ -36,18 +39,27 @@ const LABEL: Record<EntityType, string> = {
   reminder: 'تذكير',
   note: 'ملاحظة',
   suggestion: 'اقتراح',
+  meal: 'وجبة',
+  workout: 'تمرين',
+  study_session: 'جلسة مذاكرة',
 };
+
+// One smart follow-up: the handful of types an ambiguous capture is usually
+// confused between. Shown only when the model is unsure (confidence < 0.6).
+const CLARIFY: EntityType[] = ['task', 'reminder', 'appointment', 'note'];
 
 interface Props {
   items: DetectedItem[];
   onAction: (id: string, action: ReviewAction) => void;
   onApplyAll: () => void;
+  /** Resolve an ambiguous item by picking its real type (one tap). */
+  onReclassify?: (id: string, type: EntityType) => void;
   /** Heading + reply line shown above the list (Home result card). */
   reply?: string;
   compact?: boolean;
 }
 
-export const ReviewLayer = ({ items, onAction, onApplyAll, reply, compact }: Props) => {
+export const ReviewLayer = ({ items, onAction, onApplyAll, onReclassify, reply, compact }: Props) => {
   const { c } = useTheme();
   const { rowDir } = useRTL();
   const [openId, setOpenId] = useState<string | null>(null);
@@ -122,6 +134,23 @@ export const ReviewLayer = ({ items, onAction, onApplyAll, reply, compact }: Pro
               </View>
             </Pressable>
 
+            {/* Smart follow-up: one inline question when the type is uncertain. */}
+            {onReclassify && item.status === 'pending' && item.confidence < 0.6 && (
+              <View style={[S.clarify, { flexDirection: rowDir, borderTopColor: c.b0 }]}>
+                <Text style={{ color: c.t3, fontSize: 11, fontWeight: '600' }}>أهو…؟</Text>
+                {CLARIFY.filter((o) => o !== item.type).map((o) => (
+                  <Pressable
+                    key={o}
+                    onPress={() => onReclassify(item.id, o)}
+                    style={[S.chip, { backgroundColor: c.bg3 }]}
+                  >
+                    <Ionicons name={ICON[o]} size={12} color={c.t2} />
+                    <Text style={{ color: c.t2, fontSize: 11, fontWeight: '600' }}>{LABEL[o]}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
+
             {!compact && (
               <>
                 <Pressable onPress={() => setOpenId(open ? null : item.id)} style={S.moreBtn}>
@@ -167,6 +196,15 @@ const S = StyleSheet.create({
   metaRow: { alignItems: 'center', gap: 5 },
   check: { width: 26, height: 26, borderRadius: 13, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
   moreBtn: { position: 'absolute', top: 8, end: 8, width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
+  clarify: {
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 13,
+    paddingBottom: 11,
+    paddingTop: 2,
+    flexWrap: 'wrap',
+  },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 9, paddingVertical: 5, borderRadius: 999 },
   actions: { borderTopWidth: StyleSheet.hairlineWidth, paddingVertical: 4 },
   actBtn: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 3, paddingVertical: 10 },
   applyBtn: {

@@ -40,13 +40,28 @@ const TOMORROW = ['غداً', 'غدا', 'بكرة', 'tomorrow'];
 
 function detectType(line: string): { type: EntityType; confidence: number } {
   const s = line.toLowerCase();
-  if (has(s, ['امتحان', 'اختبار', 'exam', 'quiz', 'test'])) return { type: 'exam', confidence: 0.9 };
-  if (has(s, ['موعد', 'اجتماع', 'appointment', 'meeting', 'لقاء'])) return { type: 'appointment', confidence: 0.85 };
-  if (has(s, ['عادة', 'كل يوم', 'يومياً', 'habit', 'daily'])) return { type: 'habit', confidence: 0.8 };
-  if (has(s, ['ذكرني', 'تذكير', 'remind', 'reminder'])) return { type: 'reminder', confidence: 0.85 };
-  if (has(s, ['اقترح', 'ممكن', 'suggest', 'maybe'])) return { type: 'suggestion', confidence: 0.6 };
-  if (has(s, ['لازم', 'يجب', 'محتاج', 'task', 'todo', 'أنجز', 'اعمل', 'أعمل'])) return { type: 'task', confidence: 0.75 };
-  if (has(s, ['قائمة', 'checklist', 'أحضّر', 'أجهّز'])) return { type: 'checklist', confidence: 0.7 };
+  // Most specific domain signals first. Mixes MSA + Gulf/Egyptian/Levantine
+  // dialect cues with English so the same brain-dump works across the 7 langs.
+  if (has(s, ['امتحان', 'اختبار', 'كويز', 'exam', 'quiz', 'test', 'midterm', 'final']))
+    return { type: 'exam', confidence: 0.9 };
+  if (has(s, ['أكلت', 'اكلت', 'فطور', 'غداء', 'عشاء', 'وجبة', 'سعرات', 'meal', 'ate', 'breakfast', 'lunch', 'dinner', 'calories', 'protein']))
+    return { type: 'meal', confidence: 0.82 };
+  if (has(s, ['تمرين', 'تمرنت', 'رياضة', 'جيم', 'نادي', 'workout', 'gym', 'training', 'cardio', 'سكوات', 'بنش']))
+    return { type: 'workout', confidence: 0.82 };
+  if (has(s, ['ذاكرت', 'مذاكرة', 'راجعت', 'دراسة', 'studied', 'revised', 'study session']))
+    return { type: 'study_session', confidence: 0.78 };
+  if (has(s, ['موعد', 'اجتماع', 'appointment', 'meeting', 'لقاء', 'مقابلة', 'زيارة', 'حجز']))
+    return { type: 'appointment', confidence: 0.85 };
+  if (has(s, ['عادة', 'كل يوم', 'يومياً', 'يوميا', 'habit', 'daily', 'every day']))
+    return { type: 'habit', confidence: 0.8 };
+  if (has(s, ['ذكرني', 'فكرني', 'تذكير', 'لا تنسى', 'remind', 'reminder', "don't forget"]))
+    return { type: 'reminder', confidence: 0.85 };
+  if (has(s, ['اقترح', 'ممكن', 'يفضل', 'suggest', 'maybe', 'perhaps']))
+    return { type: 'suggestion', confidence: 0.6 };
+  if (has(s, ['لازم', 'يجب', 'محتاج', 'ابغى', 'أبغى', 'عايز', 'بدي', 'task', 'todo', 'أنجز', 'اعمل', 'أعمل', 'سوي', 'خلص']))
+    return { type: 'task', confidence: 0.75 };
+  if (has(s, ['قائمة', 'checklist', 'list', 'أحضّر', 'أجهّز', 'جهز', 'حضّر']))
+    return { type: 'checklist', confidence: 0.7 };
   return { type: 'note', confidence: 0.5 };
 }
 

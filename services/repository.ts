@@ -6,6 +6,7 @@
 import type { DetectedItem, EntityType } from './types';
 import { getClient } from './supabase';
 import { notifications } from './notifications';
+import { memory } from './memory';
 import { mockJournals, mockTasks, mockEvents, type JournalEntry, type TaskData, type ScheduleEvent } from '@/data/mock';
 import { mockHabits } from '@/data/mock';
 import type { HabitData } from '@/components/ui/HabitCard';
@@ -68,11 +69,70 @@ function tableFor(type: EntityType): { table: string; row: (i: DetectedItem, uid
         table: 'habits',
         row: (i, uid) => ({ user_id: uid, name: i.title, type: 'checkbox', target: 1, freq: 'daily', time_pref: 'anytime' }),
       };
+    // Phase 2 domains fed straight from a brain-dump.
+    case 'meal':
+      return {
+        table: 'meals',
+        row: (i, uid) => ({ user_id: uid, name: i.title, ai_estimated: false }),
+      };
+    case 'workout':
+      return {
+        table: 'workouts',
+        row: (i, uid) => ({ user_id: uid, name: i.title, mode: 'gym' }),
+      };
+    case 'study_session':
+      return {
+        table: 'study_sessions',
+        row: (i, uid) => ({ user_id: uid, topic: i.title, minutes: 0 }),
+      };
     case 'suggestion':
       return null; // a nudge, not a stored entity
     default:
       return null;
   }
+}
+
+/**
+ * Grow the memory graph from accepted items: each becomes a node, and items
+ * from the same capture are chained `relates_to` so the system can reason
+ * across a person's life ("how does this affect the rest?"). Real DB when
+ * signed in; the in-memory graph is the honest signed-out fallback.
+ */
+async function persistMemory(
+  client: NonNullable<ReturnType<typeof getClient>> | null,
+  uid: string | null,
+  items: DetectedItem[],
+): Promise<void> {
+  const linkable = items.filter((i) => i.type !== 'suggestion');
+  if (linkable.length === 0) return;
+
+  if (!client || !uid) {
+    // demo: keep an honest local graph (never faked, just not yet synced).
+    const local = linkable.map((i) => memory.addNode({
+      id: i.id,
+      type: i.type,
+      label: i.title,
+      createdAt: Date.now(),
+      data: i.source ? { source: i.source } : undefined,
+    }));
+    for (let k = 1; k < local.length; k++) memory.link(local[k - 1].id, local[k].id, 'relates_to');
+    return;
+  }
+
+  const rows = linkable.map((i) => ({
+    user_id: uid,
+    type: i.type,
+    label: i.title,
+    data: i.source ? { source: i.source } : null,
+  }));
+  const { data, error } = await client.from('memory_nodes').insert(rows).select('id');
+  if (error || !data) return;
+  const ids: string[] = data.map((r: any) => r.id);
+  const edges = [];
+  for (let k = 1; k < ids.length; k++) {
+    edges.push({ user_id: uid, from_node: ids[k - 1], to_node: ids[k], relation: 'relates_to' });
+  }
+  if (edges.length) await client.from('memory_edges').insert(edges);
 }
 
 export const repository = {
@@ -83,12 +143,16 @@ export const repository = {
     const client = getClient();
 
     if (!client) {
+      await persistMemory(null, null, accepted);
       return { saved: accepted.length, demo: true, errors: [] };
     }
 
     const { data: userData } = await client.auth.getUser();
     const uid = userData.user?.id;
-    if (!uid) return { saved: accepted.length, demo: true, errors: [] };
+    if (!uid) {
+      await persistMemory(null, null, accepted);
+      return { saved: accepted.length, demo: true, errors: [] };
+    }
 
     let saved = 0;
     const errors: string[] = [];
@@ -99,6 +163,8 @@ export const repository = {
       if (error) errors.push(`${item.title}: ${error.message}`);
       else saved += 1;
     }
+    // Every accepted item also grows the memory graph (links them together).
+    await persistMemory(client, uid, accepted);
     return { saved, demo: false, errors };
   },
 

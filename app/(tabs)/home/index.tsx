@@ -28,7 +28,7 @@ import { aiService, buildWorkspace } from '@/services/aiService';
 import { repository } from '@/services/repository';
 import { captureService } from '@/services/captureService';
 import { useWorkspaceStore } from '@/store/workspaceStore';
-import type { ParsedDay, DetectedItem, ReviewAction, WorkspaceType } from '@/services/types';
+import type { ParsedDay, DetectedItem, EntityType, ReviewAction, WorkspaceType } from '@/services/types';
 import { useMockStore } from '@/store/mockStore';
 import { mockTasks } from '@/data/mock';
 import { DayTimeline } from '@/components/ui/DayTimeline';
@@ -132,6 +132,11 @@ const AIView = ({ c, t }: any) => {
     );
   };
 
+  // Smart follow-up: user resolves an ambiguous capture → trust it fully.
+  const onReclassify = (id: string, type: EntityType) => {
+    setItems((p) => p.map((it) => (it.id === id ? { ...it, type, confidence: 0.85 } : it)));
+  };
+
   const applyAll = async () => {
     const next = items.map((it) => (it.status === 'pending' ? { ...it, status: 'accepted' as const } : it));
     setItems(next);
@@ -193,7 +198,7 @@ const AIView = ({ c, t }: any) => {
 
         {result && !busy && (
           <View style={{ marginTop: 22, gap: 14 }}>
-            <ReviewLayer items={items} reply={result.reply} onAction={onAction} onApplyAll={applyAll} />
+            <ReviewLayer items={items} reply={result.reply} onAction={onAction} onApplyAll={applyAll} onReclassify={onReclassify} />
             {proposal && (
               <Pressable
                 onPress={createWorkspace}

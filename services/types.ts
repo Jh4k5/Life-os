@@ -11,7 +11,11 @@ export type EntityType =
   | 'habit'
   | 'reminder'
   | 'note'
-  | 'suggestion';
+  | 'suggestion'
+  // Phase 2 domains the capture pipeline can now feed directly.
+  | 'meal'
+  | 'workout'
+  | 'study_session';
 
 export type ReviewAction = 'accept' | 'edit' | 'merge' | 'ignore' | 'delete';
 

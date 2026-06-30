@@ -22,7 +22,7 @@ const corsHeaders = {
 
 const SYSTEM = `أنت مساعد ينظّم يوم المستخدم. حلّل النص واستخرج عناصر مكتوبة الأنواع.
 أعد JSON فقط بالشكل:
-{"reply":"رد دافئ بجملة واحدة","items":[{"type":"journal|appointment|task|checklist|exam|habit|reminder|note|suggestion","title":"عنوان قصير بلهجة المستخدم","detail":"وقت/تفصيل اختياري","confidence":0.0}]}
+{"reply":"رد دافئ بجملة واحدة","items":[{"type":"journal|appointment|task|checklist|exam|habit|reminder|note|suggestion|meal|workout|study_session","title":"عنوان قصير بلهجة المستخدم","detail":"وقت/تفصيل اختياري","confidence":0.0}]}
 احفظ النص الكامل دائماً كعنصر journal. لا تكتب أي شيء خارج JSON.`;
 
 serve(async (req: Request) => {
