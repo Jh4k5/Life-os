@@ -13,6 +13,7 @@ import { SmartCard } from '@/components/ui/SmartCard';
 import { ReviewLayer } from '@/components/ai/ReviewLayer';
 import type { DetectedItem, ReviewAction } from '@/services/types';
 import { memory } from '@/services/memory';
+import { repository } from '@/services/repository';
 
 const INBOX: DetectedItem[] = [
   { id: 'r1', type: 'appointment', title: 'موعد طبيب الأسنان', detail: 'الخميس ٤:٠٠؟', confidence: 0.55, status: 'pending' },
@@ -41,7 +42,11 @@ export default function AIHubScreen() {
         )
         .filter((it) => !(it.id === id && action === 'delete'))
     );
-  const applyAll = () => setItems((p) => p.map((it) => (it.status === 'pending' ? { ...it, status: 'accepted' } : it)));
+  const applyAll = async () => {
+    const next = items.map((it) => (it.status === 'pending' ? { ...it, status: 'accepted' as const } : it));
+    setItems(next);
+    await repository.persistAccepted(next);
+  };
 
   const results = query.trim() ? memory.search(query) : [];
 

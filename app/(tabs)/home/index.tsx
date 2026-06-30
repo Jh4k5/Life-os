@@ -25,6 +25,7 @@ import { ViewToggle } from '@/components/ui/ViewToggle';
 import { MicButton } from '@/components/ui/MicButton';
 import { ReviewLayer } from '@/components/ai/ReviewLayer';
 import { aiService } from '@/services/aiService';
+import { repository } from '@/services/repository';
 import type { ParsedDay, DetectedItem, ReviewAction } from '@/services/types';
 import { useMockStore } from '@/store/mockStore';
 import { mockTasks } from '@/data/mock';
@@ -78,18 +79,19 @@ const AIView = ({ c, t }: any) => {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<ParsedDay | null>(null);
   const [items, setItems] = useState<DetectedItem[]>([]);
-  const [applied, setApplied] = useState(false);
+  const [applied, setApplied] = useState<{ saved: number; demo: boolean } | null>(null);
 
   const greeting = new Date().getHours() < 12 ? 'صباح الخير' : new Date().getHours() < 18 ? 'مساء الخير' : 'مساء الخير';
 
   const capture = async (text: string) => {
     if (!text.trim()) return;
     setBusy(true);
-    setApplied(false);
+    setApplied(null);
     setInput('');
     const parsed = await aiService.parseDay({ kind: 'text', text });
     setResult(parsed);
     setItems(parsed.items);
+    setApplied(null);
     setBusy(false);
   };
 
@@ -105,15 +107,17 @@ const AIView = ({ c, t }: any) => {
     );
   };
 
-  const applyAll = () => {
-    setItems((p) => p.map((it) => (it.status === 'pending' ? { ...it, status: 'accepted' } : it)));
-    setApplied(true);
+  const applyAll = async () => {
+    const next = items.map((it) => (it.status === 'pending' ? { ...it, status: 'accepted' as const } : it));
+    setItems(next);
+    const res = await repository.persistAccepted(next);
+    setApplied({ saved: res.saved, demo: res.demo });
   };
 
   const reset = () => {
     setResult(null);
     setItems([]);
-    setApplied(false);
+    setApplied(null);
   };
 
   return (
@@ -146,7 +150,9 @@ const AIView = ({ c, t }: any) => {
               <View style={[S.applied, { backgroundColor: c.greenDim, flexDirection: rowDir }]}>
                 <Ionicons name="checkmark-circle" size={18} color={c.green} />
                 <Text style={{ color: c.green, fontSize: 13, fontWeight: '600' }}>
-                  تم التطبيق ووُزّع على أقسامك
+                  {applied.demo
+                    ? `تم التطبيق محلياً (${applied.saved}) — فعّل Supabase للمزامنة`
+                    : `تم الحفظ ووُزّع على أقسامك (${applied.saved})`}
                 </Text>
               </View>
             )}
