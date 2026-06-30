@@ -328,5 +328,18 @@
     "optional": "Optional",
     "choose": "Wählen",
     "custom": "Benutzerdefiniert"
+  },
+  "more": {
+    "sub_areas": "Deine Lebensbereiche",
+    "sub_habits": "{{n}} heute übrig",
+    "sub_tasks": "{{n}} offen",
+    "sub_journal": "Tägliche Notizen",
+    "sub_study": "Kurse & Prüfungen",
+    "sub_learning": "Deine Bibliothek",
+    "sub_focus": "Fokus-Timer",
+    "sub_schedule": "Smarter Kalender",
+    "sub_ai_studio": "Smarte Arbeitsbereiche",
+    "sub_ai_hub": "Speicher & Datenschutz",
+    "sub_wellbeing": "Ruhige Signale"
   }
 }

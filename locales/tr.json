@@ -328,5 +328,18 @@
     "optional": "İsteğe bağlı",
     "choose": "Seç",
     "custom": "Özel"
+  },
+  "more": {
+    "sub_areas": "Yaşam alanların",
+    "sub_habits": "bugün {{n}} kaldı",
+    "sub_tasks": "{{n}} açık",
+    "sub_journal": "Günlük notlar",
+    "sub_study": "Dersler ve sınavlar",
+    "sub_learning": "Kütüphanen",
+    "sub_focus": "Derin çalışma zamanlayıcısı",
+    "sub_schedule": "Akıllı takvim",
+    "sub_ai_studio": "Akıllı çalışma alanları",
+    "sub_ai_hub": "Bellek ve gizlilik",
+    "sub_wellbeing": "Sakin sinyaller"
   }
 }

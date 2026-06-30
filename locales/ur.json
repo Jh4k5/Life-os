@@ -328,5 +328,18 @@
     "optional": "اختیاری",
     "choose": "منتخب کریں",
     "custom": "حسب ضرورت"
+  },
+  "more": {
+    "sub_areas": "آپ کے شعبہ ہائے زندگی",
+    "sub_habits": "آج {{n}} باقی",
+    "sub_tasks": "{{n}} باقی",
+    "sub_journal": "روزانہ تاثرات",
+    "sub_study": "کورسز اور امتحانات",
+    "sub_learning": "آپ کی لائبریری",
+    "sub_focus": "گہری توجہ ٹائمر",
+    "sub_schedule": "اسمارٹ کیلنڈر",
+    "sub_ai_studio": "اسمارٹ ورک اسپیس",
+    "sub_ai_hub": "میموری اور پرائیویسی",
+    "sub_wellbeing": "پُرسکون اشارے"
   }
 }

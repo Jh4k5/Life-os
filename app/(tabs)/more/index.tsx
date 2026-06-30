@@ -16,38 +16,48 @@ type Item = {
   key: string;
   icon: keyof typeof Ionicons.glyphMap;
   route: string;
-  sub: string;
-  badge?: number;
+  subKey: string;
+  /** dynamic count injected into the sub i18n string + badge */
+  count?: () => number;
 };
-
-const habitsLeft = mockHabits.filter((h) => !h.done).length;
-const tasksLeft = mockTasks.filter((t) => !t.done).length;
 
 const GROUPS: { title: string; items: Item[] }[] = [
   {
     title: 'life',
     items: [
-      { key: 'areas', icon: 'map-outline', route: '/(tabs)/more/areas', sub: 'مجالات حياتك' },
-      { key: 'habits', icon: 'repeat-outline', route: '/(tabs)/more/habits', sub: `${habitsLeft} متبقية اليوم`, badge: habitsLeft },
-      { key: 'tasks', icon: 'checkmark-circle-outline', route: '/(tabs)/more/tasks', sub: `${tasksLeft} مهام`, badge: tasksLeft },
-      { key: 'journal', icon: 'book-outline', route: '/(tabs)/more/journal', sub: 'سلسلة ١٢ يوم' },
+      { key: 'areas', icon: 'map-outline', route: '/(tabs)/more/areas', subKey: 'more.sub_areas' },
+      {
+        key: 'habits',
+        icon: 'repeat-outline',
+        route: '/(tabs)/more/habits',
+        subKey: 'more.sub_habits',
+        count: () => mockHabits.filter((h) => !h.done).length,
+      },
+      {
+        key: 'tasks',
+        icon: 'checkmark-circle-outline',
+        route: '/(tabs)/more/tasks',
+        subKey: 'more.sub_tasks',
+        count: () => mockTasks.filter((tk) => !tk.done).length,
+      },
+      { key: 'journal', icon: 'book-outline', route: '/(tabs)/more/journal', subKey: 'more.sub_journal' },
     ],
   },
   {
     title: 'focus_learn',
     items: [
-      { key: 'study', icon: 'school-outline', route: '/(tabs)/more/study', sub: 'امتحانان قادمان' },
-      { key: 'learning', icon: 'library-outline', route: '/(tabs)/more/learning', sub: '٢ قيد القراءة' },
-      { key: 'focus', icon: 'timer-outline', route: '/(tabs)/more/focus', sub: '٣ ساعات هذا الأسبوع' },
-      { key: 'schedule', icon: 'calendar-outline', route: '/(tabs)/more/schedule', sub: 'تقويمك الذكي' },
+      { key: 'study', icon: 'school-outline', route: '/(tabs)/more/study', subKey: 'more.sub_study' },
+      { key: 'learning', icon: 'library-outline', route: '/(tabs)/more/learning', subKey: 'more.sub_learning' },
+      { key: 'focus', icon: 'timer-outline', route: '/(tabs)/more/focus', subKey: 'more.sub_focus' },
+      { key: 'schedule', icon: 'calendar-outline', route: '/(tabs)/more/schedule', subKey: 'more.sub_schedule' },
     ],
   },
   {
     title: 'intelligence',
     items: [
-      { key: 'ai_studio', icon: 'sparkles-outline', route: '/(tabs)/more/ai-studio', sub: 'مساحات ذكية' },
-      { key: 'ai_hub', icon: 'git-network-outline', route: '/(tabs)/more/ai-hub', sub: 'ذاكرة + خصوصية' },
-      { key: 'wellbeing', icon: 'pulse-outline', route: '/(tabs)/more/dopamine', sub: 'إشارات هادئة' },
+      { key: 'ai_studio', icon: 'sparkles-outline', route: '/(tabs)/more/ai-studio', subKey: 'more.sub_ai_studio' },
+      { key: 'ai_hub', icon: 'git-network-outline', route: '/(tabs)/more/ai-hub', subKey: 'more.sub_ai_hub' },
+      { key: 'wellbeing', icon: 'pulse-outline', route: '/(tabs)/more/dopamine', subKey: 'more.sub_wellbeing' },
     ],
   },
 ];
@@ -70,14 +80,17 @@ export default function MoreScreen() {
           <View key={group.title} style={{ gap: 10 }}>
             <Text style={[S.groupTitle, { color: c.t3, textAlign }]}>{t(`groups.${group.title}`)}</Text>
             <View style={S.grid}>
-              {group.items.map((it) => (
-                <View key={it.key} style={S.cell}>
-                  <SectionCard
-                    section={{ key: it.key, icon: it.icon, sub: it.sub, badge: it.badge }}
-                    onPress={() => router.push(it.route as Href)}
-                  />
-                </View>
-              ))}
+              {group.items.map((it) => {
+                const n = it.count?.();
+                return (
+                  <View key={it.key} style={S.cell}>
+                    <SectionCard
+                      section={{ key: it.key, icon: it.icon, sub: t(it.subKey, { n }), badge: n }}
+                      onPress={() => router.push(it.route as Href)}
+                    />
+                  </View>
+                );
+              })}
             </View>
           </View>
         ))}

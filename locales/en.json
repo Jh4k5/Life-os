@@ -335,5 +335,18 @@
     "optional": "Optional",
     "choose": "Choose",
     "custom": "Custom"
+  },
+  "more": {
+    "sub_areas": "Your life areas",
+    "sub_habits": "{{n}} left today",
+    "sub_tasks": "{{n}} open",
+    "sub_journal": "Daily reflections",
+    "sub_study": "Courses & exams",
+    "sub_learning": "Your library",
+    "sub_focus": "Deep work timer",
+    "sub_schedule": "Smart calendar",
+    "sub_ai_studio": "Smart workspaces",
+    "sub_ai_hub": "Memory & privacy",
+    "sub_wellbeing": "Calm signals"
   }
 }

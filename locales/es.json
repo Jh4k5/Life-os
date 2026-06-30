@@ -328,5 +328,18 @@
     "optional": "Opcional",
     "choose": "Elegir",
     "custom": "Personalizado"
+  },
+  "more": {
+    "sub_areas": "Tus áreas de vida",
+    "sub_habits": "{{n}} para hoy",
+    "sub_tasks": "{{n}} abiertas",
+    "sub_journal": "Reflexiones diarias",
+    "sub_study": "Cursos y exámenes",
+    "sub_learning": "Tu biblioteca",
+    "sub_focus": "Temporizador de enfoque",
+    "sub_schedule": "Calendario inteligente",
+    "sub_ai_studio": "Espacios inteligentes",
+    "sub_ai_hub": "Memoria y privacidad",
+    "sub_wellbeing": "Señales tranquilas"
   }
 }

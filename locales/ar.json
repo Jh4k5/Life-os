@@ -335,5 +335,18 @@
     "optional": "اختياري",
     "choose": "اختر",
     "custom": "مخصص"
+  },
+  "more": {
+    "sub_areas": "مجالات حياتك",
+    "sub_habits": "{{n}} متبقية اليوم",
+    "sub_tasks": "{{n}} مهام مفتوحة",
+    "sub_journal": "تأملاتك اليومية",
+    "sub_study": "المواد والامتحانات",
+    "sub_learning": "مكتبتك",
+    "sub_focus": "مؤقّت التركيز العميق",
+    "sub_schedule": "تقويمك الذكي",
+    "sub_ai_studio": "مساحات ذكية",
+    "sub_ai_hub": "الذاكرة والخصوصية",
+    "sub_wellbeing": "إشارات هادئة"
   }
 }
