@@ -71,7 +71,10 @@ export default function MoreScreen() {
       <Header
         title={t('nav.more')}
         back={false}
-        right={[{ icon: 'settings-outline', onPress: () => router.push('/settings'), color: c.t2 }]}
+        right={[
+          { icon: 'search-outline', onPress: () => router.push('/search'), color: c.t2 },
+          { icon: 'settings-outline', onPress: () => router.push('/settings'), color: c.t2 },
+        ]}
       />
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 110, gap: 24 }}>
         {GROUPS.map((group) => (

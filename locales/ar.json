@@ -364,5 +364,16 @@
     "search_ph": "ابحث في كل حياتك…",
     "no_results": "لا نتائج",
     "empty": "ستظهر ذكرياتك هنا مع الاستخدام"
+  },
+  "search": {
+    "title": "بحث",
+    "placeholder": "ابحث في كل شيء…",
+    "hint": "ابحث في مهامك ويومياتك ودراستك وذاكرتك",
+    "no_results": "لا نتائج",
+    "kind_task": "مهمة",
+    "kind_journal": "يوميات",
+    "kind_course": "مادة",
+    "kind_library": "مكتبة",
+    "kind_memory": "ذاكرة"
   }
 }

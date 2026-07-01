@@ -359,5 +359,16 @@
     "search_ph": "Hayatınızda arayın…",
     "no_results": "Sonuç yok",
     "empty": "Anılarınız burada görünecek"
+  },
+  "search": {
+    "title": "Ara",
+    "placeholder": "Her şeyi ara…",
+    "hint": "Görevlerinizi, günlüğünüzü, çalışmanızı ve hafızanızı arayın",
+    "no_results": "Sonuç yok",
+    "kind_task": "Görev",
+    "kind_journal": "Günlük",
+    "kind_course": "Ders",
+    "kind_library": "Kitaplık",
+    "kind_memory": "Hafıza"
   }
 }

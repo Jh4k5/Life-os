@@ -359,5 +359,16 @@
     "search_ph": "Busca en tu vida…",
     "no_results": "Sin resultados",
     "empty": "Tus recuerdos aparecerán aquí"
+  },
+  "search": {
+    "title": "Buscar",
+    "placeholder": "Busca todo…",
+    "hint": "Busca tus tareas, diario, estudio y memoria",
+    "no_results": "Sin resultados",
+    "kind_task": "Tarea",
+    "kind_journal": "Diario",
+    "kind_course": "Curso",
+    "kind_library": "Biblioteca",
+    "kind_memory": "Memoria"
   }
 }

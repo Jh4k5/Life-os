@@ -364,5 +364,16 @@
     "search_ph": "Search across your life…",
     "no_results": "No results",
     "empty": "Your memories appear here as you use the app"
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search everything…",
+    "hint": "Search your tasks, journal, study, and memory",
+    "no_results": "No results",
+    "kind_task": "Task",
+    "kind_journal": "Journal",
+    "kind_course": "Course",
+    "kind_library": "Library",
+    "kind_memory": "Memory"
   }
 }

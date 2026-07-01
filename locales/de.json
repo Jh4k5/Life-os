@@ -359,5 +359,16 @@
     "search_ph": "Durchsuche dein Leben…",
     "no_results": "Keine Ergebnisse",
     "empty": "Deine Erinnerungen erscheinen hier"
+  },
+  "search": {
+    "title": "Suche",
+    "placeholder": "Alles durchsuchen…",
+    "hint": "Durchsuche Aufgaben, Journal, Lernen und Gedächtnis",
+    "no_results": "Keine Ergebnisse",
+    "kind_task": "Aufgabe",
+    "kind_journal": "Journal",
+    "kind_course": "Kurs",
+    "kind_library": "Bibliothek",
+    "kind_memory": "Gedächtnis"
   }
 }
