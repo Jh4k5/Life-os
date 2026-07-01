@@ -10,3 +10,6 @@ verify_jwt = true
 
 [functions.transcribe]
 verify_jwt = true
+
+[functions.nutrition]
+verify_jwt = true
