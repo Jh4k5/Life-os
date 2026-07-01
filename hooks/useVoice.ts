@@ -3,7 +3,9 @@
 // (Web Speech API on web). NEVER fabricates text — if permission is denied or
 // recognition fails, it ends with no transcript and the caller does nothing.
 import { useState, useCallback } from 'react';
-import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
+// Loaded through a shim so the app runs in Expo Go (voice disabled) and
+// full-featured in a dev/production build. See services/speech.ts.
+import { SpeechRecognition, useSpeechRecognitionEvent, speechAvailable } from '@/services/speech';
 import { useTranslation } from 'react-i18next';
 
 export type VoiceState = 'idle' | 'recording' | 'processing';
@@ -46,11 +48,11 @@ export function useVoice(onFinal: (text: string) => void) {
 
   const start = useCallback(async () => {
     try {
-      const perm = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+      const perm = await SpeechRecognition.requestPermissionsAsync();
       if (!perm.granted) return;
       setPartial('');
       setState('recording');
-      ExpoSpeechRecognitionModule.start({
+      SpeechRecognition.start({
         lang: LANG_MAP[i18n.language] ?? 'ar-SA',
         interimResults: true,
         continuous: false,
@@ -62,7 +64,7 @@ export function useVoice(onFinal: (text: string) => void) {
 
   const stop = useCallback(() => {
     try {
-      ExpoSpeechRecognitionModule.stop();
+      SpeechRecognition.stop();
     } catch {
       /* noop */
     }
@@ -74,5 +76,5 @@ export function useVoice(onFinal: (text: string) => void) {
     else if (state === 'idle') start();
   }, [state, start, stop]);
 
-  return { state, partial, start, stop, toggle };
+  return { state, partial, start, stop, toggle, available: speechAvailable };
 }
