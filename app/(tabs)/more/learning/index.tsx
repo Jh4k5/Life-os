@@ -12,6 +12,8 @@ import { SmartCard } from '@/components/ui/SmartCard';
 import { Header } from '@/components/layout/Header';
 import { TabPill } from '@/components/ui/TabPill';
 import { mockLibrary } from '@/data/mock';
+import { repository } from '@/services/repository';
+import { useAsync } from '@/hooks/useAsync';
 
 type LibFilter = 'all' | 'in_progress' | 'want_to_read' | 'completed';
 
@@ -30,6 +32,7 @@ export default function LearningScreen() {
   const { rowDir, textAlign } = useRTL();
   const router = useRouter();
   const [filter, setFilter] = useState<LibFilter>('all');
+  const { data: library } = useAsync(() => repository.listLibrary(), mockLibrary);
 
   const STATUS_LABEL: Record<string, string> = {
     want_to_read: t('learning.status_want'),
@@ -39,9 +42,9 @@ export default function LearningScreen() {
   };
   const statusColor = (s: string) => (s === 'completed' ? c.green : s === 'in_progress' ? c.accent : c.t3);
 
-  const filtered = mockLibrary.filter((l) => filter === 'all' || l.status === filter);
-  const inProgress = mockLibrary.filter((l) => l.status === 'in_progress').length;
-  const completed = mockLibrary.filter((l) => l.status === 'completed').length;
+  const filtered = library.filter((l) => filter === 'all' || l.status === filter);
+  const inProgress = library.filter((l) => l.status === 'in_progress').length;
+  const completed = library.filter((l) => l.status === 'completed').length;
 
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
@@ -51,7 +54,7 @@ export default function LearningScreen() {
       />
       {/* Stats — neutral, hairline */}
       <View style={[S.statsRow, { flexDirection: rowDir, backgroundColor: c.bg1, borderBottomColor: c.b1 }]}>
-        <StatItem val={mockLibrary.length} label="في المكتبة" c={c} />
+        <StatItem val={library.length} label="في المكتبة" c={c} />
         <View style={[S.vline, { backgroundColor: c.b1 }]} />
         <StatItem val={inProgress} label={t('learning.status_prog')} c={c} />
         <View style={[S.vline, { backgroundColor: c.b1 }]} />

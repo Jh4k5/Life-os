@@ -225,6 +225,24 @@ export const mockCourses: Course[] = [
   },
 ];
 
+export interface Flashcard {
+  id: string;
+  courseId: string | null;
+  front: string;
+  back: string;
+  ease: number;         // SM-2
+  interval: number;     // days
+  reps: number;
+  due: string;          // ISO date
+}
+
+export const mockFlashcards: Flashcard[] = [
+  { id: 'f1', courseId: 'c1', front: '你好', back: 'مرحباً', ease: 2.5, interval: 0, reps: 0, due: '2026-06-30' },
+  { id: 'f2', courseId: 'c1', front: '谢谢', back: 'شكراً', ease: 2.5, interval: 0, reps: 0, due: '2026-06-30' },
+  { id: 'f3', courseId: 'c2', front: 'ما هي مجموعة الهيدروكسيل؟', back: 'OH−', ease: 2.5, interval: 0, reps: 0, due: '2026-06-29' },
+  { id: 'f4', courseId: 'c2', front: 'صيغة الميثان', back: 'CH₄', ease: 2.5, interval: 0, reps: 0, due: '2026-07-01' },
+];
+
 export interface LibraryItem {
   id: string;
   title: string;

@@ -1,6 +1,12 @@
 {
-  "app": { "name": "Life OS", "tagline": "Tu sistema operativo de vida inteligente" },
-  "nav": { "home": "Inicio", "more": "Más" },
+  "app": {
+    "name": "Life OS",
+    "tagline": "Tu sistema operativo de vida inteligente"
+  },
+  "nav": {
+    "home": "Inicio",
+    "more": "Más"
+  },
   "home": {
     "ai": "IA",
     "dashboard": "Panel",
@@ -166,7 +172,16 @@
     "active": "Activo",
     "completed": "Completado",
     "paused": "Pausado",
-    "empty": "Sin cursos — añade el primero"
+    "empty": "Sin cursos — añade el primero",
+    "flashcards": "Tarjetas",
+    "srs_again": "Repetir",
+    "srs_good": "Bien",
+    "srs_easy": "Fácil",
+    "review_done": "Repaso completado",
+    "cards_due": "tarjetas pendientes",
+    "tap_to_flip": "Toca para girar",
+    "no_cards_due": "No hay tarjetas pendientes",
+    "review_cards": "Repasar tarjetas"
   },
   "learning": {
     "new": "Añadir a biblioteca",

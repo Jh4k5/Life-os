@@ -1,6 +1,12 @@
 {
-  "app": { "name": "Life OS", "tagline": "Akıllı yaşam işletim sistemin" },
-  "nav": { "home": "Ana sayfa", "more": "Daha fazla" },
+  "app": {
+    "name": "Life OS",
+    "tagline": "Akıllı yaşam işletim sistemin"
+  },
+  "nav": {
+    "home": "Ana sayfa",
+    "more": "Daha fazla"
+  },
   "home": {
     "ai": "Yapay zekâ",
     "dashboard": "Panel",
@@ -166,7 +172,16 @@
     "active": "Aktif",
     "completed": "Tamamlandı",
     "paused": "Duraklatıldı",
-    "empty": "Henüz ders yok — ilkini ekle"
+    "empty": "Henüz ders yok — ilkini ekle",
+    "flashcards": "Kartlar",
+    "srs_again": "Tekrar",
+    "srs_good": "İyi",
+    "srs_easy": "Kolay",
+    "review_done": "İnceleme tamamlandı",
+    "cards_due": "kart hazır",
+    "tap_to_flip": "Çevirmek için dokun",
+    "no_cards_due": "Şu an kart yok",
+    "review_cards": "Kartları incele"
   },
   "learning": {
     "new": "Kütüphaneye ekle",

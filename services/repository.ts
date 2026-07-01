@@ -7,7 +7,21 @@ import type { DetectedItem, EntityType } from './types';
 import { getClient } from './supabase';
 import { notifications } from './notifications';
 import { memory } from './memory';
-import { mockJournals, mockTasks, mockEvents, type JournalEntry, type TaskData, type ScheduleEvent } from '@/data/mock';
+import {
+  mockJournals,
+  mockTasks,
+  mockEvents,
+  mockCourses,
+  mockLibrary,
+  mockFlashcards,
+  type JournalEntry,
+  type TaskData,
+  type ScheduleEvent,
+  type Course,
+  type LibraryItem,
+  type Flashcard,
+} from '@/data/mock';
+import { sm2, type SrsResult } from './srs';
 import { mockHabits } from '@/data/mock';
 import type { HabitData } from '@/components/ui/HabitCard';
 
@@ -239,6 +253,102 @@ export const repository = {
       freq: r.freq ?? 'daily',
       areaId: r.area_id ?? null,
     }));
+  },
+
+  async listCourses(): Promise<Course[]> {
+    const session = await activeUser();
+    if (!session) return mockCourses;
+    const [courses, exams] = await Promise.all([
+      session.client!.from('study_courses').select('*').order('created_at', { ascending: false }),
+      session.client!.from('exams').select('*'),
+    ]);
+    if (courses.error || !courses.data) return mockCourses;
+    const examsByCourse = new Map<string, any[]>();
+    for (const e of exams.data ?? []) {
+      const list = examsByCourse.get(e.course_id) ?? [];
+      list.push(e);
+      examsByCourse.set(e.course_id, list);
+    }
+    return courses.data.map((r: any) => ({
+      id: r.id,
+      name: r.name,
+      emoji: r.icon ?? '',
+      color: r.color ?? '#7C6FFF',
+      teacher: r.teacher ?? '',
+      progress: Number(r.progress ?? 0),
+      status: r.status ?? 'active',
+      totalStudyHours: Math.round(Number(r.total_study_minutes ?? 0) / 60),
+      exams: (examsByCourse.get(r.id) ?? []).map((e: any) => ({
+        id: e.id,
+        name: e.name,
+        date: e.exam_date ?? '',
+        chaptersCount: Number(e.chapters_count ?? 0),
+        aiPlan: Array.isArray(e.ai_plan) ? e.ai_plan : [],
+        studyHours: 0,
+      })),
+    }));
+  },
+
+  async listLibrary(): Promise<LibraryItem[]> {
+    const session = await activeUser();
+    if (!session) return mockLibrary;
+    const { data, error } = await session.client!
+      .from('learning_items')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error || !data) return mockLibrary;
+    return data.map((r: any) => ({
+      id: r.id,
+      title: r.title,
+      author: r.author ?? '',
+      type: r.type ?? 'book',
+      status: r.status ?? 'want_to_read',
+      progress: Number(r.progress ?? 0),
+      rating: Number(r.rating ?? 0),
+      notes: r.notes ?? '',
+      tags: r.tags ?? [],
+      areaId: r.area_id ?? null,
+    }));
+  },
+
+  /** Flashcards due for review now (SM-2). Mock fallback when signed out. */
+  async listDueFlashcards(courseId?: string): Promise<Flashcard[]> {
+    const session = await activeUser();
+    const today = new Date().toISOString().slice(0, 10);
+    if (!session) {
+      return mockFlashcards.filter((f) => (!courseId || f.courseId === courseId) && f.due <= today);
+    }
+    let q = session.client!
+      .from('flashcards')
+      .select('*')
+      .lte('due_date', today)
+      .order('due_date', { ascending: true });
+    if (courseId) q = q.eq('course_id', courseId);
+    const { data, error } = await q;
+    if (error || !data) return mockFlashcards.filter((f) => f.due <= today);
+    return data.map((r: any) => ({
+      id: r.id,
+      courseId: r.course_id ?? null,
+      front: r.front,
+      back: r.back,
+      ease: Number(r.ease ?? 2.5),
+      interval: Number(r.interval_days ?? 0),
+      reps: Number(r.reps ?? 0),
+      due: r.due_date ?? today,
+    }));
+  },
+
+  /** Grade a flashcard (0..5) → persist the next SM-2 schedule. */
+  async reviewFlashcard(card: Flashcard, grade: number): Promise<SrsResult> {
+    const next = sm2({ ease: card.ease, interval: card.interval, reps: card.reps }, grade);
+    const session = await activeUser();
+    if (session) {
+      await session.client!
+        .from('flashcards')
+        .update({ ease: next.ease, interval_days: next.interval, reps: next.reps, due_date: next.due })
+        .eq('id', card.id);
+    }
+    return next;
   },
 
   async listEvents(): Promise<ScheduleEvent[]> {

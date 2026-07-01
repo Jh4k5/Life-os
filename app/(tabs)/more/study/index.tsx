@@ -11,6 +11,8 @@ import { useRTL } from '@/hooks/useRTL';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { Header } from '@/components/layout/Header';
 import { mockCourses } from '@/data/mock';
+import { repository } from '@/services/repository';
+import { useAsync } from '@/hooks/useAsync';
 
 const daysUntil = (date: string) => {
   const d = new Date(date).getTime() - Date.now();
@@ -22,9 +24,10 @@ export default function StudyScreen() {
   const { t } = useTranslation();
   const { rowDir, textAlign } = useRTL();
   const router = useRouter();
+  const { data: courses } = useAsync(() => repository.listCourses(), mockCourses);
 
-  const totalHours = mockCourses.reduce((s, co) => s + co.totalStudyHours, 0);
-  const totalExams = mockCourses.reduce((s, co) => s + co.exams.length, 0);
+  const totalHours = courses.reduce((s, co) => s + co.totalStudyHours, 0);
+  const totalExams = courses.reduce((s, co) => s + co.exams.length, 0);
 
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
@@ -34,19 +37,34 @@ export default function StudyScreen() {
       />
 
       <FlatList
-        data={mockCourses}
+        data={courses}
         contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 110 }}
         keyExtractor={(co) => co.id}
         ListHeaderComponent={
-          <SmartCard style={{ marginBottom: 4 }}>
-            <View style={[S.stats, { flexDirection: rowDir }]}>
-              <Stat icon="library-outline" val={mockCourses.length} label={t('study.course_name')} c={c} />
-              <View style={[S.divider, { backgroundColor: c.b1 }]} />
-              <Stat icon="school-outline" val={totalExams} label={t('study.exam_name')} c={c} />
-              <View style={[S.divider, { backgroundColor: c.b1 }]} />
-              <Stat icon="time-outline" val={`${totalHours}h`} label={t('study.total_hours')} c={c} />
-            </View>
-          </SmartCard>
+          <View style={{ gap: 12, marginBottom: 4 }}>
+            <SmartCard>
+              <View style={[S.stats, { flexDirection: rowDir }]}>
+                <Stat icon="library-outline" val={courses.length} label={t('study.course_name')} c={c} />
+                <View style={[S.divider, { backgroundColor: c.b1 }]} />
+                <Stat icon="school-outline" val={totalExams} label={t('study.exam_name')} c={c} />
+                <View style={[S.divider, { backgroundColor: c.b1 }]} />
+                <Stat icon="time-outline" val={`${totalHours}h`} label={t('study.total_hours')} c={c} />
+              </View>
+            </SmartCard>
+            <Pressable onPress={() => router.push('/(tabs)/more/study/flashcards')}>
+              <SmartCard padSize="sm">
+                <View style={[S.reviewRow, { flexDirection: rowDir }]}>
+                  <View style={[S.reviewIcon, { backgroundColor: c.accentDim }]}>
+                    <Ionicons name="albums-outline" size={18} color={c.accent} />
+                  </View>
+                  <Text style={{ flex: 1, color: c.t1, fontSize: 14, fontWeight: '600', textAlign }}>
+                    {t('study.review_cards')}
+                  </Text>
+                  <Ionicons name={rowDir === 'row-reverse' ? 'chevron-back' : 'chevron-forward'} size={18} color={c.t3} />
+                </View>
+              </SmartCard>
+            </Pressable>
+          </View>
         }
         renderItem={({ item: co }) => {
           const nextExam = [...co.exams].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
@@ -146,6 +164,8 @@ const S = StyleSheet.create({
   screen: { flex: 1 },
   stats: { alignItems: 'center' },
   divider: { width: StyleSheet.hairlineWidth, height: 38, marginHorizontal: 6 },
+  reviewRow: { alignItems: 'center', gap: 12 },
+  reviewIcon: { width: 36, height: 36, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   head: { alignItems: 'center', gap: 12 },
   icon: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   iconDot: { position: 'absolute', bottom: 7, end: 7, width: 8, height: 8, borderRadius: 4 },

@@ -1,6 +1,12 @@
 {
-  "app": { "name": "Life OS", "tagline": "Dein smartes Lebens-Betriebssystem" },
-  "nav": { "home": "Start", "more": "Mehr" },
+  "app": {
+    "name": "Life OS",
+    "tagline": "Dein smartes Lebens-Betriebssystem"
+  },
+  "nav": {
+    "home": "Start",
+    "more": "Mehr"
+  },
   "home": {
     "ai": "KI",
     "dashboard": "Dashboard",
@@ -166,7 +172,16 @@
     "active": "Aktiv",
     "completed": "Abgeschlossen",
     "paused": "Pausiert",
-    "empty": "Keine Kurse — füge den ersten hinzu"
+    "empty": "Keine Kurse — füge den ersten hinzu",
+    "flashcards": "Karten",
+    "srs_again": "Nochmal",
+    "srs_good": "Gut",
+    "srs_easy": "Leicht",
+    "review_done": "Wiederholung fertig",
+    "cards_due": "fällige Karten",
+    "tap_to_flip": "Zum Umdrehen tippen",
+    "no_cards_due": "Keine Karten fällig",
+    "review_cards": "Karten wiederholen"
   },
   "learning": {
     "new": "Zur Bibliothek hinzufügen",

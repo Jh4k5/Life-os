@@ -1,6 +1,12 @@
 {
-  "app": { "name": "Life OS", "tagline": "Your smart life operating system" },
-  "nav": { "home": "Home", "more": "More" },
+  "app": {
+    "name": "Life OS",
+    "tagline": "Your smart life operating system"
+  },
+  "nav": {
+    "home": "Home",
+    "more": "More"
+  },
   "home": {
     "ai": "AI",
     "dashboard": "Dashboard",
@@ -173,7 +179,16 @@
     "active": "Active",
     "completed": "Completed",
     "paused": "Paused",
-    "empty": "No courses yet — add your first one"
+    "empty": "No courses yet — add your first one",
+    "flashcards": "Flashcards",
+    "srs_again": "Again",
+    "srs_good": "Good",
+    "srs_easy": "Easy",
+    "review_done": "Review complete",
+    "cards_due": "cards due",
+    "tap_to_flip": "Tap to flip",
+    "no_cards_due": "No cards due right now",
+    "review_cards": "Review cards"
   },
   "learning": {
     "new": "Add to library",
