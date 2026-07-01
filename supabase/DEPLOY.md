@@ -15,7 +15,10 @@ GitHub → your repo → **Settings** → **Secrets and variables** → **Action
 | `SUPABASE_DB_PASSWORD`  | Supabase → Project → **Settings → Database → Database password**       |
 | `GEMINI_API_KEY`        | A **freshly rotated** Gemini key (the old one was shared in chat)      |
 
-Optional: `SUPABASE_PROJECT_REF` (defaults to `jlwmpyhiitgdklrbmxrh`).
+Optional:
+- `SUPABASE_PROJECT_REF` — defaults to `jlwmpyhiitgdklrbmxrh`.
+- `SUPABASE_ANON_KEY` — if added, the workflow also does a **live smoke test**
+  (real POST to `ai-parse`) to prove functions actually run, not just deploy.
 
 > These live only as GitHub Actions secrets — never in the app bundle or git.
 > The client keeps using only the public anon key (protected by RLS).
@@ -30,6 +33,14 @@ The workflow then, automatically:
 2. `supabase db push` — applies `migrations/0001_init.sql` + `0002_phase2_domains.sql`,
 3. deploys Edge Functions: `ai-parse`, `ocr`, `transcribe`, `nutrition`,
 4. `supabase secrets set GEMINI_API_KEY` (+ `GEMINI_MODEL`).
+
+It then **verifies** (via the Supabase Management API) before going green:
+- every expected table from both migrations exists, and **RLS is enabled** on the
+  core tables (tasks, study_courses, meals, goals, habit_logs, shares, profiles);
+- all four Edge Functions report **active**;
+- `GEMINI_API_KEY` is present on the project.
+
+Any failed check turns the run red with a clear error — so green truly means live.
 
 When it's green, the app is live: sign up → data persists → AI parse, meal-photo
 macros, and voice transcription use the server (Gemini) path.

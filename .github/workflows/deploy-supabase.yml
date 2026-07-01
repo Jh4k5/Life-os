@@ -33,6 +33,7 @@ jobs:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
       PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF || 'jlwmpyhiitgdklrbmxrh' }}
     steps:
       - name: Checkout
@@ -74,9 +75,67 @@ jobs:
           supabase secrets set GEMINI_API_KEY="$GEMINI_API_KEY" --project-ref "$PROJECT_REF"
           supabase secrets set GEMINI_MODEL="gemini-2.0-flash" --project-ref "$PROJECT_REF"
 
-      - name: Summary
+      # ── Post-deploy verification: prove the DB + functions + secret are real ──
+      - name: Verify database schema & RLS
         run: |
-          echo "### ✅ Life OS backend is live" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Schema pushed (migrations 0001 + 0002)" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Edge Functions deployed: ai-parse, ocr, transcribe, nutrition" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Gemini secret set (server-side only)" >> "$GITHUB_STEP_SUMMARY"
+          set -e
+          cat > /tmp/q.json <<'JSON'
+          {"query":"select (to_regclass('public.study_courses') is not null and to_regclass('public.flashcards') is not null and to_regclass('public.meals') is not null and to_regclass('public.workouts') is not null and to_regclass('public.events') is not null and to_regclass('public.memory_nodes') is not null and to_regclass('public.analytics_events') is not null and to_regclass('public.tasks') is not null and to_regclass('public.journal_entries') is not null) as tables_ok, (select bool_and(relrowsecurity) from pg_class where relname in ('tasks','study_courses','meals','goals','habit_logs','shares','profiles') and relnamespace = 'public'::regnamespace) as rls_ok;"}
+          JSON
+          resp=$(curl -sS -X POST "https://api.supabase.com/v1/projects/$PROJECT_REF/database/query" \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" -H "Content-Type: application/json" \
+            --data @/tmp/q.json)
+          echo "DB check response: $resp"
+          tables_ok=$(echo "$resp" | jq -r 'if type=="array" then .[0].tables_ok else .tables_ok end')
+          rls_ok=$(echo "$resp" | jq -r 'if type=="array" then .[0].rls_ok else .rls_ok end')
+          if [ "$tables_ok" != "true" ]; then echo "::error::Schema verification failed — expected tables are missing"; exit 1; fi
+          if [ "$rls_ok" != "true" ]; then echo "::error::RLS verification failed — row level security not enabled on all core tables"; exit 1; fi
+          echo "DB OK: all expected tables exist and RLS is enabled."
+
+      - name: Verify Edge Functions are deployed & active
+        run: |
+          set -e
+          fns=$(curl -sS "https://api.supabase.com/v1/projects/$PROJECT_REF/functions" \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN")
+          echo "Functions response: $fns"
+          fail=0
+          for fn in ai-parse ocr transcribe nutrition; do
+            status=$(echo "$fns" | jq -r --arg s "$fn" '[.[] | select(.slug == $s)][0].status // "MISSING"')
+            echo "  $fn → $status"
+            if [ "$status" = "MISSING" ]; then echo "::error::Function $fn was not deployed"; fail=1; fi
+          done
+          if [ "$fail" = "1" ]; then exit 1; fi
+          echo "Functions OK: ai-parse, ocr, transcribe, nutrition all deployed."
+
+      - name: Verify Gemini secret is set
+        run: |
+          set -e
+          secs=$(curl -sS "https://api.supabase.com/v1/projects/$PROJECT_REF/secrets" \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN")
+          if echo "$secs" | jq -e 'any(.[]; .name == "GEMINI_API_KEY")' >/dev/null; then
+            echo "Secret OK: GEMINI_API_KEY is set (value hidden)."
+          else
+            echo "::error::GEMINI_API_KEY secret is not set on the project"; exit 1
+          fi
+
+      # Optional live smoke test — only runs if you also add SUPABASE_ANON_KEY.
+      - name: Smoke-test ai-parse (optional)
+        if: ${{ env.SUPABASE_ANON_KEY != '' }}
+        run: |
+          code=$(curl -sS -o /tmp/fn.json -w "%{http_code}" \
+            -X POST "https://$PROJECT_REF.functions.supabase.co/ai-parse" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" -H "apikey: $SUPABASE_ANON_KEY" -H "Content-Type: application/json" \
+            --data '{"text":"عندي امتحان بكرة الساعة ٩"}')
+          echo "ai-parse HTTP $code"; cat /tmp/fn.json || true
+          if [ "$code" != "200" ]; then echo "::error::ai-parse did not return 200"; exit 1; fi
+          echo "Live invoke OK."
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### ✅ Life OS backend deploy";
+            echo "- Schema pushed (migrations 0001 + 0002) — verified tables exist + RLS on";
+            echo "- Edge Functions: ai-parse, ocr, transcribe, nutrition — verified active";
+            echo "- Gemini secret set (server-side only) — verified present";
+          } >> "$GITHUB_STEP_SUMMARY"

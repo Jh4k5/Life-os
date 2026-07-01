@@ -161,21 +161,50 @@ create table if not exists shares (
 );
 
 -- ── RLS: each user sees only their own rows ──────────
+-- Tables that carry user_id directly (drop-then-create = idempotent re-runs).
 do $$
 declare t text;
 begin
   foreach t in array array[
-    'profiles','areas','projects','goals','habits','tasks','journal_entries',
+    'areas','projects','habits','tasks','journal_entries',
     'workspaces','captures','files','memory_nodes','memory_edges'
   ]
   loop
     execute format('alter table %I enable row level security;', t);
+    execute format('drop policy if exists %I_own on %I;', t, t);
     execute format(
       'create policy %I_own on %I for all using (user_id = auth.uid()) with check (user_id = auth.uid());',
       t, t
     );
   end loop;
 end $$;
+
+-- profiles are keyed on id (= auth.users.id), not user_id.
+alter table profiles enable row level security;
+drop policy if exists profiles_own on profiles;
+create policy profiles_own on profiles for all
+  using (id = auth.uid()) with check (id = auth.uid());
+
+-- goals inherit ownership from their parent project.
+alter table goals enable row level security;
+drop policy if exists goals_own on goals;
+create policy goals_own on goals for all
+  using (exists (select 1 from projects p where p.id = goals.project_id and p.user_id = auth.uid()))
+  with check (exists (select 1 from projects p where p.id = goals.project_id and p.user_id = auth.uid()));
+
+-- habit_logs inherit ownership from their parent habit.
+alter table habit_logs enable row level security;
+drop policy if exists habit_logs_own on habit_logs;
+create policy habit_logs_own on habit_logs for all
+  using (exists (select 1 from habits h where h.id = habit_logs.habit_id and h.user_id = auth.uid()))
+  with check (exists (select 1 from habits h where h.id = habit_logs.habit_id and h.user_id = auth.uid()));
+
+-- shares: visible to owner or the person it's shared with; only owner writes.
+alter table shares enable row level security;
+drop policy if exists shares_own on shares;
+create policy shares_own on shares for all
+  using (owner_id = auth.uid() or shared_with = auth.uid())
+  with check (owner_id = auth.uid());
 
 -- storage buckets
 insert into storage.buckets (id, name, public)
