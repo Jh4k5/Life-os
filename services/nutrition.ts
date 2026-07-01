@@ -47,7 +47,12 @@ export function macroSplit(calories: number): { protein: number; carbs: number; 
  * vision via the `nutrition` Edge Function); returns null on any failure so the
  * UI stays honest and offers manual entry — we never fabricate numbers.
  */
-export async function estimateMeal(input: { uri?: string; text?: string }): Promise<MealEstimate | null> {
+export async function estimateMeal(input: {
+  uri?: string;
+  base64?: string;
+  mimeType?: string;
+  text?: string;
+}): Promise<MealEstimate | null> {
   const client = getClient();
   if (!client) return null;
   try {

@@ -34,6 +34,7 @@ The Gemini key is a **secret**. It lives only as an Edge Function secret:
 supabase functions deploy ai-parse
 supabase functions deploy ocr          # image/PDF → text (Smart Schedule Builder)
 supabase functions deploy transcribe   # voice → text
+supabase functions deploy nutrition    # meal photo → calories/macros (AI Nutrition)
 supabase secrets set GEMINI_API_KEY=YOUR_GEMINI_KEY
 # optional: supabase secrets set GEMINI_MODEL=gemini-2.0-flash
 ```

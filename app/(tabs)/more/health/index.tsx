@@ -52,7 +52,7 @@ export default function HealthScreen() {
     const img = await captureService.pickImage();
     if (!img) return;
     setEstimating(true);
-    const est = await estimateMeal({ uri: img.uri });
+    const est = await estimateMeal({ uri: img.uri, base64: img.base64, mimeType: img.mimeType });
     setEstimating(false);
     if (!est) {
       setNote(t('health.estimate_offline'));
