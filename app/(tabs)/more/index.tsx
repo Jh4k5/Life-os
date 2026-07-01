@@ -43,10 +43,18 @@ const GROUPS: { title: string; items: Item[] }[] = [
     ],
   },
   {
+    title: 'body',
+    items: [
+      { key: 'health', icon: 'fitness-outline', route: '/(tabs)/more/health', sub: 'تغذية + صحة' },
+      { key: 'exercise', icon: 'barbell-outline', route: '/(tabs)/more/exercise', sub: 'تمارين + أرقام قياسية' },
+    ],
+  },
+  {
     title: 'intelligence',
     items: [
       { key: 'ai_studio', icon: 'sparkles-outline', route: '/(tabs)/more/ai-studio', sub: 'مساحات ذكية' },
-      { key: 'ai_hub', icon: 'git-network-outline', route: '/(tabs)/more/ai-hub', sub: 'ذاكرة + خصوصية' },
+      { key: 'memory', icon: 'git-network-outline', route: '/(tabs)/more/memory', sub: 'استرجاع ذكي' },
+      { key: 'ai_hub', icon: 'shield-checkmark-outline', route: '/(tabs)/more/ai-hub', sub: 'ذاكرة + خصوصية' },
       { key: 'wellbeing', icon: 'pulse-outline', route: '/(tabs)/more/dopamine', sub: 'إشارات هادئة' },
     ],
   },

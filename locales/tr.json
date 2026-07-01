@@ -36,7 +36,10 @@
     "focus": "Odak",
     "schedule": "Takvim",
     "dopamine": "Dopamin",
-    "ai_hub": "Yapay Zekâ Merkezi"
+    "ai_hub": "Yapay Zekâ Merkezi",
+    "health": "Sağlık",
+    "exercise": "Egzersiz",
+    "memory": "Hafıza"
   },
   "areas": {
     "new": "Yeni alan",
@@ -323,5 +326,38 @@
     "optional": "İsteğe bağlı",
     "choose": "Seç",
     "custom": "Özel"
+  },
+  "groups": {
+    "body": "Beden"
+  },
+  "health": {
+    "calories_today": "Bugünkü kalori",
+    "protein": "Protein",
+    "carbs": "Karb",
+    "fat": "Yağ",
+    "water": "Su",
+    "sleep": "Uyku",
+    "steps": "Adım",
+    "weight": "Kilo",
+    "meals_today": "Bugünün öğünleri",
+    "log_meal_photo": "Kalori için öğünü fotoğraflayın",
+    "estimate_offline": "Tahmin için sunucu gerekli — öğünü elle ekleyin",
+    "disclaimer": "Genel tahminler, tıbbi tavsiye değildir — bir uzmana danışın."
+  },
+  "exercise": {
+    "this_week": "Bu hafta",
+    "sets": "Set",
+    "workouts": "Antrenman",
+    "min": "dk",
+    "exercises": "egzersiz",
+    "empty": "Henüz antrenman yok",
+    "mode_all": "Tümü",
+    "mode_gym": "Salon",
+    "mode_home": "Ev"
+  },
+  "memory": {
+    "search_ph": "Hayatınızda arayın…",
+    "no_results": "Sonuç yok",
+    "empty": "Anılarınız burada görünecek"
   }
 }

@@ -94,3 +94,36 @@ export interface Workspace {
   updatedAt: string;
   blocks: WorkspaceBlock[];
 }
+
+// ── Phase 2 domain types (Health / Nutrition / Exercise) ──
+export interface MealEstimate {
+  name: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  aiEstimated: boolean;
+}
+
+export interface Meal extends MealEstimate {
+  id: string;
+  eatenAt: string; // ISO
+}
+
+export interface HealthDay {
+  day: string; // yyyy-mm-dd
+  weightKg: number | null;
+  heightCm: number | null;
+  waterMl: number;
+  sleepMin: number;
+  steps: number;
+}
+
+export interface Workout {
+  id: string;
+  name: string;
+  mode: 'gym' | 'home';
+  durationMin: number;
+  exercises: { name: string; sets: number; reps: number; weight?: number }[];
+  doneAt: string; // ISO
+}

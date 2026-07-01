@@ -38,12 +38,16 @@
     "dopamine": "Wellbeing",
     "wellbeing": "Wellbeing",
     "ai_hub": "AI Hub",
-    "ai_studio": "AI Studio"
+    "ai_studio": "AI Studio",
+    "health": "Health",
+    "exercise": "Exercise",
+    "memory": "Memory"
   },
   "groups": {
     "life": "Your life",
     "focus_learn": "Focus & learning",
-    "intelligence": "Intelligence"
+    "intelligence": "Intelligence",
+    "body": "Body"
   },
   "areas": {
     "new": "New area",
@@ -330,5 +334,35 @@
     "optional": "Optional",
     "choose": "Choose",
     "custom": "Custom"
+  },
+  "health": {
+    "calories_today": "Calories today",
+    "protein": "Protein",
+    "carbs": "Carbs",
+    "fat": "Fat",
+    "water": "Water",
+    "sleep": "Sleep",
+    "steps": "Steps",
+    "weight": "Weight",
+    "meals_today": "Today’s meals",
+    "log_meal_photo": "Photograph a meal to estimate calories",
+    "estimate_offline": "Estimation needs the server — add the meal manually",
+    "disclaimer": "General estimates, not medical advice — consult a professional for health decisions."
+  },
+  "exercise": {
+    "this_week": "This week",
+    "sets": "Sets",
+    "workouts": "Workouts",
+    "min": "min",
+    "exercises": "exercises",
+    "empty": "No workouts yet",
+    "mode_all": "All",
+    "mode_gym": "Gym",
+    "mode_home": "Home"
+  },
+  "memory": {
+    "search_ph": "Search across your life…",
+    "no_results": "No results",
+    "empty": "Your memories appear here as you use the app"
   }
 }

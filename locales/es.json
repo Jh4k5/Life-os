@@ -36,7 +36,10 @@
     "focus": "Concentración",
     "schedule": "Agenda",
     "dopamine": "Dopamina",
-    "ai_hub": "Centro IA"
+    "ai_hub": "Centro IA",
+    "health": "Salud",
+    "exercise": "Ejercicio",
+    "memory": "Memoria"
   },
   "areas": {
     "new": "Nueva área",
@@ -323,5 +326,38 @@
     "optional": "Opcional",
     "choose": "Elegir",
     "custom": "Personalizado"
+  },
+  "groups": {
+    "body": "Cuerpo"
+  },
+  "health": {
+    "calories_today": "Calorías de hoy",
+    "protein": "Proteína",
+    "carbs": "Carbos",
+    "fat": "Grasa",
+    "water": "Agua",
+    "sleep": "Sueño",
+    "steps": "Pasos",
+    "weight": "Peso",
+    "meals_today": "Comidas de hoy",
+    "log_meal_photo": "Fotografía una comida para estimar calorías",
+    "estimate_offline": "La estimación necesita el servidor — añade la comida manualmente",
+    "disclaimer": "Estimaciones generales, no consejo médico — consulta a un profesional."
+  },
+  "exercise": {
+    "this_week": "Esta semana",
+    "sets": "Series",
+    "workouts": "Entrenos",
+    "min": "min",
+    "exercises": "ejercicios",
+    "empty": "Sin entrenamientos",
+    "mode_all": "Todo",
+    "mode_gym": "Gym",
+    "mode_home": "Casa"
+  },
+  "memory": {
+    "search_ph": "Busca en tu vida…",
+    "no_results": "Sin resultados",
+    "empty": "Tus recuerdos aparecerán aquí"
   }
 }

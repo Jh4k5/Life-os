@@ -382,3 +382,38 @@ export const habitTemplates = {
     { name: 'المشي بدل السيارة', emoji: '🚶', color: '#00D084', type: 'checkbox', target: 1, unit: '', freq: 'custom', timePref: 'anytime' },
   ],
 };
+
+// ── Phase 2 body domains (Health / Nutrition / Exercise) — seed/fallback only ──
+import type { Meal, HealthDay, Workout } from '@/services/types';
+
+const _today = new Date().toISOString().slice(0, 10);
+
+export const mockHealthToday: HealthDay = {
+  day: _today,
+  weightKg: 74,
+  heightCm: 178,
+  waterMl: 1200,
+  sleepMin: 420,
+  steps: 6400,
+};
+
+export const mockMeals: Meal[] = [
+  { id: 'm1', name: 'شوفان بالموز والعسل', calories: 380, protein: 12, carbs: 62, fat: 8, aiEstimated: false, eatenAt: `${_today}T08:10:00` },
+  { id: 'm2', name: 'صدر دجاج مشوي مع أرز', calories: 620, protein: 48, carbs: 60, fat: 16, aiEstimated: true, eatenAt: `${_today}T13:30:00` },
+];
+
+export const mockWorkouts: Workout[] = [
+  {
+    id: 'w1', name: 'دفع (صدر/كتف/ترايسبس)', mode: 'gym', durationMin: 55,
+    exercises: [
+      { name: 'بنش برس', sets: 4, reps: 8, weight: 60 },
+      { name: 'ضغط كتف', sets: 3, reps: 10, weight: 20 },
+    ],
+    doneAt: `${_today}T18:00:00`,
+  },
+  {
+    id: 'w2', name: 'تمرين منزلي', mode: 'home', durationMin: 30,
+    exercises: [{ name: 'ضغط', sets: 4, reps: 15 }, { name: 'سكوات', sets: 4, reps: 20 }],
+    doneAt: `${_today}T07:00:00`,
+  },
+];

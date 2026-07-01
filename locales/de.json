@@ -36,7 +36,10 @@
     "focus": "Fokus",
     "schedule": "Kalender",
     "dopamine": "Dopamin",
-    "ai_hub": "KI-Zentrale"
+    "ai_hub": "KI-Zentrale",
+    "health": "Gesundheit",
+    "exercise": "Training",
+    "memory": "Gedächtnis"
   },
   "areas": {
     "new": "Neuer Bereich",
@@ -323,5 +326,38 @@
     "optional": "Optional",
     "choose": "Wählen",
     "custom": "Benutzerdefiniert"
+  },
+  "groups": {
+    "body": "Körper"
+  },
+  "health": {
+    "calories_today": "Kalorien heute",
+    "protein": "Protein",
+    "carbs": "Kohlenh.",
+    "fat": "Fett",
+    "water": "Wasser",
+    "sleep": "Schlaf",
+    "steps": "Schritte",
+    "weight": "Gewicht",
+    "meals_today": "Heutige Mahlzeiten",
+    "log_meal_photo": "Mahlzeit fotografieren für Kalorienschätzung",
+    "estimate_offline": "Schätzung braucht den Server — Mahlzeit manuell hinzufügen",
+    "disclaimer": "Allgemeine Schätzungen, keine medizinische Beratung — Fachperson konsultieren."
+  },
+  "exercise": {
+    "this_week": "Diese Woche",
+    "sets": "Sätze",
+    "workouts": "Workouts",
+    "min": "Min",
+    "exercises": "Übungen",
+    "empty": "Noch keine Workouts",
+    "mode_all": "Alle",
+    "mode_gym": "Gym",
+    "mode_home": "Zuhause"
+  },
+  "memory": {
+    "search_ph": "Durchsuche dein Leben…",
+    "no_results": "Keine Ergebnisse",
+    "empty": "Deine Erinnerungen erscheinen hier"
   }
 }

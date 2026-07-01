@@ -14,6 +14,9 @@ import {
   mockCourses,
   mockLibrary,
   mockFlashcards,
+  mockHealthToday,
+  mockMeals,
+  mockWorkouts,
   type JournalEntry,
   type TaskData,
   type ScheduleEvent,
@@ -21,7 +24,14 @@ import {
   type LibraryItem,
   type Flashcard,
 } from '@/data/mock';
+import type { Meal, HealthDay, Workout, MealEstimate } from './types';
 import { sm2, type SrsResult } from './srs';
+
+export interface MemoryHit {
+  id: string;
+  type: string;
+  label: string;
+}
 import { mockHabits } from '@/data/mock';
 import type { HabitData } from '@/components/ui/HabitCard';
 
@@ -349,6 +359,106 @@ export const repository = {
         .eq('id', card.id);
     }
     return next;
+  },
+
+  // ── Health / Nutrition ──
+  async getHealthToday(): Promise<HealthDay> {
+    const session = await activeUser();
+    if (!session) return mockHealthToday;
+    const today = new Date().toISOString().slice(0, 10);
+    const { data, error } = await session.client!
+      .from('health_metrics')
+      .select('*')
+      .eq('day', today)
+      .maybeSingle();
+    if (error || !data) return { ...mockHealthToday, day: today, weightKg: null, heightCm: null, waterMl: 0, sleepMin: 0, steps: 0 };
+    return {
+      day: data.day,
+      weightKg: data.weight_kg ?? null,
+      heightCm: data.height_cm ?? null,
+      waterMl: Number(data.water_ml ?? 0),
+      sleepMin: Number(data.sleep_min ?? 0),
+      steps: Number(data.steps ?? 0),
+    };
+  },
+
+  async listMeals(): Promise<Meal[]> {
+    const session = await activeUser();
+    if (!session) return mockMeals;
+    const today = new Date().toISOString().slice(0, 10);
+    const { data, error } = await session.client!
+      .from('meals')
+      .select('*')
+      .gte('eaten_at', `${today}T00:00:00`)
+      .order('eaten_at', { ascending: true });
+    if (error || !data) return mockMeals;
+    return data.map((r: any) => ({
+      id: r.id,
+      name: r.name ?? '',
+      calories: Number(r.calories ?? 0),
+      protein: Number(r.protein_g ?? 0),
+      carbs: Number(r.carbs_g ?? 0),
+      fat: Number(r.fat_g ?? 0),
+      aiEstimated: !!r.ai_estimated,
+      eatenAt: r.eaten_at,
+    }));
+  },
+
+  /** Log a meal. Returns the local row; persists when signed in. */
+  async addMeal(est: MealEstimate): Promise<Meal> {
+    const meal: Meal = { ...est, id: `local_${Date.now()}`, eatenAt: new Date().toISOString() };
+    const session = await activeUser();
+    if (session) {
+      const { data } = await session.client!
+        .from('meals')
+        .insert({
+          user_id: session.uid,
+          name: est.name,
+          calories: est.calories,
+          protein_g: est.protein,
+          carbs_g: est.carbs,
+          fat_g: est.fat,
+          ai_estimated: est.aiEstimated,
+        })
+        .select('id')
+        .maybeSingle();
+      if (data?.id) meal.id = data.id;
+    }
+    return meal;
+  },
+
+  // ── Exercise ──
+  async listWorkouts(): Promise<Workout[]> {
+    const session = await activeUser();
+    if (!session) return mockWorkouts;
+    const { data, error } = await session.client!
+      .from('workouts')
+      .select('*')
+      .order('done_at', { ascending: false });
+    if (error || !data) return mockWorkouts;
+    return data.map((r: any) => ({
+      id: r.id,
+      name: r.name ?? '',
+      mode: r.mode ?? 'gym',
+      durationMin: Number(r.duration_min ?? 0),
+      exercises: Array.isArray(r.exercises) ? r.exercises : [],
+      doneAt: r.done_at,
+    }));
+  },
+
+  // ── Memory recall ──
+  async searchMemory(query: string): Promise<MemoryHit[]> {
+    const session = await activeUser();
+    if (!session) {
+      const q = query.trim().toLowerCase();
+      const nodes = q ? memory.search(query) : memory.all();
+      return nodes.map((n) => ({ id: n.id, type: n.type, label: n.label }));
+    }
+    let req = session.client!.from('memory_nodes').select('id,type,label').order('created_at', { ascending: false }).limit(100);
+    if (query.trim()) req = req.ilike('label', `%${query.trim()}%`);
+    const { data, error } = await req;
+    if (error || !data) return [];
+    return data.map((r: any) => ({ id: r.id, type: r.type, label: r.label }));
   },
 
   async listEvents(): Promise<ScheduleEvent[]> {

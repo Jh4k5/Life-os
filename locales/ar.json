@@ -38,12 +38,16 @@
     "dopamine": "الصحة الرقمية",
     "wellbeing": "الصحة الرقمية",
     "ai_hub": "مركز الذكاء",
-    "ai_studio": "استوديو الذكاء"
+    "ai_studio": "استوديو الذكاء",
+    "health": "الصحة",
+    "exercise": "التمارين",
+    "memory": "الذاكرة"
   },
   "groups": {
     "life": "حياتك",
     "focus_learn": "التركيز والتعلّم",
-    "intelligence": "الذكاء"
+    "intelligence": "الذكاء",
+    "body": "الجسد"
   },
   "areas": {
     "new": "منطقة جديدة",
@@ -330,5 +334,35 @@
     "optional": "اختياري",
     "choose": "اختر",
     "custom": "مخصص"
+  },
+  "health": {
+    "calories_today": "سعرات اليوم",
+    "protein": "بروتين",
+    "carbs": "كارب",
+    "fat": "دهون",
+    "water": "ماء",
+    "sleep": "نوم",
+    "steps": "خطوات",
+    "weight": "الوزن",
+    "meals_today": "وجبات اليوم",
+    "log_meal_photo": "صوّر وجبة لتقدير السعرات",
+    "estimate_offline": "التقدير يحتاج اتصالاً بالخادم — أضف الوجبة يدوياً",
+    "disclaimer": "تقديرات عامة وليست نصيحة طبية — استشر مختصاً للقرارات الصحية."
+  },
+  "exercise": {
+    "this_week": "هذا الأسبوع",
+    "sets": "مجموعات",
+    "workouts": "تمارين",
+    "min": "دقيقة",
+    "exercises": "تمرين",
+    "empty": "لا تمارين بعد",
+    "mode_all": "الكل",
+    "mode_gym": "نادي",
+    "mode_home": "منزل"
+  },
+  "memory": {
+    "search_ph": "ابحث في كل حياتك…",
+    "no_results": "لا نتائج",
+    "empty": "ستظهر ذكرياتك هنا مع الاستخدام"
   }
 }
