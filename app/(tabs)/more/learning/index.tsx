@@ -32,7 +32,7 @@ export default function LearningScreen() {
   const { rowDir, textAlign } = useRTL();
   const router = useRouter();
   const [filter, setFilter] = useState<LibFilter>('all');
-  const { data: library } = useAsync(() => repository.listLibrary(), mockLibrary);
+  const { data: library } = useAsync(() => repository.listLibrary(), mockLibrary, "library");
 
   const STATUS_LABEL: Record<string, string> = {
     want_to_read: t('learning.status_want'),

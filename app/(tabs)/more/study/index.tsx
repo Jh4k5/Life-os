@@ -24,7 +24,7 @@ export default function StudyScreen() {
   const { t } = useTranslation();
   const { rowDir, textAlign } = useRTL();
   const router = useRouter();
-  const { data: courses } = useAsync(() => repository.listCourses(), mockCourses);
+  const { data: courses } = useAsync(() => repository.listCourses(), mockCourses, "courses");
 
   const totalHours = courses.reduce((s, co) => s + co.totalStudyHours, 0);
   const totalExams = courses.reduce((s, co) => s + co.exams.length, 0);

@@ -21,7 +21,7 @@ export default function TasksScreen() {
   const { c } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
-  const { data: loaded } = useAsync(() => repository.listTasks(), mockTasks);
+  const { data: loaded } = useAsync(() => repository.listTasks(), mockTasks, "tasks");
   const [tasks, setTasks] = useState<TaskData[]>(mockTasks);
   const [view, setView] = useState<TView>('list');
   const [quick, setQuick] = useState('');

@@ -34,7 +34,7 @@ export default function JournalScreen() {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [filterMood, setFilterMood] = useState<string | null>(null);
-  const { data: journals, loading } = useAsync(() => repository.listJournal(), mockJournals);
+  const { data: journals, loading } = useAsync(() => repository.listJournal(), mockJournals, "journal");
 
   const filtered = journals.filter(
     (j) =>

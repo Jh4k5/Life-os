@@ -19,7 +19,7 @@ export default function ExerciseScreen() {
   const { t } = useTranslation();
   const { rowDir, textAlign } = useRTL();
   const [mode, setMode] = useState<'all' | 'gym' | 'home'>('all');
-  const { data: workouts } = useAsync(() => repository.listWorkouts(), mockWorkouts);
+  const { data: workouts } = useAsync(() => repository.listWorkouts(), mockWorkouts, "workouts");
 
   const filtered = workouts.filter((w) => mode === 'all' || w.mode === mode);
   const weekMinutes = workouts.reduce((s, w) => s + w.durationMin, 0);
