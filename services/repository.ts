@@ -26,6 +26,7 @@ import {
 } from '@/data/mock';
 import type { Meal, HealthDay, Workout, MealEstimate } from './types';
 import { sm2, type SrsResult } from './srs';
+import { analytics } from './analytics';
 
 export interface MemoryHit {
   id: string;
@@ -189,6 +190,7 @@ export const repository = {
     }
     // Every accepted item also grows the memory graph (links them together).
     await persistMemory(client, uid, accepted);
+    analytics.log('capture', 'applied', saved);
     return { saved, demo: false, errors };
   },
 
@@ -358,6 +360,7 @@ export const repository = {
         .update({ ease: next.ease, interval_days: next.interval, reps: next.reps, due_date: next.due })
         .eq('id', card.id);
     }
+    analytics.log('study', 'flashcard_review', grade);
     return next;
   },
 
@@ -424,6 +427,7 @@ export const repository = {
         .maybeSingle();
       if (data?.id) meal.id = data.id;
     }
+    analytics.log('health', 'meal_logged', est.calories, { ai: est.aiEstimated });
     return meal;
   },
 

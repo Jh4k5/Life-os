@@ -30,7 +30,8 @@ import { captureService } from '@/services/captureService';
 import { useWorkspaceStore } from '@/store/workspaceStore';
 import type { ParsedDay, DetectedItem, EntityType, ReviewAction, WorkspaceType } from '@/services/types';
 import { useMockStore } from '@/store/mockStore';
-import { mockTasks } from '@/data/mock';
+import { mockTasks, mockCourses } from '@/data/mock';
+import { useAsync } from '@/hooks/useAsync';
 import { DayTimeline } from '@/components/ui/DayTimeline';
 import { ModeSwitcher } from '@/components/ui/ModeSwitcher';
 import { useModeStore, modeMeta } from '@/store/modeStore';
@@ -281,6 +282,44 @@ const GlanceWhisper = ({ c, textAlign, rowDir }: any) => {
   );
 };
 
+// Command-center strip — real counts, each tile taps into its section.
+const CommandStats = ({ c, t, router, rowDir }: any) => {
+  const { data: tasks } = useAsync(() => repository.listTasks(), mockTasks);
+  const { data: courses } = useAsync(() => repository.listCourses(), mockCourses);
+  const habitsLeft = useMockStore((s) => s.habits).filter((h: any) => !h.done).length;
+  const tasksLeft = tasks.filter((tk) => !tk.done).length;
+  const now = Date.now();
+  const examsSoon = courses.reduce(
+    (n, co) => n + co.exams.filter((e) => e.date && new Date(e.date).getTime() >= now).length,
+    0
+  );
+
+  const tiles = [
+    { icon: 'repeat-outline', val: habitsLeft, label: t('sections.habits'), route: '/(tabs)/more/habits' },
+    { icon: 'checkmark-circle-outline', val: tasksLeft, label: t('sections.tasks'), route: '/(tabs)/more/tasks' },
+    { icon: 'school-outline', val: examsSoon, label: t('sections.study'), route: '/(tabs)/more/study' },
+  ] as const;
+
+  return (
+    <View style={[DS.row, { flexDirection: rowDir }]}>
+      {tiles.map((tile) => (
+        <Pressable key={tile.label} onPress={() => router.push(tile.route)} style={[DS.tile, { backgroundColor: c.bg1, borderColor: c.b1 }]}>
+          <Ionicons name={tile.icon as any} size={18} color={c.t2} />
+          <Text style={{ color: c.t1, fontWeight: '800', fontSize: 20 }}>{tile.val}</Text>
+          <Text style={{ color: c.t3, fontSize: 11 }} numberOfLines={1}>
+            {tile.label}
+          </Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+};
+
+const DS = StyleSheet.create({
+  row: { gap: 10, marginBottom: 22 },
+  tile: { flex: 1, alignItems: 'center', gap: 3, paddingVertical: 14, borderRadius: 16, borderWidth: 1 },
+});
+
 // ── Dashboard View — vertical timeline, not a card grid ──
 const DashView = ({ c, t, router }: any) => {
   const { textAlign, rowDir } = useRTL();
@@ -289,6 +328,8 @@ const DashView = ({ c, t, router }: any) => {
   return (
     <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 120 }}>
       <Text style={[S.stateLine, { color: c.t1, textAlign }]}>{mm.state}</Text>
+
+      <CommandStats c={c} t={t} router={router} rowDir={rowDir} />
 
       <DayTimeline />
 
