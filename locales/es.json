@@ -24,7 +24,17 @@
     "streaks": "Rachas",
     "weekly": "Resumen semanal",
     "ai_insight": "Perspectiva IA",
-    "no_tasks": "Día ligero 🎉"
+    "no_tasks": "Día ligero 🎉",
+    "now": "Ahora",
+    "insights": "De la IA",
+    "dismiss": "Descartar",
+    "mood_trend": "Ánimo, últimos días",
+    "trend_up": "Subiendo",
+    "trend_down": "Bajando",
+    "trend_flat": "Estable",
+    "chip_urgent": "urgentes",
+    "chip_exams": "exámenes pronto",
+    "chip_cards": "tarjetas pendientes"
   },
   "sections": {
     "areas": "Áreas",

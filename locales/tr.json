@@ -24,7 +24,17 @@
     "streaks": "Seriler",
     "weekly": "Haftalık özet",
     "ai_insight": "Yapay zekâ önerisi",
-    "no_tasks": "Hafif bir gün 🎉"
+    "no_tasks": "Hafif bir gün 🎉",
+    "now": "Şimdi",
+    "insights": "Yapay zekâdan",
+    "dismiss": "Yoksay",
+    "mood_trend": "Son günlerde ruh hali",
+    "trend_up": "Yükseliyor",
+    "trend_down": "Düşüyor",
+    "trend_flat": "Sabit",
+    "chip_urgent": "acil",
+    "chip_exams": "yakın sınav",
+    "chip_cards": "kart hazır"
   },
   "sections": {
     "areas": "Alanlar",

@@ -36,6 +36,8 @@ import { DayTimeline } from '@/components/ui/DayTimeline';
 import { ModeSwitcher } from '@/components/ui/ModeSwitcher';
 import { useModeStore, modeMeta } from '@/store/modeStore';
 import { useVoice } from '@/hooks/useVoice';
+import { intelligence, type Insight, type NextAction } from '@/services/intelligence';
+import { Sparkline, trendOf } from '@/components/ui/Sparkline';
 
 type HomeView = 'ai' | 'dashboard';
 const USER_NAME = 'محمد';
@@ -320,32 +322,186 @@ const DS = StyleSheet.create({
   tile: { flex: 1, alignItems: 'center', gap: 3, paddingVertical: 14, borderRadius: 16, borderWidth: 1 },
 });
 
-// ── Dashboard View — vertical timeline, not a card grid ──
+// ── Dashboard View — the command center. Answers at a glance:
+// what now · what needs attention · what's trending · what the AI sees.
+const KIND_ICON: Record<string, keyof typeof Ionicons.glyphMap> = {
+  warning: 'alert-circle-outline',
+  opportunity: 'sparkles-outline',
+  trend: 'trending-up-outline',
+  correlation: 'git-compare-outline',
+};
+const MOOD_VAL: Record<string, number> = { great: 2, good: 1, neutral: 0, bad: -1, awful: -2 };
+
 const DashView = ({ c, t, router }: any) => {
   const { textAlign, rowDir } = useRTL();
   const mode = useModeStore((s) => s.mode);
   const mm = modeMeta(mode);
+
+  const [now, setNow] = useState<NextAction | null>(null);
+  const [insights, setInsights] = useState<Insight[]>([]);
+  const [attention, setAttention] = useState<{ icon: string; label: string; route: string }[]>([]);
+  const [moodSeries, setMoodSeries] = useState<number[]>([]);
+
+  const load = React.useCallback(async () => {
+    await intelligence.runDailyPass();
+    const [na, ins, tasks, courses, cards, journals] = await Promise.all([
+      intelligence.nextAction(),
+      intelligence.listInsights(),
+      repository.listTasks(),
+      repository.listCourses(),
+      repository.listDueFlashcards(),
+      repository.listJournal(),
+    ]);
+    setNow(na);
+    setInsights(ins);
+
+    const chips: { icon: string; label: string; route: string }[] = [];
+    const urgent = tasks.filter((tk) => !tk.done && tk.priority === 'urgent').length;
+    if (urgent) chips.push({ icon: 'flash-outline', label: `${urgent} ${t('dash.chip_urgent')}`, route: '/(tabs)/more/tasks' });
+    const soonExams = courses.reduce(
+      (n: number, co: any) =>
+        n +
+        co.exams.filter((e: any) => {
+          if (!e.date) return false;
+          const d = Math.ceil((new Date(e.date).getTime() - Date.now()) / 86_400_000);
+          return d >= 0 && d <= 7;
+        }).length,
+      0
+    );
+    if (soonExams) chips.push({ icon: 'school-outline', label: `${soonExams} ${t('dash.chip_exams')}`, route: '/(tabs)/more/study' });
+    if (cards.length) chips.push({ icon: 'albums-outline', label: `${cards.length} ${t('dash.chip_cards')}`, route: '/(tabs)/more/study/flashcards' });
+    setAttention(chips);
+
+    setMoodSeries(journals.slice(0, 7).map((j) => MOOD_VAL[j.mood] ?? 0).reverse());
+  }, [t]);
+
+  React.useEffect(() => {
+    load();
+  }, [load]);
+
+  // Insight action = single-item review: the user explicitly approves the
+  // exact shown item before it is written (Review Layer semantics, inline).
+  const actOn = async (ins: Insight) => {
+    if (ins.action) {
+      await repository.persistAccepted([{ ...ins.action, status: 'accepted' }]);
+    }
+    await intelligence.setInsightStatus(ins.id, 'acted');
+    setInsights((p) => p.filter((i) => i.id !== ins.id));
+  };
+  const dismiss = async (ins: Insight) => {
+    await intelligence.setInsightStatus(ins.id, 'dismissed');
+    setInsights((p) => p.filter((i) => i.id !== ins.id));
+  };
+
+  // life pulse — today's real state as a calm dot beside the state line
+  const pulse = attention.length === 0 ? 'clear' : attention.length <= 2 ? 'normal' : 'busy';
+  const pulseColor = pulse === 'clear' ? c.green : pulse === 'normal' ? c.accent : c.orange;
+  const moodTrend = trendOf(moodSeries);
+
   return (
     <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 120 }}>
-      <Text style={[S.stateLine, { color: c.t1, textAlign }]}>{mm.state}</Text>
+      <View style={[S.pulseRow, { flexDirection: rowDir }]}>
+        <View style={[S.pulseDot, { backgroundColor: pulseColor }]} />
+        <Text style={[S.stateLine, { color: c.t1, textAlign, flex: 1, marginBottom: 0 }]}>{mm.state}</Text>
+      </View>
+
+      {/* NOW — the one thing to do, with the reason */}
+      {now && (
+        <Pressable
+          onPress={() => router.push(now.route)}
+          style={[S.nowCard, { backgroundColor: c.bg1, borderColor: c.accent + '44' }]}
+        >
+          <View style={{ flexDirection: rowDir, alignItems: 'center', gap: 12 }}>
+            <View style={[S.nowIcon, { backgroundColor: c.accentDim }]}>
+              <Ionicons name={now.icon as any} size={20} color={c.accent} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: c.t3, fontSize: 11, fontWeight: '700', textAlign }}>{t('dash.now')}</Text>
+              <Text style={{ color: c.t1, fontSize: 16, fontWeight: '700', marginTop: 2, textAlign }} numberOfLines={1}>
+                {now.title}
+              </Text>
+              <Text style={{ color: c.t3, fontSize: 12, marginTop: 2, textAlign }} numberOfLines={1}>
+                {now.reason}
+              </Text>
+            </View>
+            <Ionicons name={rowDir === 'row-reverse' ? 'chevron-back' : 'chevron-forward'} size={18} color={c.t3} />
+          </View>
+        </Pressable>
+      )}
+
+      {/* ATTENTION — what can't wait */}
+      {attention.length > 0 && (
+        <View style={[S.chipRow, { flexDirection: rowDir }]}>
+          {attention.map((a) => (
+            <Pressable
+              key={a.label}
+              onPress={() => router.push(a.route)}
+              style={[S.attnChip, { flexDirection: rowDir, backgroundColor: c.bg2, borderColor: c.b1 }]}
+            >
+              <Ionicons name={a.icon as any} size={13} color={c.t2} />
+              <Text style={{ color: c.t2, fontSize: 12, fontWeight: '600' }}>{a.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+      )}
 
       <CommandStats c={c} t={t} router={router} rowDir={rowDir} />
 
+      {/* TREND — mood over the last entries (single series; icon+text delta) */}
+      {moodSeries.length >= 3 && (
+        <View style={[S.trendCard, { backgroundColor: c.bg1, borderColor: c.b1 }]}>
+          <View style={{ flexDirection: rowDir, alignItems: 'center', gap: 8 }}>
+            <Text style={{ color: c.t3, fontSize: 12, fontWeight: '700', flex: 1, textAlign }}>{t('dash.mood_trend')}</Text>
+            <Ionicons
+              name={moodTrend === 'up' ? 'arrow-up-outline' : moodTrend === 'down' ? 'arrow-down-outline' : 'remove-outline'}
+              size={13}
+              color={c.t2}
+            />
+            <Text style={{ color: c.t2, fontSize: 12, fontWeight: '600' }}>{t(`dash.trend_${moodTrend}`)}</Text>
+          </View>
+          <View style={{ marginTop: 10, width: 130 }}>
+            <Sparkline data={moodSeries} />
+          </View>
+        </View>
+      )}
+
       <DayTimeline />
 
-      {/* quiet conversational AI insights — hidden in high-focus (minimal) */}
-      {!mm.minimal && (
-      <View style={{ gap: 10, marginTop: 22 }}>
-        <Text style={[S.insightLabel, { color: c.t3, textAlign }]}>من الذكاء</Text>
-        {['تركيزك أفضل بعد العصر — جدولت أصعب مهمة وقتها.', 'الثلاثاء عادةً يتأخر عليك — خفّفت مهامه.'].map(
-          (line, i) => (
-            <View key={i} style={[S.insightRow, { flexDirection: rowDir }]}>
-              <View style={[S.insightDot, { backgroundColor: c.accent }]} />
-              <Text style={{ color: c.t2, fontSize: 14, lineHeight: 21, flex: 1, textAlign }}>{line}</Text>
+      {/* INSIGHTS — real, persisted, actionable; hidden in high-focus mode */}
+      {!mm.minimal && insights.length > 0 && (
+        <View style={{ gap: 10, marginTop: 22 }}>
+          <Text style={[S.insightLabel, { color: c.t3, textAlign }]}>{t('dash.insights')}</Text>
+          {insights.map((ins) => (
+            <View key={ins.id} style={[S.insightCard, { backgroundColor: c.bg1, borderColor: c.b1 }]}>
+              <View style={{ flexDirection: rowDir, alignItems: 'flex-start', gap: 10 }}>
+                <Ionicons
+                  name={KIND_ICON[ins.kind] ?? 'ellipse-outline'}
+                  size={16}
+                  color={ins.kind === 'warning' ? c.orange : c.accent}
+                />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: c.t1, fontSize: 14, fontWeight: '600', lineHeight: 20, textAlign }}>{ins.title}</Text>
+                  {ins.body && (
+                    <Text style={{ color: c.t3, fontSize: 12, marginTop: 3, lineHeight: 18, textAlign }}>{ins.body}</Text>
+                  )}
+                </View>
+              </View>
+              <View style={{ flexDirection: rowDir, gap: 8, marginTop: 10 }}>
+                {ins.action && (
+                  <Pressable onPress={() => actOn(ins)} style={[S.insBtn, { flexDirection: rowDir, backgroundColor: c.accentDim }]}>
+                    <Ionicons name="checkmark" size={13} color={c.accent} />
+                    <Text style={{ color: c.accent, fontSize: 12, fontWeight: '700' }} numberOfLines={1}>
+                      {ins.action.title}
+                    </Text>
+                  </Pressable>
+                )}
+                <Pressable onPress={() => dismiss(ins)} style={[S.insBtn, { backgroundColor: c.bg3 }]}>
+                  <Text style={{ color: c.t3, fontSize: 12, fontWeight: '600' }}>{t('dash.dismiss')}</Text>
+                </Pressable>
+              </View>
             </View>
-          )
-        )}
-      </View>
+          ))}
+        </View>
       )}
     </ScrollView>
   );
@@ -371,6 +527,15 @@ const S = StyleSheet.create({
   textInput: { flex: 1, fontSize: 15, paddingHorizontal: 4 },
   sendBtn: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   stateLine: { fontSize: 20, fontWeight: '700', lineHeight: 28, marginBottom: 18 },
+  pulseRow: { alignItems: 'center', gap: 10, marginBottom: 18 },
+  pulseDot: { width: 10, height: 10, borderRadius: 5 },
+  nowCard: { borderRadius: 18, borderWidth: 1, padding: 14, marginBottom: 12 },
+  nowIcon: { width: 44, height: 44, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  chipRow: { gap: 8, flexWrap: 'wrap', marginBottom: 14 },
+  attnChip: { alignItems: 'center', gap: 6, paddingHorizontal: 11, paddingVertical: 7, borderRadius: 999, borderWidth: 1 },
+  trendCard: { borderRadius: 16, borderWidth: 1, padding: 14, marginBottom: 16 },
+  insightCard: { borderRadius: 16, borderWidth: 1, padding: 13 },
+  insBtn: { alignItems: 'center', gap: 5, paddingHorizontal: 11, paddingVertical: 7, borderRadius: 10, flexDirection: 'row' },
   insightLabel: { fontSize: 12, fontWeight: '700' },
   insightRow: { alignItems: 'flex-start', gap: 10 },
   insightDot: { width: 6, height: 6, borderRadius: 3, marginTop: 7 },

@@ -24,7 +24,17 @@
     "streaks": "Serien",
     "weekly": "Wochenüberblick",
     "ai_insight": "KI-Einblick",
-    "no_tasks": "Leichter Tag 🎉"
+    "no_tasks": "Leichter Tag 🎉",
+    "now": "Jetzt",
+    "insights": "Von der KI",
+    "dismiss": "Verwerfen",
+    "mood_trend": "Stimmung, letzte Tage",
+    "trend_up": "Steigend",
+    "trend_down": "Fallend",
+    "trend_flat": "Stabil",
+    "chip_urgent": "dringend",
+    "chip_exams": "Prüfungen bald",
+    "chip_cards": "Karten fällig"
   },
   "sections": {
     "areas": "Bereiche",

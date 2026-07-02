@@ -24,7 +24,17 @@
     "streaks": "سلاسل الاستمرار",
     "weekly": "ملخص الأسبوع",
     "ai_insight": "رؤية الذكاء",
-    "no_tasks": "يوم خفيف 🎉"
+    "no_tasks": "يوم خفيف 🎉",
+    "now": "الآن",
+    "insights": "من الذكاء",
+    "dismiss": "تجاهل",
+    "mood_trend": "مزاجك آخر الأيام",
+    "trend_up": "صاعد",
+    "trend_down": "هابط",
+    "trend_flat": "مستقر",
+    "chip_urgent": "عاجلة",
+    "chip_exams": "امتحانات قريبة",
+    "chip_cards": "بطاقة مستحقة"
   },
   "sections": {
     "areas": "المناطق",

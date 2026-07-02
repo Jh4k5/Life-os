@@ -24,7 +24,17 @@
     "streaks": "Streaks",
     "weekly": "Weekly summary",
     "ai_insight": "AI insight",
-    "no_tasks": "Light day 🎉"
+    "no_tasks": "Light day 🎉",
+    "now": "Now",
+    "insights": "From the AI",
+    "dismiss": "Dismiss",
+    "mood_trend": "Mood, recent days",
+    "trend_up": "Rising",
+    "trend_down": "Falling",
+    "trend_flat": "Steady",
+    "chip_urgent": "urgent",
+    "chip_exams": "exams soon",
+    "chip_cards": "cards due"
   },
   "sections": {
     "areas": "Areas",

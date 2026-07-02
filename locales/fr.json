@@ -24,7 +24,17 @@
     "streaks": "Séries",
     "weekly": "Résumé hebdo",
     "ai_insight": "Aperçu IA",
-    "no_tasks": "Journée légère 🎉"
+    "no_tasks": "Journée légère 🎉",
+    "now": "Maintenant",
+    "insights": "De l’IA",
+    "dismiss": "Ignorer",
+    "mood_trend": "Humeur, derniers jours",
+    "trend_up": "En hausse",
+    "trend_down": "En baisse",
+    "trend_flat": "Stable",
+    "chip_urgent": "urgentes",
+    "chip_exams": "examens proches",
+    "chip_cards": "cartes à revoir"
   },
   "sections": {
     "areas": "Domaines",

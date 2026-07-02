@@ -24,7 +24,17 @@
     "streaks": "تسلسل",
     "weekly": "ہفتہ وار خلاصہ",
     "ai_insight": "اے آئی بصیرت",
-    "no_tasks": "ہلکا دن 🎉"
+    "no_tasks": "ہلکا دن 🎉",
+    "now": "ابھی",
+    "insights": "اے آئی سے",
+    "dismiss": "نظرانداز",
+    "mood_trend": "حالیہ دنوں کا موڈ",
+    "trend_up": "بہتر",
+    "trend_down": "گرتا ہوا",
+    "trend_flat": "مستحکم",
+    "chip_urgent": "فوری",
+    "chip_exams": "قریبی امتحانات",
+    "chip_cards": "کارڈز باقی"
   },
   "sections": {
     "areas": "شعبے",
