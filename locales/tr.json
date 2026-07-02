@@ -194,7 +194,10 @@
     "cards_due": "kart hazır",
     "tap_to_flip": "Çevirmek için dokun",
     "no_cards_due": "Şu an kart yok",
-    "review_cards": "Kartları incele"
+    "review_cards": "Kartları incele",
+    "readiness": "Hazırlık",
+    "weak_topics": "Pekiştirilmeli",
+    "plan_applied": "Tekrar oturumları takvime eklendi"
   },
   "learning": {
     "new": "Kütüphaneye ekle",
@@ -352,7 +355,8 @@
     "meals_today": "Bugünün öğünleri",
     "log_meal_photo": "Kalori için öğünü fotoğraflayın",
     "estimate_offline": "Tahmin için sunucu gerekli — öğünü elle ekleyin",
-    "disclaimer": "Genel tahminler, tıbbi tavsiye değildir — bir uzmana danışın."
+    "disclaimer": "Genel tahminler, tıbbi tavsiye değildir — bir uzmana danışın.",
+    "water_week": "Bu hafta su"
   },
   "exercise": {
     "this_week": "Bu hafta",

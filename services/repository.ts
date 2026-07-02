@@ -458,6 +458,67 @@ export const repository = {
     return meal;
   },
 
+  /** Merge a partial into today's health_metrics row (insert-or-update). */
+  async upsertHealthToday(patch: Partial<{ waterMl: number; sleepMin: number; steps: number; weightKg: number }>): Promise<void> {
+    const session = await activeUser();
+    if (!session) return; // demo mode: UI keeps its optimistic local value
+    const today = new Date().toISOString().slice(0, 10);
+    const row: Record<string, unknown> = { user_id: session.uid, day: today };
+    if (patch.waterMl !== undefined) row.water_ml = patch.waterMl;
+    if (patch.sleepMin !== undefined) row.sleep_min = patch.sleepMin;
+    if (patch.steps !== undefined) row.steps = patch.steps;
+    if (patch.weightKg !== undefined) row.weight_kg = patch.weightKg;
+    await session.client!.from('health_metrics').upsert(row, { onConflict: 'user_id,day' });
+    analytics.log('health', 'metrics_upsert');
+  },
+
+  /** Last 7 days of health metrics, oldest → newest (seed series signed out). */
+  async listHealthWeek(): Promise<{ day: string; waterMl: number; sleepMin: number; steps: number }[]> {
+    const session = await activeUser();
+    if (!session) {
+      // seed/preview series — replaced by real rows once signed in
+      return [1400, 1800, 1100, 2000, 1600, 900, 1200].map((w, i) => ({
+        day: new Date(Date.now() - (6 - i) * 86_400_000).toISOString().slice(0, 10),
+        waterMl: w,
+        sleepMin: 400 + (i % 3) * 30,
+        steps: 5000 + i * 400,
+      }));
+    }
+    const from = new Date(Date.now() - 6 * 86_400_000).toISOString().slice(0, 10);
+    const { data, error } = await session.client!
+      .from('health_metrics')
+      .select('day,water_ml,sleep_min,steps')
+      .gte('day', from)
+      .order('day', { ascending: true });
+    if (error || !data) return [];
+    return data.map((r: any) => ({
+      day: r.day,
+      waterMl: Number(r.water_ml ?? 0),
+      sleepMin: Number(r.sleep_min ?? 0),
+      steps: Number(r.steps ?? 0),
+    }));
+  },
+
+  /** ALL flashcards (optionally per course) — weak-topic detection needs ease history. */
+  async listFlashcards(courseId?: string): Promise<Flashcard[]> {
+    const session = await activeUser();
+    if (!session) return mockFlashcards.filter((f) => !courseId || f.courseId === courseId);
+    let q = session.client!.from('flashcards').select('*');
+    if (courseId) q = q.eq('course_id', courseId);
+    const { data, error } = await q;
+    if (error || !data) return [];
+    return data.map((r: any) => ({
+      id: r.id,
+      courseId: r.course_id ?? null,
+      front: r.front,
+      back: r.back,
+      ease: Number(r.ease ?? 2.5),
+      interval: Number(r.interval_days ?? 0),
+      reps: Number(r.reps ?? 0),
+      due: r.due_date ?? '',
+    }));
+  },
+
   // ── Exercise ──
   async listWorkouts(): Promise<Workout[]> {
     const session = await activeUser();

@@ -17,6 +17,8 @@ import { useAsync } from '@/hooks/useAsync';
 import { bmr, tdee, targetCalories } from '@/services/nutrition';
 import { estimateMeal } from '@/services/nutrition';
 import { captureService } from '@/services/captureService';
+import { intelligence, type Insight } from '@/services/intelligence';
+import { Sparkline, trendOf } from '@/components/ui/Sparkline';
 import type { Meal } from '@/services/types';
 
 // A default profile until the user sets theirs (Settings → Profile, later).
@@ -33,6 +35,21 @@ export default function HealthScreen() {
   const [extra, setExtra] = useState<Meal[]>([]);
   const [estimating, setEstimating] = useState(false);
   const [note, setNote] = useState<string | null>(null);
+  const [waterBoost, setWaterBoost] = useState(0); // optimistic +water taps
+  const { data: week } = useAsync(() => repository.listHealthWeek(), [], 'healthWeek');
+  const [healthInsights, setHealthInsights] = useState<Insight[]>([]);
+
+  React.useEffect(() => {
+    intelligence.listInsights().then((ins) => setHealthInsights(ins.filter((i) => i.domain === 'health').slice(0, 2)));
+  }, []);
+
+  const waterNow = health.waterMl + waterBoost;
+  const addWater = async () => {
+    haptics.select();
+    setWaterBoost((b) => b + 250);
+    await repository.upsertHealthToday({ waterMl: waterNow + 250 });
+  };
+  const waterSeries = week.map((d) => d.waterMl);
 
   const meals = [...loadedMeals, ...extra];
   const totals = meals.reduce(
@@ -92,13 +109,48 @@ export default function HealthScreen() {
           <Text style={{ color: c.t4, fontSize: 11, marginTop: 10, textAlign }}>{t('health.disclaimer')}</Text>
         </SmartCard>
 
-        {/* Today metrics */}
+        {/* Today metrics — water is one-tap loggable */}
         <View style={[S.metricRow, { flexDirection: rowDir }]}>
-          <Metric icon="water-outline" val={`${(health.waterMl / 1000).toFixed(1)}L`} label={t('health.water')} c={c} />
+          <Pressable onPress={addWater} style={{ flex: 1 }}>
+            <View style={[MS.metric, { backgroundColor: c.bg1, borderColor: c.accent + '44' }]}>
+              <Ionicons name="water-outline" size={18} color={c.accent} />
+              <Text style={{ color: c.t1, fontWeight: '800', fontSize: 15 }}>{(waterNow / 1000).toFixed(1)}L</Text>
+              <View style={{ flexDirection: rowDir, alignItems: 'center', gap: 3 }}>
+                <Ionicons name="add" size={10} color={c.accent} />
+                <Text style={{ color: c.accent, fontSize: 10, fontWeight: '700' }}>250ml</Text>
+              </View>
+            </View>
+          </Pressable>
           <Metric icon="moon-outline" val={`${Math.round(health.sleepMin / 60)}h`} label={t('health.sleep')} c={c} />
           <Metric icon="footsteps-outline" val={`${health.steps}`} label={t('health.steps')} c={c} />
           <Metric icon="barbell-outline" val={`${weight}kg`} label={t('health.weight')} c={c} />
         </View>
+
+        {/* Weekly water trend (single series; direction as icon+text) */}
+        {waterSeries.length >= 3 && (
+          <SmartCard padSize="sm">
+            <View style={{ flexDirection: rowDir, alignItems: 'center', gap: 8 }}>
+              <Text style={{ color: c.t3, fontSize: 12, fontWeight: '700', flex: 1, textAlign }}>{t('health.water_week')}</Text>
+              <Ionicons
+                name={trendOf(waterSeries) === 'up' ? 'arrow-up-outline' : trendOf(waterSeries) === 'down' ? 'arrow-down-outline' : 'remove-outline'}
+                size={13}
+                color={c.t2}
+              />
+              <Text style={{ color: c.t2, fontSize: 12, fontWeight: '600' }}>{t(`dash.trend_${trendOf(waterSeries)}`)}</Text>
+            </View>
+            <View style={{ marginTop: 10, width: 150 }}>
+              <Sparkline data={waterSeries} />
+            </View>
+          </SmartCard>
+        )}
+
+        {/* In-section AI recommendations (non-prescriptive) */}
+        {healthInsights.map((ins) => (
+          <View key={ins.id} style={[S.insRow, { flexDirection: rowDir, backgroundColor: c.bg1, borderColor: c.b1 }]}>
+            <Ionicons name="sparkles-outline" size={15} color={c.accent} />
+            <Text style={{ flex: 1, color: c.t2, fontSize: 13, lineHeight: 19, textAlign }}>{ins.title}</Text>
+          </View>
+        ))}
 
         {/* Log meal via photo */}
         <Pressable onPress={logMealPhoto} disabled={estimating}>
@@ -187,6 +239,7 @@ const S = StyleSheet.create({
   logRow: { alignItems: 'center', gap: 12 },
   logIcon: { width: 36, height: 36, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   mealRow: { alignItems: 'center', gap: 12 },
+  insRow: { alignItems: 'center', gap: 10, padding: 12, borderRadius: 14, borderWidth: 1 },
   mealIcon: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   aiTag: { width: 18, height: 18, borderRadius: 6, alignItems: 'center', justifyContent: 'center' },
 });

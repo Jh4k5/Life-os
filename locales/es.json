@@ -194,7 +194,10 @@
     "cards_due": "tarjetas pendientes",
     "tap_to_flip": "Toca para girar",
     "no_cards_due": "No hay tarjetas pendientes",
-    "review_cards": "Repasar tarjetas"
+    "review_cards": "Repasar tarjetas",
+    "readiness": "Listo",
+    "weak_topics": "Por reforzar",
+    "plan_applied": "Sesiones de repaso añadidas al calendario"
   },
   "learning": {
     "new": "Añadir a biblioteca",
@@ -352,7 +355,8 @@
     "meals_today": "Comidas de hoy",
     "log_meal_photo": "Fotografía una comida para estimar calorías",
     "estimate_offline": "La estimación necesita el servidor — añade la comida manualmente",
-    "disclaimer": "Estimaciones generales, no consejo médico — consulta a un profesional."
+    "disclaimer": "Estimaciones generales, no consejo médico — consulta a un profesional.",
+    "water_week": "Agua esta semana"
   },
   "exercise": {
     "this_week": "Esta semana",

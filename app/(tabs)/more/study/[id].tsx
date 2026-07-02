@@ -12,7 +12,21 @@ import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ConnectedLayer } from '@/components/ui/ConnectedLayer';
-import { mockCourses } from '@/data/mock';
+import { ReviewLayer } from '@/components/ai/ReviewLayer';
+import { mockCourses, mockFlashcards, type Flashcard } from '@/data/mock';
+import { repository } from '@/services/repository';
+import { useAsync } from '@/hooks/useAsync';
+import type { DetectedItem, ReviewAction } from '@/services/types';
+
+const daysUntil = (date: string) => Math.ceil((new Date(date).getTime() - Date.now()) / 86_400_000);
+
+/** Honest readiness estimate: progress + plan existence + time margin. */
+function readinessOf(progress: number, hasPlan: boolean, daysLeft: number | null): number {
+  let r = Math.round(progress * 0.7);
+  if (hasPlan) r += 20;
+  if (daysLeft !== null && daysLeft > 7) r += 10;
+  return Math.max(0, Math.min(100, r));
+}
 
 export default function CourseDetailScreen() {
   const { c } = useTheme();
@@ -21,6 +35,47 @@ export default function CourseDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const course = mockCourses.find((co) => co.id === id);
+
+  // weak topics = low-ease cards that HAVE been reviewed (real SRS history)
+  const { data: cards } = useAsync(
+    () => repository.listFlashcards(id),
+    mockFlashcards.filter((f) => f.courseId === id)
+  );
+  const weak: Flashcard[] = cards.filter((f) => f.reps > 0 && f.ease < 2.3).slice(0, 4);
+
+  // revision planner → Review Layer → events (nothing written unapproved)
+  const [plan, setPlan] = React.useState<DetectedItem[] | null>(null);
+  const [planApplied, setPlanApplied] = React.useState(false);
+  const genPlan = (examName: string, chapters: number, daysLeft: number | null) => {
+    const n = Math.max(1, Math.min(chapters || 3, 7));
+    const items: DetectedItem[] = Array.from({ length: n }, (_, i) => ({
+      id: `plan_${Date.now()}_${i}`,
+      type: 'appointment',
+      title: `مراجعة ${course?.name ?? ''} — ${examName}: ${i + 1}/${n}`,
+      detail: daysLeft !== null ? `خلال ${Math.max(daysLeft, n)} يوم` : undefined,
+      confidence: 0.9,
+      status: 'pending',
+    }));
+    setPlan(items);
+    setPlanApplied(false);
+  };
+  const onPlanAction = (itemId: string, action: ReviewAction) => {
+    setPlan((p) =>
+      (p ?? [])
+        .map((it) =>
+          it.id === itemId
+            ? { ...it, status: action === 'accept' ? ('accepted' as const) : action === 'ignore' ? ('ignored' as const) : it.status }
+            : it
+        )
+        .filter((it) => !(it.id === itemId && action === 'delete'))
+    );
+  };
+  const applyPlan = async () => {
+    const next = (plan ?? []).map((it) => (it.status === 'pending' ? { ...it, status: 'accepted' as const } : it));
+    await repository.persistAccepted(next);
+    setPlan(null);
+    setPlanApplied(true);
+  };
 
   if (!course) {
     return (
@@ -68,7 +123,10 @@ export default function CourseDetailScreen() {
           <Ionicons name="school-outline" size={15} color={c.t2} />
           <Text style={{ color: c.t2, fontSize: 13, fontWeight: '600' }}>{t('study.exam_name')}</Text>
         </View>
-        {course.exams.map((exam) => (
+        {course.exams.map((exam) => {
+          const dleft = exam.date ? daysUntil(exam.date) : null;
+          const readiness = readinessOf(course.progress, exam.aiPlan.length > 0, dleft);
+          return (
           <SmartCard key={exam.id}>
             <View style={{ flexDirection: rowDir, justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
               <Text style={{ color: c.t1, fontWeight: '700', fontSize: 15, flex: 1, textAlign }}>{exam.name}</Text>
@@ -77,9 +135,17 @@ export default function CourseDetailScreen() {
                 <Text style={{ color: c.t2, fontSize: 13, fontWeight: '600' }}>{exam.date}</Text>
               </View>
             </View>
-            <Text style={{ color: c.t3, fontSize: 12, marginTop: 4, textAlign }}>
-              {exam.chaptersCount} {t('study.chapters')} · {exam.studyHours} ساعة
-            </Text>
+            <View style={{ flexDirection: rowDir, alignItems: 'center', gap: 8, marginTop: 4 }}>
+              <Text style={{ color: c.t3, fontSize: 12, flex: 1, textAlign }}>
+                {exam.chaptersCount} {t('study.chapters')} · {exam.studyHours} ساعة
+              </Text>
+              <View style={[S.readyPill, { flexDirection: rowDir, backgroundColor: readiness >= 60 ? c.bg3 : c.accentDim }]}>
+                <Ionicons name="speedometer-outline" size={12} color={readiness >= 60 ? c.t2 : c.accent} />
+                <Text style={{ color: readiness >= 60 ? c.t2 : c.accent, fontSize: 11, fontWeight: '700' }}>
+                  {t('study.readiness')} {readiness}%
+                </Text>
+              </View>
+            </View>
 
             {exam.aiPlan.length > 0 ? (
               <View style={[S.planBox, { backgroundColor: c.accentDim, borderColor: c.accent + '40' }]}>
@@ -95,13 +161,46 @@ export default function CourseDetailScreen() {
                 ))}
               </View>
             ) : (
-              <Pressable style={[S.aiBtn, { flexDirection: rowDir, backgroundColor: c.accentDim, borderColor: c.accent + '40' }]}>
+              <Pressable
+                onPress={() => genPlan(exam.name, exam.chaptersCount, dleft)}
+                style={[S.aiBtn, { flexDirection: rowDir, backgroundColor: c.accentDim, borderColor: c.accent + '40' }]}
+              >
                 <Ionicons name="sparkles-outline" size={15} color={c.accent} />
                 <Text style={{ color: c.accent, fontWeight: '600', fontSize: 14 }}>{t('study.gen_plan')}</Text>
               </Pressable>
             )}
           </SmartCard>
-        ))}
+          );
+        })}
+
+        {/* Revision planner — nothing is written without the Review Layer */}
+        {plan && <ReviewLayer items={plan} onAction={onPlanAction} onApplyAll={applyPlan} compact />}
+        {planApplied && (
+          <View style={{ flexDirection: rowDir, alignItems: 'center', gap: 8, paddingHorizontal: 4 }}>
+            <Ionicons name="checkmark-circle-outline" size={16} color={c.green} />
+            <Text style={{ color: c.t2, fontSize: 13 }}>{t('study.plan_applied')}</Text>
+          </View>
+        )}
+
+        {/* Weak topics — real SRS history (low-ease reviewed cards) */}
+        {weak.length > 0 && (
+          <>
+            <View style={[S.secTitle, { flexDirection: rowDir }]}>
+              <Ionicons name="trending-down-outline" size={15} color={c.t2} />
+              <Text style={{ color: c.t2, fontSize: 13, fontWeight: '600' }}>{t('study.weak_topics')}</Text>
+            </View>
+            <View style={{ flexDirection: rowDir, flexWrap: 'wrap', gap: 8 }}>
+              {weak.map((f) => (
+                <View key={f.id} style={[S.weakChip, { flexDirection: rowDir, backgroundColor: c.bg2, borderColor: c.b1 }]}>
+                  <Ionicons name="alert-circle-outline" size={12} color={c.orange} />
+                  <Text style={{ color: c.t2, fontSize: 12, fontWeight: '600' }} numberOfLines={1}>
+                    {f.front}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </>
+        )}
 
         {/* Sessions */}
         <View style={[S.secTitle, { flexDirection: rowDir }]}>
@@ -134,6 +233,8 @@ const S = StyleSheet.create({
   pBg: { height: 6, borderRadius: 3, overflow: 'hidden' },
   pFill: { height: 6, borderRadius: 3 },
   planBox: { marginTop: 10, padding: 12, borderRadius: 12, borderWidth: 1 },
+  readyPill: { alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
+  weakChip: { alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 999, borderWidth: 1, maxWidth: '48%' },
   aiBtn: {
     alignItems: 'center',
     justifyContent: 'center',

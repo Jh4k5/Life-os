@@ -194,7 +194,10 @@
     "cards_due": "fällige Karten",
     "tap_to_flip": "Zum Umdrehen tippen",
     "no_cards_due": "Keine Karten fällig",
-    "review_cards": "Karten wiederholen"
+    "review_cards": "Karten wiederholen",
+    "readiness": "Bereit",
+    "weak_topics": "Zu festigen",
+    "plan_applied": "Wiederholungs-Sessions im Kalender"
   },
   "learning": {
     "new": "Zur Bibliothek hinzufügen",
@@ -352,7 +355,8 @@
     "meals_today": "Heutige Mahlzeiten",
     "log_meal_photo": "Mahlzeit fotografieren für Kalorienschätzung",
     "estimate_offline": "Schätzung braucht den Server — Mahlzeit manuell hinzufügen",
-    "disclaimer": "Allgemeine Schätzungen, keine medizinische Beratung — Fachperson konsultieren."
+    "disclaimer": "Allgemeine Schätzungen, keine medizinische Beratung — Fachperson konsultieren.",
+    "water_week": "Wasser diese Woche"
   },
   "exercise": {
     "this_week": "Diese Woche",

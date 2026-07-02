@@ -202,7 +202,10 @@
     "cards_due": "cards due",
     "tap_to_flip": "Tap to flip",
     "no_cards_due": "No cards due right now",
-    "review_cards": "Review cards"
+    "review_cards": "Review cards",
+    "readiness": "Ready",
+    "weak_topics": "Needs reinforcement",
+    "plan_applied": "Revision sessions added to your calendar"
   },
   "learning": {
     "new": "Add to library",
@@ -357,7 +360,8 @@
     "meals_today": "Today’s meals",
     "log_meal_photo": "Photograph a meal to estimate calories",
     "estimate_offline": "Estimation needs the server — add the meal manually",
-    "disclaimer": "General estimates, not medical advice — consult a professional for health decisions."
+    "disclaimer": "General estimates, not medical advice — consult a professional for health decisions.",
+    "water_week": "Water this week"
   },
   "exercise": {
     "this_week": "This week",
