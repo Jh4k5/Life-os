@@ -43,3 +43,23 @@ export const typography = {
   },
   scale: { sm: 0.92, md: 1, lg: 1.1, xl: 1.22 },
 };
+
+// ── Precision type roles (ui-ux-pro-max "Modern Dark Cinema" system) ──
+// One authoritative scale: role → size/weight/tracking/leading, so every
+// screen speaks the same typographic language. Tracking is kept gentler than
+// the pure-Latin spec because the app is Arabic-first (aggressive negative
+// tracking cramps Arabic); numerals use tabular figures to avoid layout shift.
+export const type = {
+  /** Big moments — the Home greeting, hero numbers. */
+  display: { fontSize: 32, fontWeight: '800' as const, letterSpacing: -0.6, lineHeight: 38 },
+  h1: { fontSize: 26, fontWeight: '800' as const, letterSpacing: -0.4, lineHeight: 32 },
+  h2: { fontSize: 21, fontWeight: '700' as const, letterSpacing: -0.3, lineHeight: 27 },
+  title: { fontSize: 17, fontWeight: '700' as const, letterSpacing: -0.2, lineHeight: 23 },
+  body: { fontSize: 15, fontWeight: '400' as const, letterSpacing: 0, lineHeight: 22 },
+  callout: { fontSize: 14, fontWeight: '500' as const, letterSpacing: 0, lineHeight: 20 },
+  /** Eyebrow / section labels — small, confident, slightly loosened. */
+  label: { fontSize: 12, fontWeight: '700' as const, letterSpacing: 0.4, lineHeight: 16 },
+  caption: { fontSize: 11, fontWeight: '500' as const, letterSpacing: 0.2, lineHeight: 15 },
+  /** Numeric figures (timers, counts) — no width jitter. */
+  numeric: { fontVariant: ['tabular-nums'] as ['tabular-nums'] },
+};

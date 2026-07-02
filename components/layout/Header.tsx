@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useRTL } from '@/hooks/useRTL';
+import { type as T } from '@/tokens/typography';
 
 interface Action {
   icon: string;
@@ -87,8 +88,8 @@ const S = StyleSheet.create({
   },
   side: { flexDirection: 'row', width: 84, alignItems: 'center' },
   mid: { flex: 1, alignItems: 'center' },
-  title: { fontSize: 17, fontWeight: '700' },
-  sub: { fontSize: 12, marginTop: 2 },
+  title: { ...T.title },
+  sub: { ...T.caption, marginTop: 2 },
   btn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 10 },
   badge: {
     position: 'absolute',

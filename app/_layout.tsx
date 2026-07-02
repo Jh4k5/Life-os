@@ -3,12 +3,15 @@ import '@/global.css';
 import { Stack } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { ReducedMotionConfig, ReduceMotion } from 'react-native-reanimated';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import '@/lib/i18n';
 
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      {/* Honor the OS "Reduce Motion" accessibility setting app-wide. */}
+      <ReducedMotionConfig mode={ReduceMotion.System} />
       <SafeAreaProvider>
         <ThemeProvider>
           <Stack screenOptions={{ headerShown: false, animation: 'ios_from_right' }}>

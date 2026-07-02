@@ -38,6 +38,9 @@ import { useModeStore, modeMeta } from '@/store/modeStore';
 import { useVoice } from '@/hooks/useVoice';
 import { intelligence, type Insight, type NextAction } from '@/services/intelligence';
 import { Sparkline, trendOf } from '@/components/ui/Sparkline';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { type as T } from '@/tokens/typography';
+import { motion, stagger } from '@/tokens/motion';
 
 type HomeView = 'ai' | 'dashboard';
 const USER_NAME = 'محمد';
@@ -307,8 +310,8 @@ const CommandStats = ({ c, t, router, rowDir }: any) => {
       {tiles.map((tile) => (
         <Pressable key={tile.label} onPress={() => router.push(tile.route)} style={[DS.tile, { backgroundColor: c.bg1, borderColor: c.b1 }]}>
           <Ionicons name={tile.icon as any} size={18} color={c.t2} />
-          <Text style={{ color: c.t1, fontWeight: '800', fontSize: 20 }}>{tile.val}</Text>
-          <Text style={{ color: c.t3, fontSize: 11 }} numberOfLines={1}>
+          <Text style={{ color: c.t1, fontWeight: '800', fontSize: 22, letterSpacing: -0.4, fontVariant: ['tabular-nums'] }}>{tile.val}</Text>
+          <Text style={[{ color: c.t3 }, T.caption]} numberOfLines={1}>
             {tile.label}
           </Text>
         </Pressable>
@@ -407,31 +410,36 @@ const DashView = ({ c, t, router }: any) => {
 
       {/* NOW — the one thing to do, with the reason */}
       {now && (
-        <Pressable
-          onPress={() => router.push(now.route)}
-          style={[S.nowCard, { backgroundColor: c.bg1, borderColor: c.accent + '44' }]}
-        >
-          <View style={{ flexDirection: rowDir, alignItems: 'center', gap: 12 }}>
-            <View style={[S.nowIcon, { backgroundColor: c.accentDim }]}>
-              <Ionicons name={now.icon as any} size={20} color={c.accent} />
+        <Animated.View entering={FadeInDown.delay(stagger(0)).duration(motion.duration.base).springify().damping(motion.spring.damping)}>
+          <Pressable
+            onPress={() => router.push(now.route)}
+            style={[S.nowCard, { backgroundColor: c.bg1, borderColor: c.accent + '44' }]}
+          >
+            <View style={{ flexDirection: rowDir, alignItems: 'center', gap: 12 }}>
+              <View style={[S.nowIcon, { backgroundColor: c.accentDim }]}>
+                <Ionicons name={now.icon as any} size={20} color={c.accent} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[{ color: c.accent, textAlign }, T.label]}>{t('dash.now')}</Text>
+                <Text style={[{ color: c.t1, marginTop: 3, textAlign }, T.title]} numberOfLines={1}>
+                  {now.title}
+                </Text>
+                <Text style={[{ color: c.t3, marginTop: 2, textAlign }, T.caption]} numberOfLines={1}>
+                  {now.reason}
+                </Text>
+              </View>
+              <Ionicons name={rowDir === 'row-reverse' ? 'chevron-back' : 'chevron-forward'} size={18} color={c.t3} />
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: c.t3, fontSize: 11, fontWeight: '700', textAlign }}>{t('dash.now')}</Text>
-              <Text style={{ color: c.t1, fontSize: 16, fontWeight: '700', marginTop: 2, textAlign }} numberOfLines={1}>
-                {now.title}
-              </Text>
-              <Text style={{ color: c.t3, fontSize: 12, marginTop: 2, textAlign }} numberOfLines={1}>
-                {now.reason}
-              </Text>
-            </View>
-            <Ionicons name={rowDir === 'row-reverse' ? 'chevron-back' : 'chevron-forward'} size={18} color={c.t3} />
-          </View>
-        </Pressable>
+          </Pressable>
+        </Animated.View>
       )}
 
       {/* ATTENTION — what can't wait */}
       {attention.length > 0 && (
-        <View style={[S.chipRow, { flexDirection: rowDir }]}>
+        <Animated.View
+          entering={FadeInDown.delay(stagger(1)).duration(motion.duration.base).springify().damping(motion.spring.damping)}
+          style={[S.chipRow, { flexDirection: rowDir }]}
+        >
           {attention.map((a) => (
             <Pressable
               key={a.label}
@@ -439,17 +447,22 @@ const DashView = ({ c, t, router }: any) => {
               style={[S.attnChip, { flexDirection: rowDir, backgroundColor: c.bg2, borderColor: c.b1 }]}
             >
               <Ionicons name={a.icon as any} size={13} color={c.t2} />
-              <Text style={{ color: c.t2, fontSize: 12, fontWeight: '600' }}>{a.label}</Text>
+              <Text style={[{ color: c.t2 }, T.caption, { fontWeight: '600' }]}>{a.label}</Text>
             </Pressable>
           ))}
-        </View>
+        </Animated.View>
       )}
 
-      <CommandStats c={c} t={t} router={router} rowDir={rowDir} />
+      <Animated.View entering={FadeInDown.delay(stagger(2)).duration(motion.duration.base).springify().damping(motion.spring.damping)}>
+        <CommandStats c={c} t={t} router={router} rowDir={rowDir} />
+      </Animated.View>
 
       {/* TREND — mood over the last entries (single series; icon+text delta) */}
       {moodSeries.length >= 3 && (
-        <View style={[S.trendCard, { backgroundColor: c.bg1, borderColor: c.b1 }]}>
+        <Animated.View
+          entering={FadeInDown.delay(stagger(3)).duration(motion.duration.base).springify().damping(motion.spring.damping)}
+          style={[S.trendCard, { backgroundColor: c.bg1, borderColor: c.b1 }]}
+        >
           <View style={{ flexDirection: rowDir, alignItems: 'center', gap: 8 }}>
             <Text style={{ color: c.t3, fontSize: 12, fontWeight: '700', flex: 1, textAlign }}>{t('dash.mood_trend')}</Text>
             <Ionicons
@@ -462,7 +475,7 @@ const DashView = ({ c, t, router }: any) => {
           <View style={{ marginTop: 10, width: 130 }}>
             <Sparkline data={moodSeries} />
           </View>
-        </View>
+        </Animated.View>
       )}
 
       <DayTimeline />
@@ -470,9 +483,13 @@ const DashView = ({ c, t, router }: any) => {
       {/* INSIGHTS — real, persisted, actionable; hidden in high-focus mode */}
       {!mm.minimal && insights.length > 0 && (
         <View style={{ gap: 10, marginTop: 22 }}>
-          <Text style={[S.insightLabel, { color: c.t3, textAlign }]}>{t('dash.insights')}</Text>
-          {insights.map((ins) => (
-            <View key={ins.id} style={[S.insightCard, { backgroundColor: c.bg1, borderColor: c.b1 }]}>
+          <Text style={[S.insightLabel, { color: c.t3, textAlign }, T.label]}>{t('dash.insights')}</Text>
+          {insights.map((ins, i) => (
+            <Animated.View
+              key={ins.id}
+              entering={FadeInDown.delay(stagger(i)).duration(motion.duration.base).springify().damping(motion.spring.damping)}
+              style={[S.insightCard, { backgroundColor: c.bg1, borderColor: c.b1 }]}
+            >
               <View style={{ flexDirection: rowDir, alignItems: 'flex-start', gap: 10 }}>
                 <Ionicons
                   name={KIND_ICON[ins.kind] ?? 'ellipse-outline'}
@@ -499,7 +516,7 @@ const DashView = ({ c, t, router }: any) => {
                   <Text style={{ color: c.t3, fontSize: 12, fontWeight: '600' }}>{t('dash.dismiss')}</Text>
                 </Pressable>
               </View>
-            </View>
+            </Animated.View>
           ))}
         </View>
       )}
@@ -512,7 +529,7 @@ const S = StyleSheet.create({
   header: { justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 6 },
   logo: { fontSize: 22, fontWeight: '800', letterSpacing: -0.5 },
   iconBtn: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  greetBig: { fontSize: 30, fontWeight: '800', letterSpacing: -0.6, marginTop: 6 },
+  greetBig: { ...T.display, marginTop: 6 },
   glance: { alignItems: 'center', gap: 8, marginTop: 10 },
   heroMic: { alignItems: 'center', gap: 16, marginTop: 60 },
   heroHint: { fontSize: 14, marginTop: 6 },
@@ -526,7 +543,7 @@ const S = StyleSheet.create({
   iconGhost: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center' },
   textInput: { flex: 1, fontSize: 15, paddingHorizontal: 4 },
   sendBtn: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  stateLine: { fontSize: 20, fontWeight: '700', lineHeight: 28, marginBottom: 18 },
+  stateLine: { ...T.h2, marginBottom: 18 },
   pulseRow: { alignItems: 'center', gap: 10, marginBottom: 18 },
   pulseDot: { width: 10, height: 10, borderRadius: 5 },
   nowCard: { borderRadius: 18, borderWidth: 1, padding: 14, marginBottom: 12 },
