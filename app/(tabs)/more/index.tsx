@@ -10,7 +10,9 @@ import { useTranslation } from 'react-i18next';
 import { useRTL } from '@/hooks/useRTL';
 import { SectionCard } from '@/components/ui/SectionCard';
 import { Header } from '@/components/layout/Header';
-import { mockHabits, mockTasks } from '@/data/mock';
+import { mockHabits, mockTasks, mockJournals } from '@/data/mock';
+import { repository } from '@/services/repository';
+import { useAsync } from '@/hooks/useAsync';
 
 type Item = {
   key: string;
@@ -20,19 +22,8 @@ type Item = {
   badge?: number;
 };
 
-const habitsLeft = mockHabits.filter((h) => !h.done).length;
-const tasksLeft = mockTasks.filter((t) => !t.done).length;
-
-const GROUPS: { title: string; items: Item[] }[] = [
-  {
-    title: 'life',
-    items: [
-      { key: 'areas', icon: 'map-outline', route: '/(tabs)/more/areas', sub: 'مجالات حياتك' },
-      { key: 'habits', icon: 'repeat-outline', route: '/(tabs)/more/habits', sub: `${habitsLeft} متبقية اليوم`, badge: habitsLeft },
-      { key: 'tasks', icon: 'checkmark-circle-outline', route: '/(tabs)/more/tasks', sub: `${tasksLeft} مهام`, badge: tasksLeft },
-      { key: 'journal', icon: 'book-outline', route: '/(tabs)/more/journal', sub: 'سلسلة ١٢ يوم' },
-    ],
-  },
+// Static groups (live counts are injected in the component below).
+const STATIC_GROUPS: { title: string; items: Item[] }[] = [
   {
     title: 'focus_learn',
     items: [
@@ -65,6 +56,26 @@ export default function MoreScreen() {
   const { t } = useTranslation();
   const { textAlign } = useRTL();
   const router = useRouter();
+
+  // Live previews — real repository counts, refreshed on focus.
+  const { data: habits } = useAsync(() => repository.listHabits(), mockHabits, 'habits');
+  const { data: tasks } = useAsync(() => repository.listTasks(), mockTasks, 'tasks');
+  const { data: journals } = useAsync(() => repository.listJournal(), mockJournals, 'journal');
+  const habitsLeft = habits.filter((h) => !h.done).length;
+  const tasksLeft = tasks.filter((tk) => !tk.done).length;
+
+  const GROUPS: { title: string; items: Item[] }[] = [
+    {
+      title: 'life',
+      items: [
+        { key: 'areas', icon: 'map-outline', route: '/(tabs)/more/areas', sub: 'مجالات حياتك' },
+        { key: 'habits', icon: 'repeat-outline', route: '/(tabs)/more/habits', sub: `${habitsLeft} متبقية اليوم`, badge: habitsLeft },
+        { key: 'tasks', icon: 'checkmark-circle-outline', route: '/(tabs)/more/tasks', sub: `${tasksLeft} مهام`, badge: tasksLeft },
+        { key: 'journal', icon: 'book-outline', route: '/(tabs)/more/journal', sub: `${journals.length} مدخلة` },
+      ],
+    },
+    ...STATIC_GROUPS,
+  ];
 
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>

@@ -57,7 +57,7 @@ export default function JournalEntryScreen() {
         {entry.tags.length > 0 && (
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
             {entry.tags.map((tag) => (
-              <View key={tag} style={[S.tag, { backgroundColor: c.journal + '22' }]}>
+              <View key={tag} style={[S.tag, { backgroundColor: c.bg3 }]}>
                 <Text style={{ color: c.journal, fontSize: 12, fontWeight: '600' }}>#{tag}</Text>
               </View>
             ))}
