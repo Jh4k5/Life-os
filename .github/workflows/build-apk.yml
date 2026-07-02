@@ -2,8 +2,13 @@ name: Build Android APK
 
 # Builds an installable Android APK on a GitHub runner (which has the Android
 # SDK), then uploads it as a downloadable artifact. No signing secrets needed:
-# a DEBUG apk is signed with the standard debug keystore and installs on any
-# device (enable "Install unknown apps" for your browser/files app).
+# Expo's generated build.gradle signs the RELEASE variant with the standard
+# debug keystore, so it installs on any device (enable "Install unknown apps").
+#
+# Why release and not debug: a debug APK does NOT embed the JS bundle — it
+# loads it from a Metro dev server at runtime, so on a standalone phone it
+# installs but crashes instantly on launch. The release variant embeds
+# index.android.bundle inside the APK (self-contained).
 #
 # Run: Actions tab → "Build Android APK" → Run workflow.
 # (Committing this file also kicks off the first build.)
@@ -54,11 +59,16 @@ jobs:
       - name: Give Gradle enough memory
         run: echo "org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m" >> android/gradle.properties
 
-      - name: Build debug APK
-        run: cd android && ./gradlew assembleDebug --no-daemon --stacktrace
+      - name: Build release APK (self-contained, debug-keystore signed)
+        run: cd android && ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Stage APK
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk life-os.apk
+        run: cp android/app/build/outputs/apk/release/app-release.apk life-os.apk
+
+      # Guard against the "installs but crashes on launch" class of failure:
+      # the APK must carry its own JS bundle to run without a Metro server.
+      - name: Verify JS bundle is embedded
+        run: unzip -l life-os.apk | grep -q "assets/index.android.bundle"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -73,4 +83,4 @@ jobs:
         run: |
           echo "### 📦 Life OS APK" >> "$GITHUB_STEP_SUMMARY"
           echo "Download it from this run's **Artifacts → life-os-apk**." >> "$GITHUB_STEP_SUMMARY"
-          echo "It's a debug build — installs directly on any Android device." >> "$GITHUB_STEP_SUMMARY"
+          echo "Self-contained release build (JS bundle embedded) — installs and runs on any Android device." >> "$GITHUB_STEP_SUMMARY"
