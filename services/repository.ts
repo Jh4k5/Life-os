@@ -458,6 +458,46 @@ export const repository = {
     return meal;
   },
 
+  // ── Habits: real per-day logs ──
+  /** Record today's value for a habit (upsert on habit_id+day). */
+  async logHabit(habitId: string, value: number, done: boolean): Promise<void> {
+    const session = await activeUser();
+    if (!session) return; // demo mode keeps its optimistic local state
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      await session.client!
+        .from('habit_logs')
+        .upsert({ habit_id: habitId, day: today, value, done }, { onConflict: 'habit_id,day' });
+      analytics.log('habits', done ? 'habit_done' : 'habit_progress', value, { habitId });
+    } catch {
+      /* logging must never break the interaction */
+    }
+  },
+
+  /** Last N days of logs for one habit (oldest → newest). Seed-derived signed out. */
+  async listHabitLogs(habitId: string, days = 91): Promise<{ day: string; done: boolean; value: number }[]> {
+    const session = await activeUser();
+    const dayISO = (offset: number) => new Date(Date.now() - offset * 86_400_000).toISOString().slice(0, 10);
+    if (!session) {
+      // preview series derived from the seed habit's streak (not random noise)
+      const h = mockHabits.find((x) => x.id === habitId);
+      const streak = h?.streak ?? 0;
+      return Array.from({ length: days }, (_, i) => {
+        const offset = days - 1 - i;
+        return { day: dayISO(offset), done: offset < streak, value: offset < streak ? 1 : 0 };
+      });
+    }
+    const from = dayISO(days - 1);
+    const { data, error } = await session.client!
+      .from('habit_logs')
+      .select('day,done,value')
+      .eq('habit_id', habitId)
+      .gte('day', from)
+      .order('day', { ascending: true });
+    if (error || !data) return [];
+    return data.map((r: any) => ({ day: r.day, done: !!r.done, value: Number(r.value ?? 0) }));
+  },
+
   /** Merge a partial into today's health_metrics row (insert-or-update). */
   async upsertHealthToday(patch: Partial<{ waterMl: number; sleepMin: number; steps: number; weightKg: number }>): Promise<void> {
     const session = await activeUser();

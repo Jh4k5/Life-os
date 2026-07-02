@@ -19,9 +19,18 @@ export default function HabitsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const habits = useMockStore((s) => s.habits);
-  const update = useMockStore((s) => s.updateHabit);
+  const updateLocal = useMockStore((s) => s.updateHabit);
   const hydrate = useMockStore((s) => s.hydrate);
   const [view, setView] = useState<HView>('today');
+
+  // Optimistic local update + real habit_logs row (fire-and-forget when live).
+  const update = React.useCallback(
+    (id: string, val: number, done: boolean) => {
+      updateLocal(id, val, done);
+      repository.logHabit(id, val, done);
+    },
+    [updateLocal]
+  );
 
   // Load real habits from Supabase once (falls back to mock until they arrive).
   React.useEffect(() => {

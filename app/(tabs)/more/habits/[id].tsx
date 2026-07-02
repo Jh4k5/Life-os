@@ -8,21 +8,20 @@ import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useMockStore } from '@/store/mockStore';
+import { repository } from '@/services/repository';
+import { useAsync } from '@/hooks/useAsync';
 
-// خريطة حرارية بنمط GitHub — توليد حتمي من معرّف العادة
-const buildHeatmap = (seed: string, color: string, base: string) => {
-  let h = 0;
-  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
-  const cells: { level: number }[] = [];
-  for (let i = 0; i < 91; i++) {
-    h = (h * 1103515245 + 12345) >>> 0;
-    const level = (h % 5) === 0 ? 0 : (h % 4);
-    cells.push({ level });
+// Real current streak: walk back from the newest logged day while done.
+function streakFrom(logs: { day: string; done: boolean }[]): number {
+  let s = 0;
+  for (let i = logs.length - 1; i >= 0; i--) {
+    if (logs[i].done) s += 1;
+    else break;
   }
-  return cells.map((cell) =>
-    cell.level === 0 ? base : color + ['18', '40', '80', 'FF'][cell.level - 1]
-  );
-};
+  return s;
+}
+
+const WEEKDAYS_AR = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 
 export default function HabitDetailScreen() {
   const { c } = useTheme();
@@ -31,22 +30,43 @@ export default function HabitDetailScreen() {
   const habits = useMockStore((s) => s.habits);
   const habit = habits.find((h) => h.id === id);
 
+  // The heatmap is DATA now — real per-day history from habit_logs.
+  const { data: logs } = useAsync(() => repository.listHabitLogs(id ?? '', 91), []);
+
   if (!habit) {
     return (
       <View style={[S.screen, { backgroundColor: c.bg0 }]}>
         <Header title={t('sections.habits')} accent={c.habits} />
-        <EmptyState emoji="💎" title={t('common.empty')} />
+        <EmptyState icon="repeat-outline" title={t('common.empty')} />
       </View>
     );
   }
 
-  const cells = buildHeatmap(habit.id, habit.color, c.b1);
-  const rate7 = Math.round((habit.streak / 7) * 100) > 100 ? 100 : Math.round((habit.streak / 7) * 100);
+  // 91-day grid oldest → newest; unlogged days stay neutral.
+  const byDay = new Map(logs.map((l) => [l.day, l]));
+  const cells = Array.from({ length: 91 }, (_, i) => {
+    const day = new Date(Date.now() - (90 - i) * 86_400_000).toISOString().slice(0, 10);
+    const log = byDay.get(day);
+    if (!log) return c.b1;
+    return log.done ? habit.color : habit.color + '30';
+  });
+
+  const realStreak = logs.length ? streakFrom(logs) : habit.streak;
+  const last7 = logs.slice(-7);
+  const rate7 = last7.length
+    ? Math.round((last7.filter((l) => l.done).length / 7) * 100)
+    : Math.min(Math.round((habit.streak / 7) * 100), 100);
+
+  // Real weekly pattern: which weekday this habit lands most (from logs).
+  const dayCounts = new Array(7).fill(0);
+  for (const l of logs) if (l.done) dayCounts[new Date(l.day).getDay()] += 1;
+  const doneTotal = dayCounts.reduce((a, b) => a + b, 0);
+  const bestDay = doneTotal >= 5 ? WEEKDAYS_AR[dayCounts.indexOf(Math.max(...dayCounts))] : null;
 
   const stats = [
-    { val: `${Math.min(rate7, 100)}%`, label: 'معدل 7 أيام', color: habit.color },
-    { val: `${habit.streak}`, label: 'streak حالي', color: '#F59E0B' },
-    { val: `${habit.bestStreak}`, label: 'أفضل streak', color: c.green },
+    { val: `${rate7}%`, label: 'معدل 7 أيام', color: habit.color },
+    { val: `${realStreak}`, label: 'streak حالي', color: '#F59E0B' },
+    { val: `${Math.max(habit.bestStreak, realStreak)}`, label: 'أفضل streak', color: c.green },
     { val: `${habit.target}${habit.unit ? ' ' + habit.unit : ''}`, label: t('habits.target'), color: c.accent },
   ];
 
@@ -88,21 +108,23 @@ export default function HabitDetailScreen() {
             ))}
           </View>
           <View style={S.legend}>
-            <Text style={{ color: c.t3, fontSize: 11 }}>أقل</Text>
-            {['18', '40', '80', 'FF'].map((a) => (
-              <View key={a} style={[S.cell, { backgroundColor: habit.color + a }]} />
-            ))}
-            <Text style={{ color: c.t3, fontSize: 11 }}>أكثر</Text>
+            <Text style={{ color: c.t3, fontSize: 11 }}>لم يُسجَّل</Text>
+            <View style={[S.cell, { backgroundColor: c.b1 }]} />
+            <View style={[S.cell, { backgroundColor: habit.color + '30' }]} />
+            <View style={[S.cell, { backgroundColor: habit.color }]} />
+            <Text style={{ color: c.t3, fontSize: 11 }}>مكتمل</Text>
           </View>
         </SmartCard>
 
-        {/* AI insight */}
-        <SmartCard accent={c.ai_hub}>
-          <Text style={{ color: c.ai_hub, fontWeight: '700', fontSize: 13 }}>🤖 رؤية الذكاء</Text>
-          <Text style={{ color: c.t2, fontSize: 13, marginTop: 6, lineHeight: 20 }}>
-            أنت تتفوق في هذه العادة أيام الثلاثاء والخميس. حاول الحفاظ على نفس الإيقاع في عطلة نهاية الأسبوع.
-          </Text>
-        </SmartCard>
+        {/* Pattern — computed from YOUR real logs (hidden until enough data) */}
+        {bestDay && (
+          <SmartCard>
+            <Text style={{ color: c.accent, fontWeight: '700', fontSize: 13 }}>نمطك الحقيقي</Text>
+            <Text style={{ color: c.t2, fontSize: 13, marginTop: 6, lineHeight: 20 }}>
+              أكثر يوم تلتزم فيه بهذه العادة هو {bestDay} ({Math.max(...dayCounts)} مرة في آخر ٩١ يومًا).
+            </Text>
+          </SmartCard>
+        )}
       </ScrollView>
     </View>
   );

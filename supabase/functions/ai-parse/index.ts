@@ -29,17 +29,24 @@ serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
-    const { text } = await req.json();
+    const { text, context } = await req.json();
     if (!text || !GEMINI_API_KEY) {
       return json({ reply: '', items: [] });
     }
+
+    // Long-term memory context: recent entity labels from the user's own
+    // graph, so extraction recognizes recurring people/courses/projects.
+    const memoryLine =
+      Array.isArray(context) && context.length
+        ? `\n\nكيانات يعرفها المستخدم (للتعرّف لا للاختلاق): ${context.slice(0, 12).join('، ')}`
+        : '';
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: `${SYSTEM}\n\nالنص:\n${text}` }] }],
+        contents: [{ role: 'user', parts: [{ text: `${SYSTEM}${memoryLine}\n\nالنص:\n${text}` }] }],
         generationConfig: { responseMimeType: 'application/json', temperature: 0.4 },
       }),
     });

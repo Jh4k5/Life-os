@@ -20,7 +20,17 @@ async function remoteParse(text: string): Promise<ParsedDay | null> {
   const client = getClient();
   if (!client) return null;
   try {
-    const { data, error } = await client.functions.invoke('ai-parse', { body: { text } });
+    // Long-term memory as context: a handful of recent graph labels so the
+    // model recognizes the user's recurring people/courses/projects. Labels
+    // only — compact, and already the user's own data.
+    let context: string[] = [];
+    try {
+      const { repository } = await import('./repository');
+      context = (await repository.searchMemory('')).slice(0, 12).map((n) => n.label);
+    } catch {
+      context = [];
+    }
+    const { data, error } = await client.functions.invoke('ai-parse', { body: { text, context } });
     if (error || !data || !Array.isArray(data.items) || data.items.length === 0) return null;
     return data as ParsedDay;
   } catch {
