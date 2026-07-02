@@ -65,7 +65,7 @@ jobs:
       - name: Deploy Edge Functions
         run: |
           set -e
-          for fn in ai-parse ocr transcribe nutrition; do
+          for fn in ai-parse ocr transcribe nutrition insights; do
             echo "→ deploying $fn"
             supabase functions deploy "$fn" --project-ref "$PROJECT_REF"
           done
@@ -80,7 +80,7 @@ jobs:
         run: |
           set -e
           cat > /tmp/q.json <<'JSON'
-          {"query":"select (to_regclass('public.study_courses') is not null and to_regclass('public.flashcards') is not null and to_regclass('public.meals') is not null and to_regclass('public.workouts') is not null and to_regclass('public.events') is not null and to_regclass('public.memory_nodes') is not null and to_regclass('public.analytics_events') is not null and to_regclass('public.tasks') is not null and to_regclass('public.journal_entries') is not null) as tables_ok, (select bool_and(relrowsecurity) from pg_class where relname in ('tasks','study_courses','meals','goals','habit_logs','shares','profiles') and relnamespace = 'public'::regnamespace) as rls_ok;"}
+          {"query":"select (to_regclass('public.study_courses') is not null and to_regclass('public.flashcards') is not null and to_regclass('public.meals') is not null and to_regclass('public.workouts') is not null and to_regclass('public.events') is not null and to_regclass('public.memory_nodes') is not null and to_regclass('public.analytics_events') is not null and to_regclass('public.tasks') is not null and to_regclass('public.journal_entries') is not null and to_regclass('public.insights') is not null and to_regclass('public.journal_signals') is not null) as tables_ok, (select bool_and(relrowsecurity) from pg_class where relname in ('tasks','study_courses','meals','goals','habit_logs','shares','profiles','insights','journal_signals') and relnamespace = 'public'::regnamespace) as rls_ok;"}
           JSON
           resp=$(curl -sS -X POST "https://api.supabase.com/v1/projects/$PROJECT_REF/database/query" \
             -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" -H "Content-Type: application/json" \
@@ -99,13 +99,13 @@ jobs:
             -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN")
           echo "Functions response: $fns"
           fail=0
-          for fn in ai-parse ocr transcribe nutrition; do
+          for fn in ai-parse ocr transcribe nutrition insights; do
             status=$(echo "$fns" | jq -r --arg s "$fn" '[.[] | select(.slug == $s)][0].status // "MISSING"')
             echo "  $fn → $status"
             if [ "$status" = "MISSING" ]; then echo "::error::Function $fn was not deployed"; fail=1; fi
           done
           if [ "$fail" = "1" ]; then exit 1; fi
-          echo "Functions OK: ai-parse, ocr, transcribe, nutrition all deployed."
+          echo "Functions OK: ai-parse, ocr, transcribe, nutrition, insights all deployed."
 
       - name: Verify Gemini secret is set
         run: |
@@ -135,7 +135,7 @@ jobs:
         run: |
           {
             echo "### ✅ Life OS backend deploy";
-            echo "- Schema pushed (migrations 0001 + 0002) — verified tables exist + RLS on";
-            echo "- Edge Functions: ai-parse, ocr, transcribe, nutrition — verified active";
+            echo "- Schema pushed (migrations 0001 + 0002 + 0003) — verified tables exist + RLS on";
+            echo "- Edge Functions: ai-parse, ocr, transcribe, nutrition, insights — verified active";
             echo "- Gemini secret set (server-side only) — verified present";
           } >> "$GITHUB_STEP_SUMMARY"

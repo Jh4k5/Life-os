@@ -222,6 +222,33 @@ export const repository = {
     });
   },
 
+  /** Real journal write. Returns the new row id (null in signed-out demo). */
+  async addJournal(entry: {
+    title: string;
+    content: string;
+    mood: string;
+    tags: string[];
+    pinned: boolean;
+  }): Promise<string | null> {
+    const session = await activeUser();
+    if (!session) return null;
+    const { data, error } = await session.client!
+      .from('journal_entries')
+      .insert({
+        user_id: session.uid,
+        title: entry.title || entry.content.slice(0, 40),
+        content: entry.content,
+        mood: entry.mood,
+        tags: entry.tags,
+        pinned: entry.pinned,
+      })
+      .select('id')
+      .maybeSingle();
+    if (error || !data) return null;
+    analytics.log('capture', 'journal_saved', entry.content.length);
+    return data.id;
+  },
+
   async listTasks(): Promise<TaskData[]> {
     const session = await activeUser();
     if (!session) return mockTasks;

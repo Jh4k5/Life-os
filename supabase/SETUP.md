@@ -35,6 +35,7 @@ supabase functions deploy ai-parse
 supabase functions deploy ocr          # image/PDF → text (Smart Schedule Builder)
 supabase functions deploy transcribe   # voice → text
 supabase functions deploy nutrition    # meal photo → calories/macros (AI Nutrition)
+supabase functions deploy insights     # aggregate signals → cross-domain insights (V3 brain)
 supabase secrets set GEMINI_API_KEY=YOUR_GEMINI_KEY
 # optional: supabase secrets set GEMINI_MODEL=gemini-2.0-flash
 ```
