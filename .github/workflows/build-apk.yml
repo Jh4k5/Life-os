@@ -1,0 +1,76 @@
+name: Build Android APK
+
+# Builds an installable Android APK on a GitHub runner (which has the Android
+# SDK), then uploads it as a downloadable artifact. No signing secrets needed:
+# a DEBUG apk is signed with the standard debug keystore and installs on any
+# device (enable "Install unknown apps" for your browser/files app).
+#
+# Run: Actions tab → "Build Android APK" → Run workflow.
+# (Committing this file also kicks off the first build.)
+# Download: open the finished run → Artifacts → "life-os-apk".
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [claude/read-files-build-app-rw8fqi]
+    paths:
+      - '.github/workflows/build-apk.yml'
+
+concurrency:
+  group: build-apk
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Env for the bundle (public Supabase values)
+        run: cp .env.example .env
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Prebuild native Android project
+        run: npx expo prebuild -p android --no-install
+
+      - name: Give Gradle enough memory
+        run: echo "org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m" >> android/gradle.properties
+
+      - name: Build debug APK
+        run: cd android && ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Stage APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk life-os.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: life-os-apk
+          path: life-os.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### 📦 Life OS APK" >> "$GITHUB_STEP_SUMMARY"
+          echo "Download it from this run's **Artifacts → life-os-apk**." >> "$GITHUB_STEP_SUMMARY"
+          echo "It's a debug build — installs directly on any Android device." >> "$GITHUB_STEP_SUMMARY"
