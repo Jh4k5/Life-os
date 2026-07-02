@@ -478,6 +478,59 @@ export const repository = {
   },
 
   // ── Memory recall ──
+  /**
+   * The "Connected" layer read: nodes whose label matches the query PLUS
+   * their graph neighbors (via memory_edges) — how an entity surfaces the
+   * rest of the life it touches. In-memory graph when signed out.
+   */
+  async relatedMemory(query: string, limit = 6): Promise<MemoryHit[]> {
+    const q = query.trim();
+    if (!q) return [];
+    const session = await activeUser();
+
+    if (!session) {
+      const direct = memory.search(q);
+      const nbrs = direct.flatMap((n) => memory.neighbors(n.id));
+      const all = [...direct, ...nbrs];
+      const seen = new Set<string>();
+      return all
+        .filter((n) => (seen.has(n.id) ? false : (seen.add(n.id), true)))
+        .slice(0, limit)
+        .map((n) => ({ id: n.id, type: n.type, label: n.label }));
+    }
+
+    // match on the longest word so short particles don't flood results
+    const word = q.split(/\s+/).sort((a, b) => b.length - a.length)[0] ?? q;
+    const { data: direct } = await session.client!
+      .from('memory_nodes')
+      .select('id,type,label')
+      .ilike('label', `%${word}%`)
+      .limit(limit);
+    const hits: MemoryHit[] = (direct ?? []).map((r: any) => ({ id: r.id, type: r.type, label: r.label }));
+    if (hits.length === 0) return [];
+
+    const ids = hits.map((h) => h.id);
+    const { data: edges } = await session.client!
+      .from('memory_edges')
+      .select('from_node,to_node')
+      .or(`from_node.in.(${ids.join(',')}),to_node.in.(${ids.join(',')})`);
+    const nbrIds = [
+      ...new Set(
+        (edges ?? [])
+          .flatMap((e: any) => [e.from_node, e.to_node])
+          .filter((id: string) => !ids.includes(id))
+      ),
+    ].slice(0, limit);
+    if (nbrIds.length) {
+      const { data: nbrs } = await session.client!
+        .from('memory_nodes')
+        .select('id,type,label')
+        .in('id', nbrIds);
+      for (const r of nbrs ?? []) hits.push({ id: r.id, type: r.type, label: r.label });
+    }
+    return hits.slice(0, limit);
+  },
+
   async searchMemory(query: string): Promise<MemoryHit[]> {
     const session = await activeUser();
     if (!session) {

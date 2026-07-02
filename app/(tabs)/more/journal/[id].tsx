@@ -9,6 +9,7 @@ import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { mockJournals } from '@/data/mock';
+import { ConnectedLayer } from '@/components/ui/ConnectedLayer';
 
 const MOOD_EMOJI: Record<string, string> = {
   great: '😄',
@@ -78,6 +79,8 @@ export default function JournalEntryScreen() {
             يوم مليء بالطاقة الإيجابية والتقدم نحو الأهداف. حافظ على هذا الزخم.
           </Text>
         </SmartCard>
+        {/* living connections from the memory graph */}
+        <ConnectedLayer query={entry.title} domain="journal" />
       </ScrollView>
     </View>
   );

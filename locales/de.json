@@ -379,6 +379,13 @@
     "kind_journal": "Journal",
     "kind_course": "Kurs",
     "kind_library": "Bibliothek",
-    "kind_memory": "Gedächtnis"
+    "kind_memory": "Gedächtnis",
+    "kind_event": "Termin",
+    "kind_meal": "Mahlzeit",
+    "kind_workout": "Workout",
+    "kind_insight": "Einblick"
+  },
+  "connected": {
+    "title": "Verbunden"
   }
 }

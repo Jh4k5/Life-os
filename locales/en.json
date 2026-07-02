@@ -384,6 +384,13 @@
     "kind_journal": "Journal",
     "kind_course": "Course",
     "kind_library": "Library",
-    "kind_memory": "Memory"
+    "kind_memory": "Memory",
+    "kind_event": "Event",
+    "kind_meal": "Meal",
+    "kind_workout": "Workout",
+    "kind_insight": "Insight"
+  },
+  "connected": {
+    "title": "Connected"
   }
 }

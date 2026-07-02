@@ -3,8 +3,18 @@
 // and the memory graph. Reuses the repository reads (real DB when signed in,
 // mock fallback signed out) and unifies them into routable hits.
 import { repository } from './repository';
+import { intelligence } from './intelligence';
 
-export type SearchKind = 'task' | 'journal' | 'course' | 'library' | 'memory';
+export type SearchKind =
+  | 'task'
+  | 'journal'
+  | 'course'
+  | 'library'
+  | 'memory'
+  | 'event'
+  | 'meal'
+  | 'workout'
+  | 'insight';
 
 export interface SearchHit {
   id: string;
@@ -21,12 +31,16 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
   const q = norm(query).trim();
   if (!q) return [];
 
-  const [tasks, journals, courses, library, memory] = await Promise.all([
+  const [tasks, journals, courses, library, memory, events, meals, workouts, insights] = await Promise.all([
     repository.listTasks(),
     repository.listJournal(),
     repository.listCourses(),
     repository.listLibrary(),
     repository.searchMemory(query),
+    repository.listEvents(),
+    repository.listMeals(),
+    repository.listWorkouts(),
+    intelligence.listInsights(),
   ]);
 
   const hits: SearchHit[] = [];
@@ -53,6 +67,26 @@ export async function globalSearch(query: string): Promise<SearchHit[]> {
   }
   for (const m of memory) {
     hits.push({ id: m.id, kind: 'memory', title: m.label, subtitle: m.type, route: `/(tabs)/more/memory`, icon: 'git-network-outline' });
+  }
+  for (const e of events) {
+    if (norm(e.title).includes(q)) {
+      hits.push({ id: e.id, kind: 'event', title: e.title, subtitle: `${e.start} - ${e.end}`, route: '/(tabs)/more/schedule', icon: 'calendar-outline' });
+    }
+  }
+  for (const m of meals) {
+    if (norm(m.name).includes(q)) {
+      hits.push({ id: m.id, kind: 'meal', title: m.name, subtitle: `${m.calories} kcal`, route: '/(tabs)/more/health', icon: 'nutrition-outline' });
+    }
+  }
+  for (const w of workouts) {
+    if (norm(w.name).includes(q)) {
+      hits.push({ id: w.id, kind: 'workout', title: w.name, subtitle: `${w.durationMin}m`, route: '/(tabs)/more/exercise', icon: 'barbell-outline' });
+    }
+  }
+  for (const i of insights) {
+    if (norm(i.title).includes(q) || norm(i.body ?? '').includes(q)) {
+      hits.push({ id: i.id, kind: 'insight', title: i.title, subtitle: i.domain, route: '/(tabs)/home', icon: 'sparkles-outline' });
+    }
   }
 
   return hits;

@@ -379,6 +379,13 @@
     "kind_journal": "Günlük",
     "kind_course": "Ders",
     "kind_library": "Kitaplık",
-    "kind_memory": "Hafıza"
+    "kind_memory": "Hafıza",
+    "kind_event": "Etkinlik",
+    "kind_meal": "Öğün",
+    "kind_workout": "Antrenman",
+    "kind_insight": "İçgörü"
+  },
+  "connected": {
+    "title": "Bağlantılı"
   }
 }

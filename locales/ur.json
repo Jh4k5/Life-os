@@ -379,6 +379,13 @@
     "kind_journal": "ڈائری",
     "kind_course": "کورس",
     "kind_library": "لائبریری",
-    "kind_memory": "یادداشت"
+    "kind_memory": "یادداشت",
+    "kind_event": "ایونٹ",
+    "kind_meal": "کھانا",
+    "kind_workout": "ورزش",
+    "kind_insight": "بصیرت"
+  },
+  "connected": {
+    "title": "منسلک"
   }
 }

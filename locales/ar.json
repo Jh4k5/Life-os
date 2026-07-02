@@ -384,6 +384,13 @@
     "kind_journal": "يوميات",
     "kind_course": "مادة",
     "kind_library": "مكتبة",
-    "kind_memory": "ذاكرة"
+    "kind_memory": "ذاكرة",
+    "kind_event": "موعد",
+    "kind_meal": "وجبة",
+    "kind_workout": "تمرين",
+    "kind_insight": "رؤية"
+  },
+  "connected": {
+    "title": "مترابط"
   }
 }

@@ -11,6 +11,7 @@ import { useRTL } from '@/hooks/useRTL';
 import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ConnectedLayer } from '@/components/ui/ConnectedLayer';
 import { mockCourses } from '@/data/mock';
 
 export default function CourseDetailScreen() {
@@ -117,6 +118,9 @@ export default function CourseDetailScreen() {
             <Text style={{ color: c.accent, fontWeight: '600' }}>{t('study.study_session')}</Text>
           </Pressable>
         </SmartCard>
+
+        {/* living connections: graph matches + study insights */}
+        <ConnectedLayer query={course.name} domain="study" />
       </ScrollView>
     </View>
   );

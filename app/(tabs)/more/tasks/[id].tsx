@@ -9,6 +9,7 @@ import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { mockTasks, type SubTask } from '@/data/mock';
+import { ConnectedLayer } from '@/components/ui/ConnectedLayer';
 
 const ENERGY_ICON = { low: '🌙', medium: '☁', high: '⚡' };
 
@@ -93,6 +94,8 @@ export default function TaskDetailScreen() {
             أفضل وقت لإنجاز هذه المهمة: صباحاً بين 9 و 11 — وقت ذروة تركيزك بناءً على سجلك.
           </Text>
         </SmartCard>
+        {/* living connections from the memory graph */}
+        <ConnectedLayer query={task.title} />
       </ScrollView>
     </View>
   );

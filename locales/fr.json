@@ -379,6 +379,13 @@
     "kind_journal": "Journal",
     "kind_course": "Cours",
     "kind_library": "Bibliothèque",
-    "kind_memory": "Mémoire"
+    "kind_memory": "Mémoire",
+    "kind_event": "Événement",
+    "kind_meal": "Repas",
+    "kind_workout": "Séance",
+    "kind_insight": "Aperçu"
+  },
+  "connected": {
+    "title": "Connecté"
   }
 }
