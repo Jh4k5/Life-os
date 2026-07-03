@@ -67,28 +67,22 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
+          # NOTE: android-emulator-runner runs this script LINE BY LINE (each
+          # line is its own `sh -c`), so multi-line for/if blocks break and
+          # shell vars do NOT persist across lines. Every line below is fully
+          # self-contained; the pid capture + verdict share one line, and the
+          # poll loop is a single physical line. State that must survive between
+          # lines goes to a file (/tmp/logcat_full.txt).
           script: |
-            set -x
             adb logcat -b all -c || true
-            # Capture ALL buffers (incl. crash + native tombstone signals).
             adb logcat -b all > /tmp/logcat_full.txt &
             adb install -r life-os.apk
             adb shell am start -W -n com.liveos.app/.MainActivity || true
-            # Poll for 40s; record the last time the process was alive.
-            for i in $(seq 1 20); do
-              P=$(adb shell pidof com.liveos.app || true)
-              echo "t=$((i*2))s pid='$P'"
-              sleep 2
-            done
-            PID=$(adb shell pidof com.liveos.app || true)
-            echo "==== app's own JS log (last 80) ===="
-            grep -E "ReactNativeJS|LIFEOS-CRASH" /tmp/logcat_full.txt | tail -80 || true
-            echo "==== fatals / signals / tombstones ===="
-            grep -E "LIFEOS-CRASH|FATAL EXCEPTION|AndroidRuntime|F DEBUG|F libc|signal |SIGSEGV|SIGABRT|abort message|tombstone|has died|Force finishing|ExceptionsManager|redbox|libhermes|UnsatisfiedLink|dlopen|TurboModule" /tmp/logcat_full.txt | tail -200 || true
-            echo "==== tombstones on device ===="
-            adb shell ls -la /data/tombstones/ 2>/dev/null || true
-            adb shell "cat /data/tombstones/* 2>/dev/null" | head -120 || true
-            [ -z "$PID" ] && echo "APP-STATUS: CRASHED (no live process after launch)" || echo "APP-STATUS: RUNNING (pid $PID)"
+            for i in $(seq 1 20); do echo "t=$((i*2))s pid='$(adb shell pidof com.liveos.app 2>/dev/null)'"; sleep 2; done
+            echo "==== app JS log (last 80) ====" ; grep -E "ReactNativeJS|LIFEOS-CRASH" /tmp/logcat_full.txt | tail -80 || true
+            echo "==== fatals / signals / tombstones ====" ; grep -E "LIFEOS-CRASH|FATAL EXCEPTION|AndroidRuntime|F DEBUG|F libc|signal |SIGSEGV|SIGABRT|abort message|tombstone|has died|Force finishing|ExceptionsManager|redbox|libhermes|UnsatisfiedLink|dlopen|TurboModule" /tmp/logcat_full.txt | tail -200 || true
+            echo "==== tombstones on device ====" ; adb shell "ls -la /data/tombstones/ 2>/dev/null; cat /data/tombstones/* 2>/dev/null" | head -140 || true
+            P="$(adb shell pidof com.liveos.app 2>/dev/null)" ; [ -z "$P" ] && echo "APP-STATUS: CRASHED (no live process after launch)" || echo "APP-STATUS: RUNNING (pid $P)"
 
       - name: Upload full logcat + APK
         if: always()
