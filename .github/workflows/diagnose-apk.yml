@@ -80,11 +80,7 @@ jobs:
             echo "pid='$PID'"
             echo "==== FATAL / crash lines ===="
             grep -E "LIFEOS-CRASH|FATAL EXCEPTION|AndroidRuntime|com\.liveos\.app|ReactNativeJS|ReactNative|Hermes|SoLoader|ExpoModules|dlopen|UnsatisfiedLink|Fabric|TurboModule" /tmp/logcat_full.txt | tail -250 || true
-            if [ -z "$PID" ]; then
-              echo "APP-STATUS: CRASHED (no live process after launch)"
-            else
-              echo "APP-STATUS: RUNNING (pid $PID)"
-            fi
+            [ -z "$PID" ] && echo "APP-STATUS: CRASHED (no live process after launch)" || echo "APP-STATUS: RUNNING (pid $PID)"
 
       - name: Upload full logcat + APK
         if: always()
