@@ -37,7 +37,10 @@ i18n.use(initReactI18next).init({
   lng: Loc.getLocales()[0]?.languageCode ?? 'ar',
   fallbackLng: 'ar',
   interpolation: { escapeValue: false },
-  compatibilityJSON: 'v4',
+  // Hermes (RN) does not ship a complete Intl.PluralRules, which the v4 JSON
+  // plural format depends on. Use v3 so pluralization never touches Intl —
+  // otherwise i18next logs an error on every startup.
+  compatibilityJSON: 'v3',
 });
 
 export const changeLang = async (code: string) => {
