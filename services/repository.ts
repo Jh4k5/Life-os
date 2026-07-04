@@ -18,6 +18,7 @@ import type {
 import type { Meal, HealthDay, Workout, MealEstimate } from './types';
 import { sm2, type SrsResult } from './srs';
 import { analytics } from './analytics';
+import { resolveDate } from './dateResolve';
 import type { HabitData } from '@/components/ui/HabitCard';
 
 export interface MemoryHit {
@@ -66,15 +67,12 @@ function mapFor(type: EntityType): { coll: db.Collection; row: (i: DetectedItem)
       return { coll: 'tasks', row: (i) => ({ title: i.title, priority: 'medium', energy: 'medium', done: false }) };
     case 'appointment':
     case 'reminder':
-    case 'exam':
       return {
         coll: 'events',
-        row: (i) => ({
-          title: i.type === 'exam' ? `امتحان: ${i.title}` : i.title,
-          starts_at: (i.detail && !Number.isNaN(Date.parse(i.detail)) ? new Date(i.detail) : new Date(Date.now() + 3600_000)).toISOString(),
-          all_day: i.type === 'exam',
-          source: i.type === 'exam' ? 'exam' : 'event',
-        }),
+        row: (i) => {
+          const when = resolveDate(i.source ?? i.detail ?? i.title) ?? new Date(Date.now() + 3600_000);
+          return { title: i.title, starts_at: when.toISOString(), all_day: false, source: 'event' };
+        },
       };
     case 'habit':
       return { coll: 'habits', row: (i) => ({ name: i.title, icon: '•', type: 'checkbox', target: 1, freq: 'daily', time_pref: 'anytime' }) };
@@ -113,9 +111,29 @@ export const repository = {
     let saved = 0;
     const errors: string[] = [];
     for (const item of accepted) {
-      const map = mapFor(item.type);
-      if (!map) continue;
       try {
+        // Cross-domain: an exam becomes a real study record AND a calendar
+        // event on its actual date (from the text) — one capture, connected.
+        if (item.type === 'exam') {
+          const when = resolveDate(item.source ?? item.title);
+          await db.insert('exams', {
+            course_id: null,
+            name: item.title,
+            exam_date: when ? when.toISOString().slice(0, 10) : null,
+            chapters_count: 0,
+            ai_plan: [],
+          });
+          await db.insert('events', {
+            title: `امتحان: ${item.title}`,
+            starts_at: (when ?? new Date(Date.now() + 86_400_000)).toISOString(),
+            all_day: true,
+            source: 'exam',
+          });
+          saved += 1;
+          continue;
+        }
+        const map = mapFor(item.type);
+        if (!map) continue;
         await db.insert(map.coll, map.row(item));
         saved += 1;
       } catch (e: any) {
