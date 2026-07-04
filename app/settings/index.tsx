@@ -13,12 +13,13 @@ import { useSettingsStore } from '@/store/settingsStore';
 import { auth } from '@/services/auth';
 import { useProfileStore } from '@/store/profileStore';
 import * as db from '@/db/local';
+import { feedback } from '@/services/feedback';
 
 export default function SettingsScreen() {
   const { c, isDark, mode, setMode, accent, setAccent } = useTheme();
   const { t, i18n } = useTranslation();
   const router = useRouter();
-  const { fontSize, setFontSize, density, setDensity } = useSettingsStore();
+  const { fontSize, setFontSize, density, setDensity, haptics, setHaptics, sounds, setSounds } = useSettingsStore();
   const profileName = useProfileStore((s) => s.name);
   const resetProfile = useProfileStore((s) => s.reset);
 
@@ -40,6 +41,24 @@ export default function SettingsScreen() {
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
         {value && <Text style={{ color: c.t3, fontSize: 14 }}>{value}</Text>}
         <Ionicons name="chevron-forward" size={16} color={c.t3} />
+      </View>
+    </Pressable>
+  );
+
+  const Toggle = ({ icon, label, value, onToggle, iconColor }: any) => (
+    <Pressable
+      onPress={() => {
+        onToggle(!value);
+        feedback.tap();
+      }}
+      style={[S.row, { borderBottomColor: c.b0 }]}
+    >
+      <View style={[S.rowIcon, { backgroundColor: (iconColor ?? c.accent) + '20' }]}>
+        <Ionicons name={icon} size={18} color={iconColor ?? c.accent} />
+      </View>
+      <Text style={[S.rowLabel, { color: c.t1 }]}>{label}</Text>
+      <View style={[S.track, { backgroundColor: value ? c.green : c.b2 }]}>
+        <View style={[S.knob, { alignSelf: value ? 'flex-end' : 'flex-start' }]} />
       </View>
     </Pressable>
   );
@@ -177,6 +196,13 @@ export default function SettingsScreen() {
           ))}
         </SmartCard>
 
+        {/* ── الأصوات والإحساس ── */}
+        <Text style={[S.groupTitle, { color: c.t2 }]}>الأصوات والإحساس</Text>
+        <SmartCard>
+          <Toggle icon="phone-portrait-outline" label="الاهتزاز اللمسي" value={haptics} onToggle={setHaptics} iconColor={c.accent} />
+          <Toggle icon="volume-high-outline" label="الأصوات" value={sounds} onToggle={setSounds} iconColor={c.habits} />
+        </SmartCard>
+
         {/* ── الحساب ── */}
         <Text style={[S.groupTitle, { color: c.t2 }]}>{t('settings.account')}</Text>
         <SmartCard>
@@ -219,6 +245,8 @@ const S = StyleSheet.create({
   accentGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 14, paddingVertical: 4 },
   accentDot: { width: 34, height: 34, borderRadius: 17 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 13, borderBottomWidth: StyleSheet.hairlineWidth },
+  track: { width: 44, height: 26, borderRadius: 13, padding: 3, justifyContent: 'center' },
+  knob: { width: 20, height: 20, borderRadius: 10, backgroundColor: '#FFF' },
   rowIcon: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   rowLabel: { flex: 1, fontSize: 15 },
   langRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },

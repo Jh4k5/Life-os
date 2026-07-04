@@ -40,6 +40,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { type as T } from '@/tokens/typography';
 import { motion, stagger } from '@/tokens/motion';
 import { useProfileStore } from '@/store/profileStore';
+import { feedback } from '@/services/feedback';
 
 type HomeView = 'ai' | 'dashboard';
 
@@ -147,6 +148,7 @@ const AIView = ({ c, t }: any) => {
     setItems(next);
     const res = await repository.persistAccepted(next);
     setApplied({ saved: res.saved, demo: res.demo });
+    feedback.success();
   };
 
   const reset = () => {

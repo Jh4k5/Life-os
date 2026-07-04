@@ -11,6 +11,7 @@ import { HabitCard } from '@/components/ui/HabitCard';
 import { TabPill } from '@/components/ui/TabPill';
 import { useMockStore } from '@/store/mockStore';
 import { repository } from '@/services/repository';
+import { feedback } from '@/services/feedback';
 
 type HView = 'today' | 'all' | 'stats';
 
@@ -28,6 +29,8 @@ export default function HabitsScreen() {
     (id: string, val: number, done: boolean) => {
       updateLocal(id, val, done);
       repository.logHabit(id, val, done);
+      if (done) feedback.success();
+      else feedback.tap();
     },
     [updateLocal]
   );
