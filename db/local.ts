@@ -177,20 +177,24 @@ export async function mergeRemote(c: Collection, remote: Row[]): Promise<void> {
   await writeAll(c, [...byId.values()]);
 }
 
+const ALL_COLLECTIONS: Collection[] = [
+  'journal_entries', 'journal_signals', 'tasks', 'habits', 'habit_logs', 'study_courses',
+  'exams', 'goals', 'learning_items', 'flashcards', 'meals', 'health_metrics', 'workouts',
+  'events', 'memory_nodes', 'memory_edges', 'insights',
+];
+
+/** A full snapshot of the user's data (for the real "Export data" setting). */
+export async function exportAll(): Promise<{ exportedAt: string; app: string; data: Record<string, Row[]> }> {
+  const data: Record<string, Row[]> = {};
+  for (const c of ALL_COLLECTIONS) data[c] = await list(c);
+  return { exportedAt: nowISO(), app: 'Life OS', data };
+}
+
 /** Wipe everything (used on sign-out / account delete). */
 export async function clearAll(): Promise<void> {
-  const cols = cache.keys();
   cache.clear();
-  const keys: string[] = [];
-  for (const c of cols) keys.push(keyFor(c));
-  // also clear any not currently cached
-  const all: Collection[] = [
-    'journal_entries', 'journal_signals', 'tasks', 'habits', 'habit_logs', 'study_courses',
-    'exams', 'goals', 'learning_items', 'flashcards', 'meals', 'health_metrics', 'workouts',
-    'events', 'memory_nodes', 'memory_edges', 'insights',
-  ];
   try {
-    await AsyncStorage.multiRemove(all.map(keyFor));
+    await AsyncStorage.multiRemove(ALL_COLLECTIONS.map(keyFor));
   } catch {
     /* ignore */
   }

@@ -1,6 +1,6 @@
 // app/settings/index.tsx
 import React from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet, Share } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, type ThemeMode } from '@/contexts/ThemeContext';
@@ -21,6 +21,15 @@ export default function SettingsScreen() {
   const { fontSize, setFontSize, density, setDensity } = useSettingsStore();
   const profileName = useProfileStore((s) => s.name);
   const resetProfile = useProfileStore((s) => s.reset);
+
+  const exportData = async () => {
+    try {
+      const snapshot = await db.exportAll();
+      await Share.share({ message: JSON.stringify(snapshot, null, 2) }, { dialogTitle: 'تصدير بيانات Life OS' });
+    } catch {
+      /* user cancelled the share sheet */
+    }
+  };
 
   const Row = ({ icon, label, value, onPress, iconColor }: any) => (
     <Pressable onPress={onPress} style={[S.row, { borderBottomColor: c.b0 }]}>
@@ -172,8 +181,8 @@ export default function SettingsScreen() {
         <Text style={[S.groupTitle, { color: c.t2 }]}>{t('settings.account')}</Text>
         <SmartCard>
           <Row icon="person-outline" label="الملف الشخصي" value={profileName || undefined} onPress={() => router.push('/settings/profile' as never)} iconColor={c.accent} />
-          <Row icon="diamond-outline" label="الاشتراك" value="تجربة مجانية" onPress={() => {}} iconColor={c.habits} />
-          <Row icon="download-outline" label="تصدير البيانات" onPress={() => {}} iconColor={c.tasks} />
+          <Row icon="diamond-outline" label="الاشتراك" value="تجربة مجانية" onPress={() => router.push('/settings/subscription' as never)} iconColor={c.habits} />
+          <Row icon="download-outline" label="تصدير البيانات" onPress={exportData} iconColor={c.tasks} />
           <Row
             icon="shield-checkmark-outline"
             label="مركز الثقة والخصوصية"
