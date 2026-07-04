@@ -33,10 +33,6 @@ export default function WelcomeScreen() {
 
   return (
     <View style={[S.screen, { backgroundColor: c.bg0, paddingTop: top }]}>
-      <Pressable onPress={() => router.replace('/(tabs)/home')} style={[S.skip, { top: top + 8 }]}>
-        <Text style={{ color: c.t3, fontSize: 14 }}>{t('auth.skip')}</Text>
-      </Pressable>
-
       <ScrollView
         ref={ref}
         horizontal

@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { auth } from '@/services/auth';
+import { useProfileStore } from '@/store/profileStore';
 
 export default function SignInScreen() {
   const { c } = useTheme();
@@ -19,13 +20,18 @@ export default function SignInScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const profile = useProfileStore();
+
   const submit = async () => {
     setLoading(true);
     setError(null);
     const res = await auth.signIn(email.trim(), password);
     setLoading(false);
-    if (res.ok) router.replace('/(tabs)/home');
-    else setError(res.error ?? 'تعذّر تسجيل الدخول');
+    if (res.ok) {
+      profile.setEmail(email.trim() || null);
+      profile.setOnboarded(true);
+      router.replace('/(tabs)/home');
+    } else setError(res.error ?? 'تعذّر تسجيل الدخول');
   };
 
   return (

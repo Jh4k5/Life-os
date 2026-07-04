@@ -11,12 +11,16 @@ import { accentPresets } from '@/tokens/colors';
 import { LANGS, changeLang } from '@/lib/i18n';
 import { useSettingsStore } from '@/store/settingsStore';
 import { auth } from '@/services/auth';
+import { useProfileStore } from '@/store/profileStore';
+import * as db from '@/db/local';
 
 export default function SettingsScreen() {
   const { c, isDark, mode, setMode, accent, setAccent } = useTheme();
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { fontSize, setFontSize, density, setDensity } = useSettingsStore();
+  const profileName = useProfileStore((s) => s.name);
+  const resetProfile = useProfileStore((s) => s.reset);
 
   const Row = ({ icon, label, value, onPress, iconColor }: any) => (
     <Pressable onPress={onPress} style={[S.row, { borderBottomColor: c.b0 }]}>
@@ -167,7 +171,7 @@ export default function SettingsScreen() {
         {/* ── الحساب ── */}
         <Text style={[S.groupTitle, { color: c.t2 }]}>{t('settings.account')}</Text>
         <SmartCard>
-          <Row icon="person-outline" label="الملف الشخصي" onPress={() => {}} iconColor={c.accent} />
+          <Row icon="person-outline" label="الملف الشخصي" value={profileName || undefined} onPress={() => router.push('/settings/profile' as never)} iconColor={c.accent} />
           <Row icon="diamond-outline" label="الاشتراك" value="تجربة مجانية" onPress={() => {}} iconColor={c.habits} />
           <Row icon="download-outline" label="تصدير البيانات" onPress={() => {}} iconColor={c.tasks} />
           <Row
@@ -182,6 +186,8 @@ export default function SettingsScreen() {
         <Pressable
           onPress={async () => {
             await auth.signOut();
+            await db.clearAll();
+            resetProfile();
             router.replace('/(auth)/sign-in');
           }}
           style={[S.signOutBtn, { borderColor: c.red + '50' }]}

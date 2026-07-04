@@ -10,7 +10,7 @@ import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
 
 const ROWS = [
-  { icon: 'phone-portrait-outline' as const, title: 'يبقى على جهازك', desc: 'يومياتك ومسوّداتك مخزّنة محلياً حتى تختار المزامنة.' },
+  { icon: 'phone-portrait-outline' as const, title: 'يبقى على جهازك', desc: 'بياناتك تُحفظ على جهازك أولاً وتُزامَن بصمت وأمان في الخلفية.' },
   { icon: 'cloud-upload-outline' as const, title: 'يُخزَّن مشفّراً', desc: 'الملفات والصور والـ PDF في مساحة خاصة بك فقط.' },
   { icon: 'trash-outline' as const, title: 'يُحذف فوراً', desc: 'التسجيلات الصوتية تُحذف بعد التحويل إلى نص مباشرة.' },
   { icon: 'people-outline' as const, title: 'لا تتم المشاركة', desc: 'لا شيء يُشارك مع أحد إلا حين تشاركه أنت بنفسك.' },

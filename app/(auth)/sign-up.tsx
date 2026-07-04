@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { auth } from '@/services/auth';
+import { useProfileStore } from '@/store/profileStore';
 
 export default function SignUpScreen() {
   const { c } = useTheme();
@@ -20,13 +21,25 @@ export default function SignUpScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const profile = useProfileStore();
+
   const submit = async () => {
+    if (!name.trim()) {
+      setError('أدخل اسمك');
+      return;
+    }
     setLoading(true);
     setError(null);
     const res = await auth.signUp(email.trim(), password, name.trim());
     setLoading(false);
-    if (res.ok) router.replace('/(tabs)/home');
-    else setError(res.error ?? 'تعذّر إنشاء الحساب');
+    if (res.ok) {
+      // Local-first identity: the app greets you by your real name and is
+      // personal immediately, whether or not the account finishes verifying.
+      profile.setName(name.trim());
+      profile.setEmail(email.trim() || null);
+      profile.setOnboarded(true);
+      router.replace('/(tabs)/home');
+    } else setError(res.error ?? 'تعذّر إنشاء الحساب');
   };
 
   return (

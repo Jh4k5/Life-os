@@ -124,9 +124,7 @@ export default function ScheduleBuilderScreen() {
               <View style={[S.ok, { backgroundColor: c.greenDim, flexDirection: rowDir }]}>
                 <Ionicons name="checkmark-circle" size={16} color={c.green} />
                 <Text style={{ color: c.green, fontSize: 13 }}>
-                  {applied.demo
-                    ? `جاهز محلياً (${applied.saved}) — فعّل Supabase للمزامنة`
-                    : `أُضيفت ${applied.saved} جلسة لمهامك`}
+                  {`أُضيفت ${applied.saved} جلسة لمهامك`}
                 </Text>
               </View>
             ) : (

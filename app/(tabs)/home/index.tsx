@@ -41,9 +41,9 @@ import { Sparkline, trendOf } from '@/components/ui/Sparkline';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { type as T } from '@/tokens/typography';
 import { motion, stagger } from '@/tokens/motion';
+import { useProfileStore } from '@/store/profileStore';
 
 type HomeView = 'ai' | 'dashboard';
-const USER_NAME = 'محمد';
 
 export default function HomeScreen() {
   const { c } = useTheme();
@@ -94,7 +94,8 @@ const AIView = ({ c, t }: any) => {
   const [applied, setApplied] = useState<{ saved: number; demo: boolean } | null>(null);
   const [proposal, setProposal] = useState<{ type: WorkspaceType; title: string } | null>(null);
 
-  const greeting = new Date().getHours() < 12 ? 'صباح الخير' : new Date().getHours() < 18 ? 'مساء الخير' : 'مساء الخير';
+  const name = useProfileStore((s) => s.name);
+  const greeting = new Date().getHours() < 12 ? 'صباح الخير' : 'مساء الخير';
 
   const capture = async (text: string) => {
     if (!text.trim()) return;
@@ -170,7 +171,7 @@ const AIView = ({ c, t }: any) => {
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 200 }} keyboardShouldPersistTaps="handled">
         {/* Greeting — presence, never empty */}
         <Text style={[S.greetBig, { color: c.t1, textAlign }]}>
-          {greeting}، {USER_NAME}
+          {name ? `${greeting}، ${name}` : greeting}
         </Text>
         {mode === 'normal' ? (
           <GlanceWhisper c={c} textAlign={textAlign} rowDir={rowDir} />
@@ -226,9 +227,7 @@ const AIView = ({ c, t }: any) => {
               <View style={[S.applied, { backgroundColor: c.greenDim, flexDirection: rowDir }]}>
                 <Ionicons name="checkmark-circle" size={18} color={c.green} />
                 <Text style={{ color: c.green, fontSize: 13, fontWeight: '600' }}>
-                  {applied.demo
-                    ? `تم التطبيق محلياً (${applied.saved}) — فعّل Supabase للمزامنة`
-                    : `تم الحفظ ووُزّع على أقسامك (${applied.saved})`}
+                  {`تم الحفظ ووُزّع على أقسامك (${applied.saved})`}
                 </Text>
               </View>
             )}
