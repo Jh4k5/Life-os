@@ -1,71 +1,84 @@
 // components/ui/DayTimeline.tsx
-// The dashboard is a calm vertical timeline of today — not a card grid.
-// Time on the leading edge (RTL-aware), each block with a quiet progress bar.
+// The dashboard's calm vertical timeline of TODAY — built from the user's real
+// events (captures, exams, appointments, study sessions), not a mockup. Time on
+// the leading edge (RTL-aware); the "now" marker is the next upcoming block.
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useRTL } from '@/hooks/useRTL';
+import { useAsync } from '@/hooks/useAsync';
+import { repository } from '@/services/repository';
+import type { ScheduleEvent } from '@/data/mock';
 
-interface Block {
-  time: string;
-  title: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  progress: number; // 0..1
-  done?: boolean;
-}
+const AR = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+const toAr = (s: string) => s.replace(/[0-9]/g, (d) => AR[+d]);
 
-const TODAY: Block[] = [
-  { time: '٠٨:٠٠', title: 'تعلم الصينية', icon: 'language-outline', progress: 1, done: true },
-  { time: '١١:٠٠', title: 'مراجعة الفصل الأول', icon: 'document-text-outline', progress: 0.6 },
-  { time: '١٤:٠٠', title: 'جلسة مذاكرة — الكيمياء', icon: 'school-outline', progress: 0.3 },
-  { time: '١٦:٠٠', title: 'تمرين', icon: 'barbell-outline', progress: 0 },
-  { time: '٢١:٠٠', title: 'قراءة قبل النوم', icon: 'book-outline', progress: 0 },
-];
+const ICON_FOR: Record<string, keyof typeof Ionicons.glyphMap> = {
+  event: 'calendar-outline',
+  task: 'checkbox-outline',
+  study: 'school-outline',
+  exam: 'document-text-outline',
+  habit: 'repeat-outline',
+};
 
 export const DayTimeline = () => {
   const { c } = useTheme();
   const { rowDir } = useRTL();
-  const now = 2; // current block index (mock "now" marker)
+  const { data: events } = useAsync(() => repository.listEvents(), [] as ScheduleEvent[], 'events');
+
+  const nowHM = new Date().toTimeString().slice(0, 5);
+  const blocks = [...events].sort((a, b) => a.start.localeCompare(b.start));
+  // "now" = first block not yet started; else the last one.
+  const nowIdx = (() => {
+    const i = blocks.findIndex((b) => b.start >= nowHM);
+    return i === -1 ? blocks.length - 1 : i;
+  })();
+
+  if (blocks.length === 0) {
+    return (
+      <View style={[S.empty, { borderColor: c.b1, backgroundColor: c.bg1 }]}>
+        <Ionicons name="sunny-outline" size={20} color={c.t3} />
+        <Text style={{ color: c.t2, fontSize: 13, textAlign: 'center' }}>
+          لا مواعيد اليوم بعد — التقط يومك أو أضِف من الجدول وسيظهر هنا.
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View style={{ gap: 0 }}>
-      {TODAY.map((b, i) => {
-        const isNow = i === now;
+      {blocks.map((b, i) => {
+        const isNow = i === nowIdx;
+        const done = b.start < nowHM && !isNow;
         return (
-          <View key={i} style={[S.row, { flexDirection: rowDir }]}>
-            {/* time + rail */}
+          <View key={b.id} style={[S.row, { flexDirection: rowDir }]}>
             <View style={S.timeCol}>
-              <Text style={[S.time, { color: isNow ? c.accent : c.t3 }]}>{b.time}</Text>
+              <Text style={[S.time, { color: isNow ? c.accent : c.t3 }]}>{b.allDay ? 'اليوم' : toAr(b.start)}</Text>
             </View>
             <View style={S.railCol}>
               <View
                 style={[
                   S.node,
                   {
-                    backgroundColor: b.done ? c.accent : isNow ? c.bg0 : c.bg2,
-                    borderColor: isNow ? c.accent : b.done ? c.accent : c.b2,
+                    backgroundColor: done ? c.accent : isNow ? c.bg0 : c.bg2,
+                    borderColor: isNow ? c.accent : done ? c.accent : c.b2,
                   },
                 ]}
               >
-                {b.done && <Ionicons name="checkmark" size={10} color="#FFF" />}
+                {done && <Ionicons name="checkmark" size={10} color="#FFF" />}
               </View>
-              {i < TODAY.length - 1 && <View style={[S.rail, { backgroundColor: c.b1 }]} />}
+              {i < blocks.length - 1 && <View style={[S.rail, { backgroundColor: c.b1 }]} />}
             </View>
-            {/* content */}
             <View style={[S.card, { backgroundColor: c.bg1, borderColor: isNow ? c.accent + '55' : c.b1 }]}>
               <View style={[S.cardTop, { flexDirection: rowDir }]}>
-                <Ionicons name={b.icon} size={16} color={c.t2} />
+                <Ionicons name={ICON_FOR[b.source] ?? 'ellipse-outline'} size={16} color={isNow ? c.accent : c.t2} />
                 <Text style={[S.title, { color: c.t1 }]} numberOfLines={1}>
                   {b.title}
                 </Text>
-                {b.done && <Text style={{ color: c.green, fontSize: 11, fontWeight: '600' }}>تم</Text>}
+                {done && <Text style={{ color: c.green, fontSize: 11, fontWeight: '600' }}>مضى</Text>}
+                {isNow && <Text style={{ color: c.accent, fontSize: 11, fontWeight: '700' }}>التالي</Text>}
               </View>
-              {!b.done && (
-                <View style={[S.pBg, { backgroundColor: c.b1 }]}>
-                  <View style={[S.pFill, { width: `${b.progress * 100}%`, backgroundColor: c.accent }]} />
-                </View>
-              )}
             </View>
           </View>
         );
@@ -75,7 +88,7 @@ export const DayTimeline = () => {
 };
 
 const S = StyleSheet.create({
-  row: { gap: 10, minHeight: 64 },
+  row: { gap: 10, minHeight: 56 },
   timeCol: { width: 46, paddingTop: 2 },
   time: { fontSize: 12, fontWeight: '600', fontVariant: ['tabular-nums'] },
   railCol: { alignItems: 'center', width: 16 },
@@ -84,6 +97,5 @@ const S = StyleSheet.create({
   card: { flex: 1, borderRadius: 14, borderWidth: 1, padding: 12, marginBottom: 12, gap: 8 },
   cardTop: { alignItems: 'center', gap: 8 },
   title: { fontSize: 14, fontWeight: '600', flex: 1 },
-  pBg: { height: 5, borderRadius: 3, overflow: 'hidden' },
-  pFill: { height: 5, borderRadius: 3 },
+  empty: { borderRadius: 14, borderWidth: 1, borderStyle: 'dashed', padding: 20, alignItems: 'center', gap: 10 },
 });

@@ -29,8 +29,6 @@ import { repository } from '@/services/repository';
 import { captureService } from '@/services/captureService';
 import { useWorkspaceStore } from '@/store/workspaceStore';
 import type { ParsedDay, DetectedItem, EntityType, ReviewAction, WorkspaceType } from '@/services/types';
-import { useMockStore } from '@/store/mockStore';
-import { mockTasks, mockCourses } from '@/data/mock';
 import { useAsync } from '@/hooks/useAsync';
 import { DayTimeline } from '@/components/ui/DayTimeline';
 import { ModeSwitcher } from '@/components/ui/ModeSwitcher';
@@ -274,27 +272,39 @@ const AIView = ({ c, t }: any) => {
 };
 
 const GlanceWhisper = ({ c, textAlign, rowDir }: any) => {
-  const urgent = mockTasks.filter((tk) => tk.priority === 'urgent' && !tk.done).length;
-  const habits = useMockStore((s) => s.habits).filter((h) => !h.done).length;
+  const { data: tasks } = useAsync(() => repository.listTasks(), [] as any[], 'tasks');
+  const { data: habits } = useAsync(() => repository.listHabits(), [] as any[], 'habits');
+  const urgent = tasks.filter((tk: any) => tk.priority === 'urgent' && !tk.done).length;
+  const habitsLeft = habits.filter((h: any) => !h.done).length;
+  const openTasks = tasks.filter((tk: any) => !tk.done).length;
+
+  // A real, human read of the day — or a warm invitation when it's empty.
+  const line =
+    tasks.length === 0 && habits.length === 0
+      ? 'ابدأ يومك — التقط ما يدور في ذهنك وسأرتّبه لك.'
+      : [
+          habitsLeft > 0 ? `${habitsLeft} عادة متبقية` : 'عاداتك مكتملة',
+          urgent > 0 ? `${urgent} عاجلة` : openTasks > 0 ? `${openTasks} مهمة` : 'لا مهام عالقة',
+        ].join(' · ');
+
   return (
     <View style={[S.glance, { flexDirection: rowDir }]}>
       <Ionicons name="ellipse" size={6} color={c.accent} />
-      <Text style={{ color: c.t2, fontSize: 13, textAlign }}>
-        {`${habits} عادات متبقية · ${urgent} مهمة عاجلة · يومك تحت السيطرة`}
-      </Text>
+      <Text style={{ color: c.t2, fontSize: 13, textAlign }}>{line}</Text>
     </View>
   );
 };
 
 // Command-center strip — real counts, each tile taps into its section.
 const CommandStats = ({ c, t, router, rowDir }: any) => {
-  const { data: tasks } = useAsync(() => repository.listTasks(), mockTasks);
-  const { data: courses } = useAsync(() => repository.listCourses(), mockCourses);
-  const habitsLeft = useMockStore((s) => s.habits).filter((h: any) => !h.done).length;
-  const tasksLeft = tasks.filter((tk) => !tk.done).length;
+  const { data: tasks } = useAsync(() => repository.listTasks(), [] as any[], 'tasks');
+  const { data: courses } = useAsync(() => repository.listCourses(), [] as any[], 'courses');
+  const { data: habits } = useAsync(() => repository.listHabits(), [] as any[], 'habits');
+  const habitsLeft = habits.filter((h: any) => !h.done).length;
+  const tasksLeft = tasks.filter((tk: any) => !tk.done).length;
   const now = Date.now();
   const examsSoon = courses.reduce(
-    (n, co) => n + co.exams.filter((e) => e.date && new Date(e.date).getTime() >= now).length,
+    (n: number, co: any) => n + co.exams.filter((e: any) => e.date && new Date(e.date).getTime() >= now).length,
     0
   );
 
