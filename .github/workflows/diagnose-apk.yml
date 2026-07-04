@@ -82,7 +82,7 @@ jobs:
             echo "==== app JS log (last 80) ====" ; grep -E "ReactNativeJS|LIFEOS-CRASH" /tmp/logcat_full.txt | tail -80 || true
             echo "==== fatals / signals / tombstones ====" ; grep -E "LIFEOS-CRASH|FATAL EXCEPTION|AndroidRuntime|F DEBUG|F libc|signal |SIGSEGV|SIGABRT|abort message|tombstone|has died|Force finishing|ExceptionsManager|redbox|libhermes|UnsatisfiedLink|dlopen|TurboModule" /tmp/logcat_full.txt | tail -200 || true
             echo "==== tombstones on device ====" ; adb shell "ls -la /data/tombstones/ 2>/dev/null; cat /data/tombstones/* 2>/dev/null" | head -140 || true
-            P="$(adb shell pidof com.liveos.app 2>/dev/null)" ; [ -z "$P" ] && echo "APP-STATUS: CRASHED (no live process after launch)" || echo "APP-STATUS: RUNNING (pid $P)"
+            P="$(adb shell pidof com.liveos.app 2>/dev/null)" ; [ -z "$P" ] && { echo "APP-STATUS: CRASHED (no live process after launch)"; exit 1; } || echo "APP-STATUS: RUNNING (pid $P)"
 
       - name: Upload full logcat + APK
         if: always()
