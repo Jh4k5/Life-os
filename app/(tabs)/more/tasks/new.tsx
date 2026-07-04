@@ -8,6 +8,7 @@ import { Header } from '@/components/layout/Header';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { mockAreas, type TaskData } from '@/data/mock';
+import { repository } from '@/services/repository';
 
 const PRIORITIES: { key: TaskData['priority']; dot: string; tkey: string }[] = [
   { key: 'none', dot: '⚪', tkey: 'tasks.p_none' },
@@ -33,13 +34,21 @@ export default function NewTaskScreen() {
   const [energy, setEnergy] = useState<TaskData['energy']>('medium');
   const [due, setDue] = useState('');
   const [areaId, setAreaId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    if (!title.trim() || saving) return;
+    setSaving(true);
+    await repository.addTask({ title: title.trim(), priority, energy, due: due.trim() || null, areaId });
+    router.back();
+  };
 
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
       <Header
         title={t('tasks.new')}
         accent={c.tasks}
-        right={[{ icon: 'checkmark', onPress: () => router.back(), color: c.accent }]}
+        right={[{ icon: 'checkmark', onPress: save, color: c.accent }]}
       />
       <ScrollView contentContainerStyle={{ padding: 16, gap: 20, paddingBottom: 120 }}>
         <Input label={t('tasks.title_ph')} value={title} onChangeText={setTitle} />
@@ -105,7 +114,7 @@ export default function NewTaskScreen() {
           ))}
         </View>
 
-        <Button label={t('common.create')} onPress={() => router.back()} color={c.tasks} />
+        <Button label={t('common.create')} onPress={save} color={c.tasks} />
       </ScrollView>
     </View>
   );

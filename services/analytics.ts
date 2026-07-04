@@ -13,7 +13,8 @@ export type AnalyticsDomain =
   | 'learning'
   | 'health'
   | 'focus'
-  | 'wellbeing';
+  | 'wellbeing'
+  | 'goals';
 
 export const analytics = {
   log(domain: AnalyticsDomain, name: string, value?: number, meta?: Record<string, unknown>) {

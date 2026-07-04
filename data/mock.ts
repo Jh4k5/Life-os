@@ -61,44 +61,9 @@ export const mockAreas = [
   },
 ];
 
-export const mockHabits: HabitData[] = [
-  {
-    id: 'h1', name: 'شرب الماء', emoji: '💧', color: '#3B82F6',
-    type: 'counter', target: 8, unit: 'كوب',
-    freq: 'daily', streak: 6, bestStreak: 14, todayValue: 5, done: false,
-    timePref: 'anytime', areaId: 'a2',
-  },
-  {
-    id: 'h2', name: 'القراءة', emoji: '📖', color: '#F59E0B',
-    type: 'timer', target: 20, unit: 'دقيقة',
-    freq: 'daily', streak: 12, bestStreak: 21, todayValue: 0, done: false,
-    timePref: 'evening', areaId: null,
-  },
-  {
-    id: 'h3', name: 'المشي', emoji: '🚶', color: '#00D084',
-    type: 'checkbox', target: 1, unit: '',
-    freq: 'daily', streak: 4, bestStreak: 8, todayValue: 1, done: true,
-    timePref: 'morning', areaId: 'a2',
-  },
-  {
-    id: 'h4', name: 'التأمل', emoji: '🧘', color: '#A855F7',
-    type: 'timer', target: 10, unit: 'دقيقة',
-    freq: 'daily', streak: 8, bestStreak: 15, todayValue: 10, done: true,
-    timePref: 'morning', areaId: null,
-  },
-  {
-    id: 'h5', name: 'الأوميغا-3', emoji: '💊', color: '#14B8A6',
-    type: 'checkbox', target: 1, unit: '',
-    freq: 'daily', streak: 3, bestStreak: 5, todayValue: 0, done: false,
-    timePref: 'morning', areaId: 'a2',
-  },
-  {
-    id: 'h6', name: 'تعلم الصينية', emoji: '🀄', color: '#00D084',
-    type: 'timer', target: 30, unit: 'دقيقة',
-    freq: 'daily', streak: 9, bestStreak: 9, todayValue: 0, done: false,
-    timePref: 'afternoon', areaId: 'a1',
-  },
-];
+// Seed arrays are intentionally EMPTY: the app is local-first and shows the
+// user's real data (or a designed empty state) — never fabricated rows.
+export const mockHabits: HabitData[] = [];
 
 export interface SubTask {
   id: string;
@@ -118,29 +83,7 @@ export interface TaskData {
   subtasks: SubTask[];
 }
 
-export const mockTasks: TaskData[] = [
-  {
-    id: 't1', title: 'مراجعة الفصل الأول HSK', priority: 'urgent', energy: 'high',
-    due: 'اليوم', area: 'تعلم الصينية', project: 'امتحان HSK', done: false,
-    subtasks: [
-      { id: 'st1', title: 'قراءة الفصل', done: true },
-      { id: 'st2', title: 'حفظ المفردات الجديدة', done: false },
-      { id: 'st3', title: 'حل التمارين', done: false },
-    ],
-  },
-  {
-    id: 't2', title: 'رسالة للمشرف', priority: 'high', energy: 'medium',
-    due: 'غداً', area: null, project: null, done: false, subtasks: [],
-  },
-  {
-    id: 't3', title: 'تصفح عروض التوظيف', priority: 'medium', energy: 'low',
-    due: null, area: 'المشروع الشخصي', project: null, done: false, subtasks: [],
-  },
-  {
-    id: 't4', title: 'شراء مكملات رياضية', priority: 'low', energy: 'low',
-    due: null, area: 'الصحة', project: null, done: true, subtasks: [],
-  },
-];
+export const mockTasks: TaskData[] = [];
 
 export interface JournalEntry {
   id: string;
@@ -156,26 +99,7 @@ export interface JournalEntry {
   projectId: string | null;
 }
 
-export const mockJournals: JournalEntry[] = [
-  {
-    id: 'j1', title: 'خطة الأسبوع القادم',
-    preview: 'كان يوماً مثمراً حيث أنهيت...',
-    date: '2026-06-27', mood: 'great', words: 320, chars: 1840, pinned: true,
-    tags: ['أسبوعية', 'أهداف', 'خطط'], areaId: null, projectId: null,
-  },
-  {
-    id: 'j2', title: 'أفكار عن اللغة الصينية',
-    preview: 'اليوم تعلمت أن الصبر...',
-    date: '2026-06-26', mood: 'good', words: 150, chars: 890, pinned: false,
-    tags: ['صينية', 'تعلم'], areaId: 'a1', projectId: 'p1',
-  },
-  {
-    id: 'j3', title: 'يوم صعب لكنه مثمر',
-    preview: 'الصدق مع النفس...',
-    date: '2026-06-24', mood: 'neutral', words: 200, chars: 1200, pinned: false,
-    tags: ['تأمل'], areaId: null, projectId: null,
-  },
-];
+export const mockJournals: JournalEntry[] = [];
 
 export interface Exam {
   id: string;
@@ -198,32 +122,7 @@ export interface Course {
   totalStudyHours: number;
 }
 
-export const mockCourses: Course[] = [
-  {
-    id: 'c1', name: 'اللغة الصينية HSK 3', emoji: '🀄', color: '#F59E0B',
-    teacher: 'منصة Duolingo', progress: 45, status: 'active',
-    exams: [
-      {
-        id: 'e1', name: 'الامتحان التجريبي', date: '2026-07-03', chaptersCount: 4,
-        aiPlan: ['الاثنين: الفصل 1', 'الثلاثاء: الفصل 2', 'الأربعاء: الفصل 3', 'الخميس: الفصل 4'],
-        studyHours: 8,
-      },
-      {
-        id: 'e2', name: 'الامتحان الرسمي HSK 3', date: '2026-07-10', chaptersCount: 6,
-        aiPlan: [], studyHours: 0,
-      },
-    ],
-    totalStudyHours: 12,
-  },
-  {
-    id: 'c2', name: 'الكيمياء العضوية', emoji: '⚗', color: '#3B82F6',
-    teacher: 'د. أحمد محمد', progress: 60, status: 'active',
-    exams: [
-      { id: 'e3', name: 'الاختبار النهائي', date: '2026-07-15', chaptersCount: 8, aiPlan: [], studyHours: 0 },
-    ],
-    totalStudyHours: 22,
-  },
-];
+export const mockCourses: Course[] = [];
 
 export interface Flashcard {
   id: string;
@@ -236,12 +135,7 @@ export interface Flashcard {
   due: string;          // ISO date
 }
 
-export const mockFlashcards: Flashcard[] = [
-  { id: 'f1', courseId: 'c1', front: '你好', back: 'مرحباً', ease: 2.5, interval: 0, reps: 0, due: '2026-06-30' },
-  { id: 'f2', courseId: 'c1', front: '谢谢', back: 'شكراً', ease: 2.5, interval: 0, reps: 0, due: '2026-06-30' },
-  { id: 'f3', courseId: 'c2', front: 'ما هي مجموعة الهيدروكسيل؟', back: 'OH−', ease: 2.5, interval: 0, reps: 0, due: '2026-06-29' },
-  { id: 'f4', courseId: 'c2', front: 'صيغة الميثان', back: 'CH₄', ease: 2.5, interval: 0, reps: 0, due: '2026-07-01' },
-];
+export const mockFlashcards: Flashcard[] = [];
 
 export interface LibraryItem {
   id: string;
@@ -256,26 +150,7 @@ export interface LibraryItem {
   areaId: string | null;
 }
 
-export const mockLibrary: LibraryItem[] = [
-  {
-    id: 'l1', title: 'العادات الذرية', author: 'جيمس كلير', type: 'book',
-    status: 'in_progress', progress: 65, rating: 5,
-    notes: 'فكرة قوية: 1% تحسن يومياً = 37x في السنة',
-    tags: ['عادات', 'إنتاجية'], areaId: null,
-  },
-  {
-    id: 'l2', title: 'Huberman Lab Podcast', author: 'أندرو هوبرمان', type: 'podcast',
-    status: 'in_progress', progress: 0, rating: 5,
-    notes: 'حلقات عن النوم والطاقة',
-    tags: ['علوم', 'صحة'], areaId: 'a2',
-  },
-  {
-    id: 'l3', title: 'الأمير الصغير', author: 'أنطوان دو سانت', type: 'book',
-    status: 'completed', progress: 100, rating: 4,
-    notes: 'كتاب فلسفي بسيط وعميق',
-    tags: ['فلسفة'], areaId: null,
-  },
-];
+export const mockLibrary: LibraryItem[] = [];
 
 export interface DopamineActivity {
   id: string;
@@ -342,13 +217,7 @@ export interface ScheduleEvent {
   location?: string;
 }
 
-export const mockEvents: ScheduleEvent[] = [
-  { id: 'ev1', title: 'اجتماع الفريق', start: '09:00', end: '10:00', color: '#3B82F6', allDay: false, source: 'event', location: 'Zoom' },
-  { id: 'ev2', title: 'مراجعة الفصل الأول', start: '11:00', end: '12:00', color: '#3B82F6', allDay: false, source: 'task' },
-  { id: 'ev3', title: 'جلسة مذاكرة: الكيمياء', start: '14:00', end: '15:30', color: '#F59E0B', allDay: false, source: 'study' },
-  { id: 'ev4', title: 'الامتحان التجريبي HSK', start: '00:00', end: '23:59', color: '#F59E0B', allDay: true, source: 'exam' },
-  { id: 'ev5', title: 'تذكير: التأمل', start: '07:00', end: '07:10', color: '#A855F7', allDay: false, source: 'habit' },
-];
+export const mockEvents: ScheduleEvent[] = [];
 
 // Templates للعادات (50+ template)
 export const habitTemplates = {
@@ -390,30 +259,13 @@ const _today = new Date().toISOString().slice(0, 10);
 
 export const mockHealthToday: HealthDay = {
   day: _today,
-  weightKg: 74,
-  heightCm: 178,
-  waterMl: 1200,
-  sleepMin: 420,
-  steps: 6400,
+  weightKg: null,
+  heightCm: null,
+  waterMl: 0,
+  sleepMin: 0,
+  steps: 0,
 };
 
-export const mockMeals: Meal[] = [
-  { id: 'm1', name: 'شوفان بالموز والعسل', calories: 380, protein: 12, carbs: 62, fat: 8, aiEstimated: false, eatenAt: `${_today}T08:10:00` },
-  { id: 'm2', name: 'صدر دجاج مشوي مع أرز', calories: 620, protein: 48, carbs: 60, fat: 16, aiEstimated: true, eatenAt: `${_today}T13:30:00` },
-];
+export const mockMeals: Meal[] = [];
 
-export const mockWorkouts: Workout[] = [
-  {
-    id: 'w1', name: 'دفع (صدر/كتف/ترايسبس)', mode: 'gym', durationMin: 55,
-    exercises: [
-      { name: 'بنش برس', sets: 4, reps: 8, weight: 60 },
-      { name: 'ضغط كتف', sets: 3, reps: 10, weight: 20 },
-    ],
-    doneAt: `${_today}T18:00:00`,
-  },
-  {
-    id: 'w2', name: 'تمرين منزلي', mode: 'home', durationMin: 30,
-    exercises: [{ name: 'ضغط', sets: 4, reps: 15 }, { name: 'سكوات', sets: 4, reps: 20 }],
-    doneAt: `${_today}T07:00:00`,
-  },
-];
+export const mockWorkouts: Workout[] = [];

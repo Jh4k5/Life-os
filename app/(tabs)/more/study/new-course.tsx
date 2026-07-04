@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { EmojiPicker } from '@/components/ui/EmojiPicker';
 import { ColorPicker } from '@/components/ui/ColorPicker';
+import { repository } from '@/services/repository';
 
 export default function NewCourseScreen() {
   const { c } = useTheme();
@@ -18,13 +19,21 @@ export default function NewCourseScreen() {
   const [teacher, setTeacher] = useState('');
   const [emoji, setEmoji] = useState('🎓');
   const [color, setColor] = useState('#F59E0B');
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    if (!name.trim() || saving) return;
+    setSaving(true);
+    await repository.addCourse({ name: name.trim(), teacher: teacher.trim(), color, emoji });
+    router.back();
+  };
 
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
       <Header
         title={t('study.new_course')}
         accent={c.study}
-        right={[{ icon: 'checkmark', onPress: () => router.back(), color: c.accent }]}
+        right={[{ icon: 'checkmark', onPress: save, color: c.accent }]}
       />
       <ScrollView contentContainerStyle={{ padding: 16, gap: 22, paddingBottom: 120 }}>
         <View style={[S.preview, { backgroundColor: color + '22', borderColor: color }]}>
@@ -34,7 +43,7 @@ export default function NewCourseScreen() {
         <ColorPicker value={color} onChange={setColor} />
         <Input label={t('study.course_name')} value={name} onChangeText={setName} />
         <Input label={t('study.teacher')} value={teacher} onChangeText={setTeacher} />
-        <Button label={t('common.create')} onPress={() => router.back()} color={color} />
+        <Button label={t('common.create')} onPress={save} color={color} />
       </ScrollView>
     </View>
   );

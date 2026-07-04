@@ -8,6 +8,7 @@ import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { HabitCard, type HabitData } from '@/components/ui/HabitCard';
 import { mockAreas } from '@/data/mock';
+import { repository } from '@/services/repository';
 
 type HType = 'checkbox' | 'counter' | 'timer' | 'stopwatch' | 'quantity';
 type Freq = 'daily' | 'weekly' | 'monthly' | 'custom';
@@ -40,6 +41,14 @@ export default function NewHabitScreen() {
   const [reminders, setReminders] = useState(['08:00']);
   const [noteEnabled, setNoteEnabled] = useState(false);
   const [retroEnabled, setRetroEnabled] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    if (!name.trim() || saving) return;
+    setSaving(true);
+    await repository.addHabit({ name: name.trim(), emoji, color, type, target, unit, freq, timePref, areaId });
+    router.back();
+  };
 
   const toggleDay = (d: number) =>
     setCustomDays((p) => (p.includes(d) ? p.filter((x) => x !== d) : [...p, d].sort()));
@@ -71,7 +80,7 @@ export default function NewHabitScreen() {
       <Header
         title="عادة جديدة"
         accent={c.habits}
-        right={[{ icon: 'checkmark', onPress: () => router.back(), color: c.accent }]}
+        right={[{ icon: 'checkmark', onPress: save, color: c.accent }]}
       />
       <ScrollView contentContainerStyle={{ padding: 16, gap: 22, paddingBottom: 120 }}>
         {/* Preview حي */}
@@ -335,7 +344,7 @@ export default function NewHabitScreen() {
         </Sec>
 
         {/* Save */}
-        <Pressable onPress={() => router.back()} style={[S.saveBtn, { backgroundColor: color }]}>
+        <Pressable onPress={save} style={[S.saveBtn, { backgroundColor: color }]}>
           <Text style={S.saveTxt}>+ إضافة العادة</Text>
         </Pressable>
       </ScrollView>

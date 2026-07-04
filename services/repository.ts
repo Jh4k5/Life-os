@@ -1,40 +1,50 @@
 // services/repository.ts
-// Writes approved Review-Layer items to the real database. This closes the
-// loop: capture → review → Apply → real rows. When Supabase is live AND a user
-// is signed in, items are inserted into the right tables; otherwise it returns
-// { demo: true } so the UI can stay honest ("applied locally") — never faked.
+// LOCAL-FIRST data access. Every read and write goes to the on-device store
+// (db/local) as the source of truth, so the UI is instant and works offline —
+// no "applied locally / pending sync" states, no seed data for the user. The
+// background sync layer (db/sync) mirrors dirty rows to Supabase when a session
+// and network exist; the repository neither waits on nor exposes that.
 import type { DetectedItem, EntityType } from './types';
-import { getClient } from './supabase';
 import { notifications } from './notifications';
-import { memory } from './memory';
-import {
-  mockJournals,
-  mockTasks,
-  mockEvents,
-  mockCourses,
-  mockLibrary,
-  mockFlashcards,
-  mockHealthToday,
-  mockMeals,
-  mockWorkouts,
-  type JournalEntry,
-  type TaskData,
-  type ScheduleEvent,
-  type Course,
-  type LibraryItem,
-  type Flashcard,
+import * as db from '@/db/local';
+import type {
+  JournalEntry,
+  TaskData,
+  ScheduleEvent,
+  Course,
+  LibraryItem,
+  Flashcard,
 } from '@/data/mock';
 import type { Meal, HealthDay, Workout, MealEstimate } from './types';
 import { sm2, type SrsResult } from './srs';
 import { analytics } from './analytics';
+import type { HabitData } from '@/components/ui/HabitCard';
 
 export interface MemoryHit {
   id: string;
   type: string;
   label: string;
 }
-import { mockHabits } from '@/data/mock';
-import type { HabitData } from '@/components/ui/HabitCard';
+
+export interface PersistResult {
+  saved: number;
+  demo: boolean;
+  errors: string[];
+}
+
+export interface Goal {
+  id: string;
+  title: string;
+  detail: string;
+  areaId: string | null;
+  projectId: string | null;
+  progress: number;
+  done: boolean;
+  targetDate: string | null;
+}
+
+const todayISO = () => new Date().toISOString().slice(0, 10);
+const dayISO = (offset: number) => new Date(Date.now() - offset * 86_400_000).toISOString().slice(0, 10);
 
 /** Best-effort proactive reminders for time-bound items (device only). */
 function scheduleReminders(items: DetectedItem[]) {
@@ -45,165 +55,83 @@ function scheduleReminders(items: DetectedItem[]) {
   }
 }
 
-/** Returns the signed-in user id, or null when running in local/demo mode. */
-async function activeUser(): Promise<{ client: ReturnType<typeof getClient>; uid: string } | null> {
-  const client = getClient();
-  if (!client) return null;
-  const { data } = await client.auth.getUser();
-  return data.user ? { client, uid: data.user.id } : null;
-}
-
-export interface PersistResult {
-  saved: number;
-  demo: boolean;
-  errors: string[];
-}
-
-// Which table each detected entity flows into.
-function tableFor(type: EntityType): { table: string; row: (i: DetectedItem, uid: string) => Record<string, unknown> } | null {
+// Which local collection each detected entity flows into, plus the row shape.
+function mapFor(type: EntityType): { coll: db.Collection; row: (i: DetectedItem) => Record<string, unknown> } | null {
   switch (type) {
     case 'journal':
     case 'note':
-      return {
-        table: 'journal_entries',
-        row: (i, uid) => ({ user_id: uid, title: i.title, content: i.source ?? i.title }),
-      };
+      return { coll: 'journal_entries', row: (i) => ({ title: i.title, content: i.source ?? i.title, mood: 'neutral', tags: [], pinned: false }) };
     case 'task':
     case 'checklist':
-      return {
-        table: 'tasks',
-        row: (i, uid) => ({ user_id: uid, title: i.title, priority: 'medium' }),
-      };
-    // Time-bound items land in the calendar (events), not the task wall.
+      return { coll: 'tasks', row: (i) => ({ title: i.title, priority: 'medium', energy: 'medium', done: false }) };
     case 'appointment':
     case 'reminder':
     case 'exam':
       return {
-        table: 'events',
-        row: (i, uid) => ({
-          user_id: uid,
+        coll: 'events',
+        row: (i) => ({
           title: i.type === 'exam' ? `امتحان: ${i.title}` : i.title,
-          // best-effort: place an hour out; real date parsing fills this later
-          starts_at: new Date(Date.now() + 3600_000).toISOString(),
+          starts_at: (i.detail && !Number.isNaN(Date.parse(i.detail)) ? new Date(i.detail) : new Date(Date.now() + 3600_000)).toISOString(),
           all_day: i.type === 'exam',
           source: i.type === 'exam' ? 'exam' : 'event',
         }),
       };
     case 'habit':
-      return {
-        table: 'habits',
-        row: (i, uid) => ({ user_id: uid, name: i.title, type: 'checkbox', target: 1, freq: 'daily', time_pref: 'anytime' }),
-      };
-    // Phase 2 domains fed straight from a brain-dump.
+      return { coll: 'habits', row: (i) => ({ name: i.title, icon: '•', type: 'checkbox', target: 1, freq: 'daily', time_pref: 'anytime' }) };
     case 'meal':
-      return {
-        table: 'meals',
-        row: (i, uid) => ({ user_id: uid, name: i.title, ai_estimated: false }),
-      };
+      return { coll: 'meals', row: (i) => ({ name: i.title, ai_estimated: false, eaten_at: db.nowISO() }) };
     case 'workout':
-      return {
-        table: 'workouts',
-        row: (i, uid) => ({ user_id: uid, name: i.title, mode: 'gym' }),
-      };
+      return { coll: 'workouts', row: (i) => ({ name: i.title, mode: 'gym', done_at: db.nowISO() }) };
     case 'study_session':
-      return {
-        table: 'study_sessions',
-        row: (i, uid) => ({ user_id: uid, topic: i.title, minutes: 0 }),
-      };
+      return { coll: 'study_courses', row: (i) => ({ name: i.title }) };
     case 'suggestion':
-      return null; // a nudge, not a stored entity
+      return null;
     default:
       return null;
   }
 }
 
-/**
- * Grow the memory graph from accepted items: each becomes a node, and items
- * from the same capture are chained `relates_to` so the system can reason
- * across a person's life ("how does this affect the rest?"). Real DB when
- * signed in; the in-memory graph is the honest signed-out fallback.
- */
-async function persistMemory(
-  client: NonNullable<ReturnType<typeof getClient>> | null,
-  uid: string | null,
-  items: DetectedItem[],
-): Promise<void> {
+/** Grow the local memory graph: each item a node, chained relates_to. */
+async function persistMemory(items: DetectedItem[]): Promise<void> {
   const linkable = items.filter((i) => i.type !== 'suggestion');
   if (linkable.length === 0) return;
-
-  if (!client || !uid) {
-    // demo: keep an honest local graph (never faked, just not yet synced).
-    const local = linkable.map((i) => memory.addNode({
-      id: i.id,
-      type: i.type,
-      label: i.title,
-      createdAt: Date.now(),
-      data: i.source ? { source: i.source } : undefined,
-    }));
-    for (let k = 1; k < local.length; k++) memory.link(local[k - 1].id, local[k].id, 'relates_to');
-    return;
+  const ids: string[] = [];
+  for (const i of linkable) {
+    const node = await db.insert('memory_nodes', { type: i.type, label: i.title, data: i.source ? { source: i.source } : null });
+    ids.push(node.id);
   }
-
-  const rows = linkable.map((i) => ({
-    user_id: uid,
-    type: i.type,
-    label: i.title,
-    data: i.source ? { source: i.source } : null,
-  }));
-  const { data, error } = await client.from('memory_nodes').insert(rows).select('id');
-  if (error || !data) return;
-  const ids: string[] = data.map((r: any) => r.id);
-  const edges = [];
   for (let k = 1; k < ids.length; k++) {
-    edges.push({ user_id: uid, from_node: ids[k - 1], to_node: ids[k], relation: 'relates_to' });
+    await db.insert('memory_edges', { from_node: ids[k - 1], to_node: ids[k], relation: 'relates_to' });
   }
-  if (edges.length) await client.from('memory_edges').insert(edges);
 }
 
 export const repository = {
-  /** Persist every accepted item. Suggestions are skipped (they're nudges). */
+  /** Persist every accepted item locally (real, instant). */
   async persistAccepted(items: DetectedItem[]): Promise<PersistResult> {
     const accepted = items.filter((i) => i.status === 'accepted' && i.type !== 'suggestion');
     scheduleReminders(accepted);
-    const client = getClient();
-
-    if (!client) {
-      await persistMemory(null, null, accepted);
-      return { saved: accepted.length, demo: true, errors: [] };
-    }
-
-    const { data: userData } = await client.auth.getUser();
-    const uid = userData.user?.id;
-    if (!uid) {
-      await persistMemory(null, null, accepted);
-      return { saved: accepted.length, demo: true, errors: [] };
-    }
-
     let saved = 0;
     const errors: string[] = [];
     for (const item of accepted) {
-      const map = tableFor(item.type);
+      const map = mapFor(item.type);
       if (!map) continue;
-      const { error } = await client.from(map.table).insert(map.row(item, uid));
-      if (error) errors.push(`${item.title}: ${error.message}`);
-      else saved += 1;
+      try {
+        await db.insert(map.coll, map.row(item));
+        saved += 1;
+      } catch (e: any) {
+        errors.push(`${item.title}: ${e?.message ?? 'error'}`);
+      }
     }
-    // Every accepted item also grows the memory graph (links them together).
-    await persistMemory(client, uid, accepted);
+    await persistMemory(accepted);
     analytics.log('capture', 'applied', saved);
+    // demo:false — the write is real (local), regardless of network/account.
     return { saved, demo: false, errors };
   },
 
-  // ── reads (real DB when signed in, else mock) ──
+  // ── Journal ──
   async listJournal(): Promise<JournalEntry[]> {
-    const session = await activeUser();
-    if (!session) return mockJournals;
-    const { data, error } = await session.client!
-      .from('journal_entries')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (error || !data) return mockJournals;
-    return data.map((r: any) => {
+    const rows = await db.list('journal_entries');
+    return rows.map((r: any) => {
       const content: string = r.content ?? '';
       const words = content.trim() ? content.trim().split(/\s+/).length : 0;
       return {
@@ -222,93 +150,151 @@ export const repository = {
     });
   },
 
-  /** Real journal write. Returns the new row id (null in signed-out demo). */
-  async addJournal(entry: {
-    title: string;
-    content: string;
-    mood: string;
-    tags: string[];
-    pinned: boolean;
-  }): Promise<string | null> {
-    const session = await activeUser();
-    if (!session) return null;
-    const { data, error } = await session.client!
-      .from('journal_entries')
-      .insert({
-        user_id: session.uid,
-        title: entry.title || entry.content.slice(0, 40),
-        content: entry.content,
-        mood: entry.mood,
-        tags: entry.tags,
-        pinned: entry.pinned,
-      })
-      .select('id')
-      .maybeSingle();
-    if (error || !data) return null;
+  async addJournal(entry: { title: string; content: string; mood: string; tags: string[]; pinned: boolean }): Promise<string | null> {
+    const row = await db.insert('journal_entries', {
+      title: entry.title || entry.content.slice(0, 40),
+      content: entry.content,
+      mood: entry.mood,
+      tags: entry.tags,
+      pinned: entry.pinned,
+    });
     analytics.log('capture', 'journal_saved', entry.content.length);
-    return data.id;
+    return row.id;
   },
 
+  // ── Tasks ──
   async listTasks(): Promise<TaskData[]> {
-    const session = await activeUser();
-    if (!session) return mockTasks;
-    const { data, error } = await session.client!
-      .from('tasks')
-      .select('*')
-      .is('parent_id', null)
-      .order('created_at', { ascending: false });
-    if (error || !data) return mockTasks;
-    return data.map((r: any) => ({
+    const rows = await db.find('tasks', (r) => !r.parent_id);
+    return rows.map((r: any) => ({
       id: r.id,
       title: r.title,
       priority: r.priority ?? 'medium',
       energy: r.energy ?? 'medium',
       due: r.due ?? null,
-      area: null,
-      project: null,
+      area: r.area ?? null,
+      project: r.project ?? null,
       done: !!r.done,
-      subtasks: [],
+      subtasks: r.subtasks ?? [],
     }));
   },
 
-  async listHabits(): Promise<HabitData[]> {
-    const session = await activeUser();
-    if (!session) return mockHabits;
-    const { data, error } = await session.client!.from('habits').select('*');
-    if (error || !data) return mockHabits;
-    return data.map((r: any) => ({
-      id: r.id,
-      name: r.name,
-      emoji: r.icon ?? '•',
-      color: '#7C6FFF',
-      type: r.type ?? 'checkbox',
-      target: Number(r.target ?? 1),
-      unit: r.unit ?? '',
-      streak: 0,
-      bestStreak: 0,
-      todayValue: 0,
+  async addTask(task: { title: string; priority?: string; energy?: string; due?: string | null; areaId?: string | null }): Promise<string> {
+    const row = await db.insert('tasks', {
+      title: task.title,
+      priority: task.priority ?? 'medium',
+      energy: task.energy ?? 'medium',
+      due: task.due ?? null,
+      area_id: task.areaId ?? null,
       done: false,
-      timePref: r.time_pref ?? 'anytime',
-      freq: r.freq ?? 'daily',
-      areaId: r.area_id ?? null,
-    }));
+    });
+    analytics.log('tasks', 'task_added');
+    return row.id;
   },
 
+  async toggleTask(id: string, done: boolean): Promise<void> {
+    await db.update('tasks', id, { done });
+    analytics.log('tasks', done ? 'task_done' : 'task_reopen');
+  },
+
+  async deleteTask(id: string): Promise<void> {
+    await db.remove('tasks', id);
+  },
+
+  // ── Habits ──
+  async listHabits(): Promise<HabitData[]> {
+    const [habits, logs] = await Promise.all([db.list('habits'), db.list('habit_logs')]);
+    const today = todayISO();
+    return habits.map((r: any) => {
+      const mine = logs.filter((l: any) => l.habit_id === r.id);
+      const todayLog = mine.find((l: any) => l.day === today);
+      // streak: consecutive days (ending today or yesterday) marked done
+      let streak = 0;
+      for (let off = 0; off < 400; off++) {
+        const d = dayISO(off);
+        const hit = mine.find((l: any) => l.day === d && l.done);
+        if (hit) streak++;
+        else if (off === 0) continue; // today not yet done doesn't break a prior streak
+        else break;
+      }
+      const best = mine.filter((l: any) => l.done).length; // simple proxy
+      return {
+        id: r.id,
+        name: r.name,
+        emoji: r.icon ?? '•',
+        color: r.color ?? '#7C6FFF',
+        type: r.type ?? 'checkbox',
+        target: Number(r.target ?? 1),
+        unit: r.unit ?? '',
+        streak,
+        bestStreak: Math.max(streak, best),
+        todayValue: Number(todayLog?.value ?? 0),
+        done: !!todayLog?.done,
+        timePref: r.time_pref ?? 'anytime',
+        freq: r.freq ?? 'daily',
+        areaId: r.area_id ?? null,
+      };
+    });
+  },
+
+  async addHabit(habit: { name: string; emoji?: string; color?: string; type?: string; target?: number; unit?: string; freq?: string; timePref?: string; areaId?: string | null }): Promise<string> {
+    const row = await db.insert('habits', {
+      name: habit.name,
+      icon: habit.emoji ?? '•',
+      color: habit.color ?? '#7C6FFF',
+      type: habit.type ?? 'checkbox',
+      target: habit.target ?? 1,
+      unit: habit.unit ?? '',
+      freq: habit.freq ?? 'daily',
+      time_pref: habit.timePref ?? 'anytime',
+      area_id: habit.areaId ?? null,
+    });
+    analytics.log('habits', 'habit_added');
+    return row.id;
+  },
+
+  async updateHabit(id: string, patch: Partial<{ name: string; emoji: string; color: string; target: number; unit: string; freq: string; timePref: string }>): Promise<void> {
+    const map: Record<string, unknown> = {};
+    if (patch.name !== undefined) map.name = patch.name;
+    if (patch.emoji !== undefined) map.icon = patch.emoji;
+    if (patch.color !== undefined) map.color = patch.color;
+    if (patch.target !== undefined) map.target = patch.target;
+    if (patch.unit !== undefined) map.unit = patch.unit;
+    if (patch.freq !== undefined) map.freq = patch.freq;
+    if (patch.timePref !== undefined) map.time_pref = patch.timePref;
+    await db.update('habits', id, map);
+  },
+
+  async deleteHabit(id: string): Promise<void> {
+    await db.remove('habits', id);
+  },
+
+  /** Record today's value for a habit (upsert on habit_id+day). */
+  async logHabit(habitId: string, value: number, done: boolean): Promise<void> {
+    await db.upsert('habit_logs', { habit_id: habitId, day: todayISO() }, { value, done });
+    analytics.log('habits', done ? 'habit_done' : 'habit_progress', value, { habitId });
+  },
+
+  /** Last N days of logs for one habit (oldest → newest). */
+  async listHabitLogs(habitId: string, days = 91): Promise<{ day: string; done: boolean; value: number }[]> {
+    const logs = await db.find('habit_logs', (r: any) => r.habit_id === habitId);
+    const byDay = new Map(logs.map((l: any) => [l.day, l]));
+    return Array.from({ length: days }, (_, i) => {
+      const day = dayISO(days - 1 - i);
+      const l: any = byDay.get(day);
+      return { day, done: !!l?.done, value: Number(l?.value ?? 0) };
+    });
+  },
+
+  // ── Study ──
   async listCourses(): Promise<Course[]> {
-    const session = await activeUser();
-    if (!session) return mockCourses;
-    const [courses, exams] = await Promise.all([
-      session.client!.from('study_courses').select('*').order('created_at', { ascending: false }),
-      session.client!.from('exams').select('*'),
-    ]);
-    if (courses.error || !courses.data) return mockCourses;
+    const [courses, exams] = await Promise.all([db.list('study_courses'), db.list('exams')]);
     const examsByCourse = new Map<string, any[]>();
-    for (const e of exams.data ?? []) {
+    for (const e of exams as any[]) {
       const list = examsByCourse.get(e.course_id) ?? [];
       list.push(e);
       examsByCourse.set(e.course_id, list);
     }
-    return courses.data.map((r: any) => ({
+    return (courses as any[]).map((r) => ({
       id: r.id,
       name: r.name,
       emoji: r.icon ?? '',
@@ -328,15 +314,34 @@ export const repository = {
     }));
   },
 
+  async addCourse(course: { name: string; teacher?: string; color?: string; emoji?: string }): Promise<string> {
+    const row = await db.insert('study_courses', {
+      name: course.name,
+      teacher: course.teacher ?? '',
+      color: course.color ?? '#7C6FFF',
+      icon: course.emoji ?? '',
+      status: 'active',
+      progress: 0,
+    });
+    analytics.log('study', 'course_added');
+    return row.id;
+  },
+
+  async addExam(exam: { courseId: string | null; name: string; date: string | null; chaptersCount?: number }): Promise<string> {
+    const row = await db.insert('exams', {
+      course_id: exam.courseId,
+      name: exam.name,
+      exam_date: exam.date,
+      chapters_count: exam.chaptersCount ?? 0,
+      ai_plan: [],
+    });
+    analytics.log('study', 'exam_added');
+    return row.id;
+  },
+
   async listLibrary(): Promise<LibraryItem[]> {
-    const session = await activeUser();
-    if (!session) return mockLibrary;
-    const { data, error } = await session.client!
-      .from('learning_items')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (error || !data) return mockLibrary;
-    return data.map((r: any) => ({
+    const rows = await db.list('learning_items');
+    return (rows as any[]).map((r) => ({
       id: r.id,
       title: r.title,
       author: r.author ?? '',
@@ -350,22 +355,22 @@ export const repository = {
     }));
   },
 
-  /** Flashcards due for review now (SM-2). Mock fallback when signed out. */
+  async addLibraryItem(item: { title: string; author?: string; type?: string; status?: string }): Promise<string> {
+    const row = await db.insert('learning_items', {
+      title: item.title,
+      author: item.author ?? '',
+      type: item.type ?? 'book',
+      status: item.status ?? 'want_to_read',
+      progress: 0,
+    });
+    return row.id;
+  },
+
+  // ── Flashcards (SM-2) ──
   async listDueFlashcards(courseId?: string): Promise<Flashcard[]> {
-    const session = await activeUser();
-    const today = new Date().toISOString().slice(0, 10);
-    if (!session) {
-      return mockFlashcards.filter((f) => (!courseId || f.courseId === courseId) && f.due <= today);
-    }
-    let q = session.client!
-      .from('flashcards')
-      .select('*')
-      .lte('due_date', today)
-      .order('due_date', { ascending: true });
-    if (courseId) q = q.eq('course_id', courseId);
-    const { data, error } = await q;
-    if (error || !data) return mockFlashcards.filter((f) => f.due <= today);
-    return data.map((r: any) => ({
+    const today = todayISO();
+    const rows = await db.find('flashcards', (r: any) => (!courseId || r.course_id === courseId) && (r.due_date ?? today) <= today);
+    return (rows as any[]).map((r) => ({
       id: r.id,
       courseId: r.course_id ?? null,
       front: r.front,
@@ -377,177 +382,9 @@ export const repository = {
     }));
   },
 
-  /** Grade a flashcard (0..5) → persist the next SM-2 schedule. */
-  async reviewFlashcard(card: Flashcard, grade: number): Promise<SrsResult> {
-    const next = sm2({ ease: card.ease, interval: card.interval, reps: card.reps }, grade);
-    const session = await activeUser();
-    if (session) {
-      await session.client!
-        .from('flashcards')
-        .update({ ease: next.ease, interval_days: next.interval, reps: next.reps, due_date: next.due })
-        .eq('id', card.id);
-    }
-    analytics.log('study', 'flashcard_review', grade);
-    return next;
-  },
-
-  // ── Health / Nutrition ──
-  async getHealthToday(): Promise<HealthDay> {
-    const session = await activeUser();
-    if (!session) return mockHealthToday;
-    const today = new Date().toISOString().slice(0, 10);
-    const { data, error } = await session.client!
-      .from('health_metrics')
-      .select('*')
-      .eq('day', today)
-      .maybeSingle();
-    if (error || !data) return { ...mockHealthToday, day: today, weightKg: null, heightCm: null, waterMl: 0, sleepMin: 0, steps: 0 };
-    return {
-      day: data.day,
-      weightKg: data.weight_kg ?? null,
-      heightCm: data.height_cm ?? null,
-      waterMl: Number(data.water_ml ?? 0),
-      sleepMin: Number(data.sleep_min ?? 0),
-      steps: Number(data.steps ?? 0),
-    };
-  },
-
-  async listMeals(): Promise<Meal[]> {
-    const session = await activeUser();
-    if (!session) return mockMeals;
-    const today = new Date().toISOString().slice(0, 10);
-    const { data, error } = await session.client!
-      .from('meals')
-      .select('*')
-      .gte('eaten_at', `${today}T00:00:00`)
-      .order('eaten_at', { ascending: true });
-    if (error || !data) return mockMeals;
-    return data.map((r: any) => ({
-      id: r.id,
-      name: r.name ?? '',
-      calories: Number(r.calories ?? 0),
-      protein: Number(r.protein_g ?? 0),
-      carbs: Number(r.carbs_g ?? 0),
-      fat: Number(r.fat_g ?? 0),
-      aiEstimated: !!r.ai_estimated,
-      eatenAt: r.eaten_at,
-    }));
-  },
-
-  /** Log a meal. Returns the local row; persists when signed in. */
-  async addMeal(est: MealEstimate): Promise<Meal> {
-    const meal: Meal = { ...est, id: `local_${Date.now()}`, eatenAt: new Date().toISOString() };
-    const session = await activeUser();
-    if (session) {
-      const { data } = await session.client!
-        .from('meals')
-        .insert({
-          user_id: session.uid,
-          name: est.name,
-          calories: est.calories,
-          protein_g: est.protein,
-          carbs_g: est.carbs,
-          fat_g: est.fat,
-          ai_estimated: est.aiEstimated,
-        })
-        .select('id')
-        .maybeSingle();
-      if (data?.id) meal.id = data.id;
-    }
-    analytics.log('health', 'meal_logged', est.calories, { ai: est.aiEstimated });
-    return meal;
-  },
-
-  // ── Habits: real per-day logs ──
-  /** Record today's value for a habit (upsert on habit_id+day). */
-  async logHabit(habitId: string, value: number, done: boolean): Promise<void> {
-    const session = await activeUser();
-    if (!session) return; // demo mode keeps its optimistic local state
-    try {
-      const today = new Date().toISOString().slice(0, 10);
-      await session.client!
-        .from('habit_logs')
-        .upsert({ habit_id: habitId, day: today, value, done }, { onConflict: 'habit_id,day' });
-      analytics.log('habits', done ? 'habit_done' : 'habit_progress', value, { habitId });
-    } catch {
-      /* logging must never break the interaction */
-    }
-  },
-
-  /** Last N days of logs for one habit (oldest → newest). Seed-derived signed out. */
-  async listHabitLogs(habitId: string, days = 91): Promise<{ day: string; done: boolean; value: number }[]> {
-    const session = await activeUser();
-    const dayISO = (offset: number) => new Date(Date.now() - offset * 86_400_000).toISOString().slice(0, 10);
-    if (!session) {
-      // preview series derived from the seed habit's streak (not random noise)
-      const h = mockHabits.find((x) => x.id === habitId);
-      const streak = h?.streak ?? 0;
-      return Array.from({ length: days }, (_, i) => {
-        const offset = days - 1 - i;
-        return { day: dayISO(offset), done: offset < streak, value: offset < streak ? 1 : 0 };
-      });
-    }
-    const from = dayISO(days - 1);
-    const { data, error } = await session.client!
-      .from('habit_logs')
-      .select('day,done,value')
-      .eq('habit_id', habitId)
-      .gte('day', from)
-      .order('day', { ascending: true });
-    if (error || !data) return [];
-    return data.map((r: any) => ({ day: r.day, done: !!r.done, value: Number(r.value ?? 0) }));
-  },
-
-  /** Merge a partial into today's health_metrics row (insert-or-update). */
-  async upsertHealthToday(patch: Partial<{ waterMl: number; sleepMin: number; steps: number; weightKg: number }>): Promise<void> {
-    const session = await activeUser();
-    if (!session) return; // demo mode: UI keeps its optimistic local value
-    const today = new Date().toISOString().slice(0, 10);
-    const row: Record<string, unknown> = { user_id: session.uid, day: today };
-    if (patch.waterMl !== undefined) row.water_ml = patch.waterMl;
-    if (patch.sleepMin !== undefined) row.sleep_min = patch.sleepMin;
-    if (patch.steps !== undefined) row.steps = patch.steps;
-    if (patch.weightKg !== undefined) row.weight_kg = patch.weightKg;
-    await session.client!.from('health_metrics').upsert(row, { onConflict: 'user_id,day' });
-    analytics.log('health', 'metrics_upsert');
-  },
-
-  /** Last 7 days of health metrics, oldest → newest (seed series signed out). */
-  async listHealthWeek(): Promise<{ day: string; waterMl: number; sleepMin: number; steps: number }[]> {
-    const session = await activeUser();
-    if (!session) {
-      // seed/preview series — replaced by real rows once signed in
-      return [1400, 1800, 1100, 2000, 1600, 900, 1200].map((w, i) => ({
-        day: new Date(Date.now() - (6 - i) * 86_400_000).toISOString().slice(0, 10),
-        waterMl: w,
-        sleepMin: 400 + (i % 3) * 30,
-        steps: 5000 + i * 400,
-      }));
-    }
-    const from = new Date(Date.now() - 6 * 86_400_000).toISOString().slice(0, 10);
-    const { data, error } = await session.client!
-      .from('health_metrics')
-      .select('day,water_ml,sleep_min,steps')
-      .gte('day', from)
-      .order('day', { ascending: true });
-    if (error || !data) return [];
-    return data.map((r: any) => ({
-      day: r.day,
-      waterMl: Number(r.water_ml ?? 0),
-      sleepMin: Number(r.sleep_min ?? 0),
-      steps: Number(r.steps ?? 0),
-    }));
-  },
-
-  /** ALL flashcards (optionally per course) — weak-topic detection needs ease history. */
   async listFlashcards(courseId?: string): Promise<Flashcard[]> {
-    const session = await activeUser();
-    if (!session) return mockFlashcards.filter((f) => !courseId || f.courseId === courseId);
-    let q = session.client!.from('flashcards').select('*');
-    if (courseId) q = q.eq('course_id', courseId);
-    const { data, error } = await q;
-    if (error || !data) return [];
-    return data.map((r: any) => ({
+    const rows = await db.find('flashcards', (r: any) => !courseId || r.course_id === courseId);
+    return (rows as any[]).map((r) => ({
       id: r.id,
       courseId: r.course_id ?? null,
       front: r.front,
@@ -559,16 +396,118 @@ export const repository = {
     }));
   },
 
+  async reviewFlashcard(card: Flashcard, grade: number): Promise<SrsResult> {
+    const next = sm2({ ease: card.ease, interval: card.interval, reps: card.reps }, grade);
+    await db.update('flashcards', card.id, { ease: next.ease, interval_days: next.interval, reps: next.reps, due_date: next.due });
+    analytics.log('study', 'flashcard_review', grade);
+    return next;
+  },
+
+  // ── Goals ──
+  async listGoals(): Promise<Goal[]> {
+    const rows = await db.list('goals');
+    return (rows as any[]).map((r) => ({
+      id: r.id,
+      title: r.title,
+      detail: r.detail ?? '',
+      areaId: r.area_id ?? null,
+      projectId: r.project_id ?? null,
+      progress: Number(r.progress ?? 0),
+      done: !!r.done,
+      targetDate: r.target_date ?? null,
+    }));
+  },
+
+  async addGoal(goal: { title: string; detail?: string; areaId?: string | null; projectId?: string | null; targetDate?: string | null }): Promise<string> {
+    const row = await db.insert('goals', {
+      title: goal.title,
+      detail: goal.detail ?? '',
+      area_id: goal.areaId ?? null,
+      project_id: goal.projectId ?? null,
+      target_date: goal.targetDate ?? null,
+      progress: 0,
+      done: false,
+    });
+    analytics.log('goals', 'goal_added');
+    return row.id;
+  },
+
+  async updateGoal(id: string, patch: Partial<{ progress: number; done: boolean; title: string; detail: string }>): Promise<void> {
+    await db.update('goals', id, patch);
+  },
+
+  async deleteGoal(id: string): Promise<void> {
+    await db.remove('goals', id);
+  },
+
+  // ── Health / Nutrition ──
+  async getHealthToday(): Promise<HealthDay> {
+    const today = todayISO();
+    const row: any = (await db.find('health_metrics', (r: any) => r.day === today))[0];
+    if (!row) return { day: today, weightKg: null, heightCm: null, waterMl: 0, sleepMin: 0, steps: 0 };
+    return {
+      day: row.day,
+      weightKg: row.weight_kg ?? null,
+      heightCm: row.height_cm ?? null,
+      waterMl: Number(row.water_ml ?? 0),
+      sleepMin: Number(row.sleep_min ?? 0),
+      steps: Number(row.steps ?? 0),
+    };
+  },
+
+  async upsertHealthToday(patch: Partial<{ waterMl: number; sleepMin: number; steps: number; weightKg: number }>): Promise<void> {
+    const data: Record<string, unknown> = {};
+    if (patch.waterMl !== undefined) data.water_ml = patch.waterMl;
+    if (patch.sleepMin !== undefined) data.sleep_min = patch.sleepMin;
+    if (patch.steps !== undefined) data.steps = patch.steps;
+    if (patch.weightKg !== undefined) data.weight_kg = patch.weightKg;
+    await db.upsert('health_metrics', { day: todayISO() }, data);
+    analytics.log('health', 'metrics_upsert');
+  },
+
+  async listHealthWeek(): Promise<{ day: string; waterMl: number; sleepMin: number; steps: number }[]> {
+    const rows = await db.list('health_metrics');
+    const byDay = new Map((rows as any[]).map((r) => [r.day, r]));
+    return Array.from({ length: 7 }, (_, i) => {
+      const day = dayISO(6 - i);
+      const r: any = byDay.get(day);
+      return { day, waterMl: Number(r?.water_ml ?? 0), sleepMin: Number(r?.sleep_min ?? 0), steps: Number(r?.steps ?? 0) };
+    });
+  },
+
+  async listMeals(): Promise<Meal[]> {
+    const today = todayISO();
+    const rows = await db.find('meals', (r: any) => (r.eaten_at ?? '').slice(0, 10) === today);
+    return (rows as any[]).map((r) => ({
+      id: r.id,
+      name: r.name ?? '',
+      calories: Number(r.calories ?? 0),
+      protein: Number(r.protein_g ?? 0),
+      carbs: Number(r.carbs_g ?? 0),
+      fat: Number(r.fat_g ?? 0),
+      aiEstimated: !!r.ai_estimated,
+      eatenAt: r.eaten_at,
+    }));
+  },
+
+  async addMeal(est: MealEstimate): Promise<Meal> {
+    const row = await db.insert('meals', {
+      name: est.name,
+      calories: est.calories,
+      protein_g: est.protein,
+      carbs_g: est.carbs,
+      fat_g: est.fat,
+      ai_estimated: est.aiEstimated,
+      eaten_at: db.nowISO(),
+    });
+    analytics.log('health', 'meal_logged', est.calories, { ai: est.aiEstimated });
+    return { ...est, id: row.id, eatenAt: row.eaten_at as string };
+  },
+
   // ── Exercise ──
   async listWorkouts(): Promise<Workout[]> {
-    const session = await activeUser();
-    if (!session) return mockWorkouts;
-    const { data, error } = await session.client!
-      .from('workouts')
-      .select('*')
-      .order('done_at', { ascending: false });
-    if (error || !data) return mockWorkouts;
-    return data.map((r: any) => ({
+    const rows = await db.list('workouts');
+    return (rows as any[]).map((r) => ({
       id: r.id,
       name: r.name ?? '',
       mode: r.mode ?? 'gym',
@@ -578,92 +517,71 @@ export const repository = {
     }));
   },
 
-  // ── Memory recall ──
-  /**
-   * The "Connected" layer read: nodes whose label matches the query PLUS
-   * their graph neighbors (via memory_edges) — how an entity surfaces the
-   * rest of the life it touches. In-memory graph when signed out.
-   */
+  async addWorkout(w: { name: string; mode?: 'gym' | 'home'; durationMin?: number }): Promise<string> {
+    const row = await db.insert('workouts', {
+      name: w.name,
+      mode: w.mode ?? 'gym',
+      duration_min: w.durationMin ?? 0,
+      exercises: [],
+      done_at: db.nowISO(),
+    });
+    return row.id;
+  },
+
+  // ── Events / calendar ──
+  async listEvents(): Promise<ScheduleEvent[]> {
+    const rows = await db.list('events');
+    const hhmm = (iso?: string) => (iso ? new Date(iso).toTimeString().slice(0, 5) : '00:00');
+    return (rows as any[])
+      .sort((a, b) => (a.starts_at ?? '').localeCompare(b.starts_at ?? ''))
+      .map((r) => ({
+        id: r.id,
+        title: r.title,
+        start: hhmm(r.starts_at),
+        end: hhmm(r.ends_at ?? r.starts_at),
+        color: r.color ?? '#7C6FFF',
+        allDay: !!r.all_day,
+        source: r.source ?? 'event',
+        location: r.location ?? undefined,
+      }));
+  },
+
+  async addEvent(ev: { title: string; startsAt: string; endsAt?: string | null; allDay?: boolean; source?: string; location?: string }): Promise<string> {
+    const row = await db.insert('events', {
+      title: ev.title,
+      starts_at: ev.startsAt,
+      ends_at: ev.endsAt ?? null,
+      all_day: !!ev.allDay,
+      source: ev.source ?? 'event',
+      location: ev.location ?? null,
+    });
+    return row.id;
+  },
+
+  // ── Memory recall (local graph) ──
   async relatedMemory(query: string, limit = 6): Promise<MemoryHit[]> {
-    const q = query.trim();
+    const q = query.trim().toLowerCase();
     if (!q) return [];
-    const session = await activeUser();
-
-    if (!session) {
-      const direct = memory.search(q);
-      const nbrs = direct.flatMap((n) => memory.neighbors(n.id));
-      const all = [...direct, ...nbrs];
-      const seen = new Set<string>();
-      return all
-        .filter((n) => (seen.has(n.id) ? false : (seen.add(n.id), true)))
-        .slice(0, limit)
-        .map((n) => ({ id: n.id, type: n.type, label: n.label }));
-    }
-
-    // match on the longest word so short particles don't flood results
     const word = q.split(/\s+/).sort((a, b) => b.length - a.length)[0] ?? q;
-    const { data: direct } = await session.client!
-      .from('memory_nodes')
-      .select('id,type,label')
-      .ilike('label', `%${word}%`)
-      .limit(limit);
-    const hits: MemoryHit[] = (direct ?? []).map((r: any) => ({ id: r.id, type: r.type, label: r.label }));
-    if (hits.length === 0) return [];
-
-    const ids = hits.map((h) => h.id);
-    const { data: edges } = await session.client!
-      .from('memory_edges')
-      .select('from_node,to_node')
-      .or(`from_node.in.(${ids.join(',')}),to_node.in.(${ids.join(',')})`);
-    const nbrIds = [
-      ...new Set(
-        (edges ?? [])
-          .flatMap((e: any) => [e.from_node, e.to_node])
-          .filter((id: string) => !ids.includes(id))
-      ),
-    ].slice(0, limit);
-    if (nbrIds.length) {
-      const { data: nbrs } = await session.client!
-        .from('memory_nodes')
-        .select('id,type,label')
-        .in('id', nbrIds);
-      for (const r of nbrs ?? []) hits.push({ id: r.id, type: r.type, label: r.label });
+    const nodes = (await db.list('memory_nodes')) as any[];
+    const direct = nodes.filter((n) => String(n.label ?? '').toLowerCase().includes(word)).slice(0, limit);
+    if (direct.length === 0) return [];
+    const ids = new Set(direct.map((n) => n.id));
+    const edges = (await db.list('memory_edges')) as any[];
+    const nbrIds = new Set<string>();
+    for (const e of edges) {
+      if (ids.has(e.from_node) && !ids.has(e.to_node)) nbrIds.add(e.to_node);
+      if (ids.has(e.to_node) && !ids.has(e.from_node)) nbrIds.add(e.from_node);
     }
+    const hits: MemoryHit[] = direct.map((n) => ({ id: n.id, type: n.type, label: n.label }));
+    for (const n of nodes) if (nbrIds.has(n.id)) hits.push({ id: n.id, type: n.type, label: n.label });
     return hits.slice(0, limit);
   },
 
   async searchMemory(query: string): Promise<MemoryHit[]> {
-    const session = await activeUser();
-    if (!session) {
-      const q = query.trim().toLowerCase();
-      const nodes = q ? memory.search(query) : memory.all();
-      return nodes.map((n) => ({ id: n.id, type: n.type, label: n.label }));
-    }
-    let req = session.client!.from('memory_nodes').select('id,type,label').order('created_at', { ascending: false }).limit(100);
-    if (query.trim()) req = req.ilike('label', `%${query.trim()}%`);
-    const { data, error } = await req;
-    if (error || !data) return [];
-    return data.map((r: any) => ({ id: r.id, type: r.type, label: r.label }));
-  },
-
-  async listEvents(): Promise<ScheduleEvent[]> {
-    const session = await activeUser();
-    if (!session) return mockEvents;
-    const { data, error } = await session.client!
-      .from('events')
-      .select('*')
-      .order('starts_at', { ascending: true });
-    if (error || !data) return mockEvents;
-    const hhmm = (iso?: string) => (iso ? new Date(iso).toTimeString().slice(0, 5) : '00:00');
-    return data.map((r: any) => ({
-      id: r.id,
-      title: r.title,
-      start: hhmm(r.starts_at),
-      end: hhmm(r.ends_at ?? r.starts_at),
-      color: r.color ?? '#7C6FFF',
-      allDay: !!r.all_day,
-      source: r.source ?? 'event',
-      location: r.location ?? undefined,
-    }));
+    const nodes = (await db.list('memory_nodes')) as any[];
+    const q = query.trim().toLowerCase();
+    const filtered = q ? nodes.filter((n) => String(n.label ?? '').toLowerCase().includes(q)) : nodes;
+    return filtered.slice(0, 100).map((n) => ({ id: n.id, type: n.type, label: n.label }));
   },
 };
