@@ -11,7 +11,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getClient } from './supabase';
 import { repository } from './repository';
 import type { DetectedItem } from './types';
-import { mockHabits } from '@/data/mock';
 
 export type InsightKind = 'correlation' | 'warning' | 'opportunity' | 'trend';
 export type InsightStatus = 'new' | 'seen' | 'acted' | 'dismissed';
@@ -60,12 +59,13 @@ function suggest(type: DetectedItem['type'], title: string): DetectedItem {
 async function computeLocalInsights(): Promise<Omit<Insight, 'id' | 'status' | 'createdAt'>[]> {
   const out: Omit<Insight, 'id' | 'status' | 'createdAt'>[] = [];
 
-  const [tasks, courses, dueCards, journals, health] = await Promise.all([
+  const [tasks, courses, dueCards, journals, health, habits] = await Promise.all([
     repository.listTasks(),
     repository.listCourses(),
     repository.listDueFlashcards(),
     repository.listJournal(),
     repository.getHealthToday(),
+    repository.listHabits(),
   ]);
 
   // 1) Exams vs revision pace → warning + planned session suggestion.
@@ -115,8 +115,8 @@ async function computeLocalInsights(): Promise<Omit<Insight, 'id' | 'status' | '
     });
   }
 
-  // 4) Habit streaks at risk (high streak, not done today).
-  const habits = mockHabits; // seed shape; real habit_logs analytics lands in a later phase
+  // 4) Habit streaks at risk (high streak, not done today) — real streaks now
+  // computed from the user's habit_logs by repository.listHabits().
   const atRisk = habits.filter((h) => !h.done && h.streak >= 5);
   if (atRisk.length > 0) {
     out.push({
