@@ -10,6 +10,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getClient } from './supabase';
 import { repository } from './repository';
+import * as db from '@/db/local';
 import type { DetectedItem } from './types';
 
 export type InsightKind = 'correlation' | 'warning' | 'opportunity' | 'trend';
@@ -59,13 +60,14 @@ function suggest(type: DetectedItem['type'], title: string): DetectedItem {
 async function computeLocalInsights(): Promise<Omit<Insight, 'id' | 'status' | 'createdAt'>[]> {
   const out: Omit<Insight, 'id' | 'status' | 'createdAt'>[] = [];
 
-  const [tasks, courses, dueCards, journals, health, habits] = await Promise.all([
+  const [tasks, courses, dueCards, journals, health, habits, signals] = await Promise.all([
     repository.listTasks(),
     repository.listCourses(),
     repository.listDueFlashcards(),
     repository.listJournal(),
     repository.getHealthToday(),
     repository.listHabits(),
+    db.list('journal_signals'),
   ]);
 
   // 1) Exams vs revision pace → warning + planned session suggestion.
@@ -150,6 +152,36 @@ async function computeLocalInsights(): Promise<Omit<Insight, 'id' | 'status' | '
         title: 'أسبوعك النفسي صاعد — استثمره',
         evidence: { avgMood: +avg.toFixed(2), samples: recent.length },
         confidence: 0.7,
+      });
+    }
+  }
+
+  // 5b) Memory: read journal_signals back over time so the AI *remembers* —
+  // recurring stress and the people who keep showing up in your entries.
+  const recentSignals = (signals as any[]).slice(0, 8);
+  if (recentSignals.length >= 3) {
+    const avgStress = recentSignals.reduce((a, s) => a + Number(s.stress ?? 0), 0) / recentSignals.length;
+    if (avgStress >= 1.5) {
+      out.push({
+        kind: 'correlation',
+        domain: 'journal',
+        title: 'التوتر يتكرر في يومياتك مؤخرًا',
+        body: 'لاحظتُ إشارات ضغط في أكثر من مدخل — وقفة قصيرة أو مشي قد يساعد.',
+        evidence: { avgStress: +avgStress.toFixed(2), entries: recentSignals.length },
+        confidence: 0.72,
+        action: suggest('habit', 'تنفّس عميق ٥ دقائق'),
+      });
+    }
+    const peopleFreq = new Map<string, number>();
+    for (const s of recentSignals) for (const p of (s.people ?? [])) peopleFreq.set(p, (peopleFreq.get(p) ?? 0) + 1);
+    const topPerson = [...peopleFreq.entries()].sort((a, b) => b[1] - a[1])[0];
+    if (topPerson && topPerson[1] >= 2) {
+      out.push({
+        kind: 'trend',
+        domain: 'journal',
+        title: `«${topPerson[0]}» حاضر كثيرًا في يومياتك`,
+        evidence: { person: topPerson[0], mentions: topPerson[1] },
+        confidence: 0.65,
       });
     }
   }
@@ -392,23 +424,18 @@ export const intelligence = {
     };
   },
 
-  /** Persist a journal entry's signals (silent no-op signed out / on error). */
+  /** Persist a journal entry's signals locally (read back for mood/people trends). */
   async recordJournalSignals(entryId: string | null, text: string): Promise<JournalSignals> {
     const sig = this.extractJournalSignals(text);
     try {
-      const uid = await activeUid();
-      if (uid) {
-        await getClient()!.from('journal_signals').insert({
-          user_id: uid,
-          entry_id: entryId,
-          mood_score: sig.moodScore,
-          stress: sig.stress,
-          energy: sig.energy,
-          topics: sig.topics,
-          people: sig.people,
-          signals: {},
-        });
-      }
+      await db.insert('journal_signals', {
+        entry_id: entryId,
+        mood_score: sig.moodScore,
+        stress: sig.stress,
+        energy: sig.energy,
+        topics: sig.topics,
+        people: sig.people,
+      });
     } catch {
       /* signals must never break saving a journal */
     }
