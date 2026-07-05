@@ -5,7 +5,6 @@
 // so we can tune the whole feel from one place and honor the user's
 // Haptics/Sounds toggles.
 import * as Haptics from 'expo-haptics';
-import { createAudioPlayer, type AudioPlayer } from 'expo-audio';
 import { useSettingsStore } from '@/store/settingsStore';
 
 const hapticsOn = () => {
@@ -15,14 +14,6 @@ const hapticsOn = () => {
     return true;
   }
 };
-const soundsOn = () => {
-  try {
-    return useSettingsStore.getState().sounds !== false;
-  } catch {
-    return true;
-  }
-};
-
 const runHaptic = (fn: () => Promise<unknown>) => {
   if (!hapticsOn()) return;
   fn().catch(() => {
@@ -30,28 +21,13 @@ const runHaptic = (fn: () => Promise<unknown>) => {
   });
 };
 
-// ── soft, musical UI sounds (soft attack + exponential decay, not beeps) ──
-type SoundName = 'tap' | 'success' | 'celebrate';
-const SOURCES: Record<SoundName, number> = {
-  tap: require('../assets/sounds/tap.wav'),
-  success: require('../assets/sounds/success.wav'),
-  celebrate: require('../assets/sounds/celebrate.wav'),
-};
-const players: Partial<Record<SoundName, AudioPlayer>> = {};
-
-function playSound(name: SoundName) {
-  if (!soundsOn()) return;
-  try {
-    let p = players[name];
-    if (!p) {
-      p = createAudioPlayer(SOURCES[name]);
-      players[name] = p;
-    }
-    p.seekTo(0);
-    p.play();
-  } catch {
-    /* audio is a nicety — never let it break the interaction */
-  }
+// Sound playback is intentionally deferred: expo-audio@1.1.1 references a
+// native class (AnyTypeCache) that SDK 54's expo-modules-core lacks, crashing
+// launch. The `sounds` toggle stays in Settings so re-enabling audio later
+// (once a compatible module is aligned) is a one-line change here. For now the
+// tactile layer (haptics) carries the "alive" feel.
+function playSound(_name: 'tap' | 'success' | 'celebrate') {
+  /* no-op until a launch-safe audio module is wired */
 }
 
 export const feedback = {
