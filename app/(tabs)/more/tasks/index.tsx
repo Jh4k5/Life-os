@@ -13,6 +13,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { mockTasks, type TaskData } from '@/data/mock';
 import { repository } from '@/services/repository';
 import { useAsync } from '@/hooks/useAsync';
+import { feedback } from '@/services/feedback';
 
 type TView = 'list' | 'board' | 'energy';
 const PRIORITY_ORDER: TaskData['priority'][] = ['urgent', 'high', 'medium', 'low', 'none'];
@@ -31,15 +32,28 @@ export default function TasksScreen() {
     setTasks(loaded);
   }, [loaded]);
 
-  const toggle = (id: string) =>
-    setTasks((p) => p.map((tk) => (tk.id === id ? { ...tk, done: !tk.done } : tk)));
+  const toggle = (id: string) => {
+    // Optimistic UI + real persistence, so the change survives a relaunch.
+    let nowDone = false;
+    setTasks((p) => p.map((tk) => {
+      if (tk.id !== id) return tk;
+      nowDone = !tk.done;
+      return { ...tk, done: nowDone };
+    }));
+    if (nowDone) feedback.success();
+    else feedback.tap();
+    repository.toggleTask(id, nowDone).catch(() => {});
+  };
 
-  const addQuick = () => {
+  const addQuick = async () => {
     const v = quick.trim();
     if (!v) return;
+    setQuick('');
+    feedback.press();
+    const id = await repository.addTask({ title: v, priority: 'medium', energy: 'medium' });
     setTasks((p) => [
       {
-        id: Date.now().toString(),
+        id,
         title: v,
         priority: 'medium',
         energy: 'medium',
@@ -51,7 +65,6 @@ export default function TasksScreen() {
       },
       ...p,
     ]);
-    setQuick('');
   };
 
   const PRIORITY_LABEL: Record<TaskData['priority'], string> = {

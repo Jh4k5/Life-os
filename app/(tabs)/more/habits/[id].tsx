@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { useMockStore } from '@/store/mockStore';
 import { repository } from '@/services/repository';
 import { useAsync } from '@/hooks/useAsync';
 
@@ -27,7 +26,7 @@ export default function HabitDetailScreen() {
   const { c } = useTheme();
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const habits = useMockStore((s) => s.habits);
+  const { data: habits } = useAsync(() => repository.listHabits(), []);
   const habit = habits.find((h) => h.id === id);
 
   // The heatmap is DATA now — real per-day history from habit_logs.
