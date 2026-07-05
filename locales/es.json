@@ -262,7 +262,27 @@
     "add_activity": "Añadir actividad",
     "weekly": "Progreso semanal",
     "challenges": "Retos",
-    "activities": "Actividades"
+    "activities": "Actividades",
+    "empty_state": "Empieza añadiendo actividades que te nutren o te agotan, y regístralas a diario para ver tu balance semanal.",
+    "balance_line": "Tu semana está equilibrada — {{pct}}% de tu energía fue a cosas que te nutren.",
+    "day_sun": "Dom",
+    "day_mon": "Lun",
+    "day_tue": "Mar",
+    "day_wed": "Mié",
+    "day_thu": "Jue",
+    "day_fri": "Vie",
+    "day_sat": "Sáb",
+    "from_ai": "De tu IA",
+    "apply": "Aplicar",
+    "applied": "Aplicado",
+    "add_healthy": "Actividad que nutre",
+    "add_draining": "Actividad que agota",
+    "no_activities": "Aún no hay actividades. Añade lo que te nutre (lectura, ejercicio) y lo que te agota (redes, trasnochar).",
+    "nourishes": "Te nutre",
+    "drains": "Te agota",
+    "long_press_delete": "Mantén pulsada una actividad para eliminarla.",
+    "activity_name": "Nombre de la actividad",
+    "add": "Añadir"
   },
   "ai_hub": {
     "ask_ph": "Dime qué quieres… (ej. crear un plan de repaso)",
@@ -273,7 +293,17 @@
     "gen_plan_90": "Plan de 90 días",
     "weekly_review": "Revisión semanal",
     "skill_plan": "Plan de aprendizaje",
-    "habit_system": "Sistema de hábitos"
+    "habit_system": "Sistema de hábitos",
+    "search_placeholder": "Busca en tu vida… (¿última cita? ¿dónde está el plan HSK?)",
+    "no_results": "Aún no hay resultados — cuanto más uses la app, más te conocerá.",
+    "noticed": "Lo que notó tu IA",
+    "no_insights": "Aún no hay ideas. Registra diarios, tareas y hábitos y la IA empezará a conectar patrones.",
+    "about_you": "Lo que sabe de ti",
+    "add_fact": "Añadir un dato",
+    "facts_hint": "Enséñale datos sobre ti (universidad, carrera, metas, personas clave) para que entienda tu contexto en cada sección.",
+    "fact_label": "Un dato sobre ti",
+    "fact_placeholder": "p. ej. Estudio Ingeniería Informática en la KSU",
+    "trust_center": "Centro de confianza y privacidad"
   },
   "settings": {
     "title": "Ajustes",
@@ -356,7 +386,13 @@
     "log_meal_photo": "Fotografía una comida para estimar calorías",
     "estimate_offline": "La estimación necesita el servidor — añade la comida manualmente",
     "disclaimer": "Estimaciones generales, no consejo médico — consulta a un profesional.",
-    "water_week": "Agua esta semana"
+    "water_week": "Agua esta semana",
+    "log_sleep": "Registrar sueño",
+    "log_steps": "Registrar pasos",
+    "log_weight": "Registrar peso",
+    "add_meal": "Añadir comida manualmente",
+    "meal_name": "Nombre de la comida",
+    "no_meals": "Sin comidas hoy — añade una por foto o a mano."
   },
   "exercise": {
     "this_week": "Esta semana",

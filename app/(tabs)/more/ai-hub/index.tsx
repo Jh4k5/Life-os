@@ -1,6 +1,8 @@
-// app/(tabs)/more/ai-hub/index.tsx
-// AI Hub = memory + Review Inbox + Trust Center. The Review Inbox reuses the
-// exact same Review Layer as the Home result card and AI Studio.
+// app/(tabs)/more/ai-hub/index.tsx  → "Intelligence"
+// The one place the AI's understanding of your life is visible: deep search
+// over your real memory graph, the insights it noticed across every section,
+// and a way to teach it facts about you. All real — no seeded graph, no fake
+// inbox. What you add here (facts) and everywhere else feeds the same brain.
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -10,114 +12,169 @@ import { useTranslation } from 'react-i18next';
 import { useRTL } from '@/hooks/useRTL';
 import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
-import { ReviewLayer } from '@/components/ai/ReviewLayer';
-import type { DetectedItem, ReviewAction } from '@/services/types';
-import { memory } from '@/services/memory';
-import { repository } from '@/services/repository';
+import { QuickLogSheet } from '@/components/ui/QuickLogSheet';
+import { repository, type MemoryHit } from '@/services/repository';
+import { intelligence, type Insight } from '@/services/intelligence';
+import { useAsync } from '@/hooks/useAsync';
+import { feedback } from '@/services/feedback';
 
-const INBOX: DetectedItem[] = [
-  { id: 'r1', type: 'appointment', title: 'موعد طبيب الأسنان', detail: 'الخميس ٤:٠٠؟', confidence: 0.55, status: 'pending' },
-  { id: 'r2', type: 'task', title: 'تجديد الاشتراك', detail: 'ذكرتَه بشكل عابر', confidence: 0.45, status: 'pending' },
-  { id: 'r3', type: 'habit', title: 'مشي ٢٠ دقيقة', confidence: 0.5, status: 'pending' },
-];
+const KIND_ICON: Record<Insight['kind'], keyof typeof import('@expo/vector-icons').Ionicons.glyphMap> = {
+  correlation: 'git-compare-outline',
+  warning: 'alert-circle-outline',
+  opportunity: 'bulb-outline',
+  trend: 'trending-up-outline',
+};
 
-// seed a tiny memory graph so Deep Search returns real results
-['تعلم الصينية', 'امتحان HSK', 'الصحة واللياقة', 'العادات الذرية'].forEach((label, i) =>
-  memory.addNode({ id: `seed_${i}`, type: 'note', label, createdAt: Date.now() })
-);
-
-export default function AIHubScreen() {
+export default function IntelligenceScreen() {
   const { c } = useTheme();
   const { t } = useTranslation();
   const { rowDir, textAlign } = useRTL();
   const router = useRouter();
-  const [items, setItems] = useState<DetectedItem[]>(INBOX);
   const [query, setQuery] = useState('');
+  const [results, setResults] = useState<MemoryHit[]>([]);
+  const [addingFact, setAddingFact] = useState(false);
+  const { data: insights, reload: reloadInsights } = useAsync(() => intelligence.listInsights(), [] as Insight[], 'ai_insights');
+  const { data: facts, reload: reloadFacts } = useAsync(
+    () => repository.searchMemory('').then((all) => all.filter((n) => n.type === 'fact')),
+    [] as MemoryHit[],
+    'ai_facts'
+  );
 
-  const onAction = (id: string, action: ReviewAction) =>
-    setItems((p) =>
-      p
-        .map((it) =>
-          it.id === id ? { ...it, status: action === 'accept' ? 'accepted' : action === 'ignore' ? 'ignored' : it.status } : it
-        )
-        .filter((it) => !(it.id === id && action === 'delete'))
-    );
-  const applyAll = async () => {
-    const next = items.map((it) => (it.status === 'pending' ? { ...it, status: 'accepted' as const } : it));
-    setItems(next);
-    await repository.persistAccepted(next);
+  const onSearch = async (q: string) => {
+    setQuery(q);
+    if (!q.trim()) {
+      setResults([]);
+      return;
+    }
+    setResults(await repository.searchMemory(q));
   };
 
-  const results = query.trim() ? memory.search(query) : [];
+  const addFact = async (v: Record<string, string>) => {
+    const label = (v.fact ?? '').trim();
+    if (!label) return;
+    await repository.addMemoryNode(label, 'fact');
+    reloadFacts();
+  };
 
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
       <Header
         title={t('sections.ai_hub')}
         accent={c.accent}
-        right={[{ icon: 'shield-checkmark-outline', onPress: () => router.push('/trust-center'), color: c.t2 }]}
+        right={[
+          { icon: 'add', onPress: () => { feedback.tap(); setAddingFact(true); }, color: c.accent },
+          { icon: 'shield-checkmark-outline', onPress: () => router.push('/trust-center'), color: c.t2 },
+        ]}
       />
       <ScrollView contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: 110 }}>
-        {/* Deep search in my life */}
+        {/* Deep search over the real memory graph */}
         <View style={[S.search, { backgroundColor: c.bg2, borderColor: c.b1, flexDirection: rowDir }]}>
           <Ionicons name="search-outline" size={18} color={c.t3} />
           <TextInput
             style={[S.searchInput, { color: c.t1, textAlign }]}
-            placeholder="ابحث في حياتك… (متى آخر موعد؟ وين خطة HSK؟)"
+            placeholder={t('ai_hub.search_placeholder')}
             placeholderTextColor={c.t4}
             value={query}
-            onChangeText={setQuery}
+            onChangeText={onSearch}
           />
         </View>
-        {results.length > 0 && (
+        {query.trim().length > 0 && (
+          results.length > 0 ? (
+            <SmartCard noPad>
+              {results.map((r, i) => (
+                <View
+                  key={r.id}
+                  style={[S.resRow, { flexDirection: rowDir }, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.b0 }]}
+                >
+                  <Ionicons name="git-network-outline" size={16} color={c.t3} />
+                  <Text style={{ color: c.t1, fontSize: 14, flex: 1, textAlign }}>{r.label}</Text>
+                </View>
+              ))}
+            </SmartCard>
+          ) : (
+            <Text style={{ color: c.t3, fontSize: 13, textAlign, paddingHorizontal: 4 }}>{t('ai_hub.no_results')}</Text>
+          )
+        )}
+
+        {/* What the AI noticed — real insights across every section */}
+        <View style={[S.inboxHead, { flexDirection: rowDir }]}>
+          <Text style={[S.label, { color: c.t3, textAlign }]}>{t('ai_hub.noticed')}</Text>
+          <Pressable onPress={() => { feedback.tap(); reloadInsights(); }} hitSlop={8}>
+            <Ionicons name="refresh-outline" size={16} color={c.t3} />
+          </Pressable>
+        </View>
+        {insights.length > 0 ? (
+          insights.slice(0, 6).map((ins) => (
+            <SmartCard key={ins.id}>
+              <View style={[S.row, { flexDirection: rowDir }]}>
+                <View style={[S.nIcon, { backgroundColor: c.accentDim }]}>
+                  <Ionicons name={KIND_ICON[ins.kind]} size={17} color={c.accent} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: c.t1, fontSize: 14, fontWeight: '600', lineHeight: 21, textAlign }}>{ins.title}</Text>
+                  {ins.body ? (
+                    <Text style={{ color: c.t3, fontSize: 12, marginTop: 3, lineHeight: 18, textAlign }}>{ins.body}</Text>
+                  ) : null}
+                </View>
+              </View>
+            </SmartCard>
+          ))
+        ) : (
+          <SmartCard>
+            <Text style={{ color: c.t3, fontSize: 13, lineHeight: 20, textAlign }}>{t('ai_hub.no_insights')}</Text>
+          </SmartCard>
+        )}
+
+        {/* Facts you've taught it about you */}
+        <View style={[S.inboxHead, { flexDirection: rowDir }]}>
+          <Text style={[S.label, { color: c.t3, textAlign }]}>{t('ai_hub.about_you')}</Text>
+          <Pressable onPress={() => { feedback.tap(); setAddingFact(true); }} style={[S.addChip, { backgroundColor: c.accentDim }]}>
+            <Ionicons name="add" size={13} color={c.accent} />
+            <Text style={{ color: c.accent, fontSize: 12, fontWeight: '700' }}>{t('ai_hub.add_fact')}</Text>
+          </Pressable>
+        </View>
+        {facts.length === 0 ? (
+          <SmartCard>
+            <Text style={{ color: c.t3, fontSize: 13, lineHeight: 20, textAlign }}>{t('ai_hub.facts_hint')}</Text>
+          </SmartCard>
+        ) : (
           <SmartCard noPad>
-            {results.map((r, i) => (
-              <View
-                key={r.id}
+            {facts.map((f, i) => (
+              <Pressable
+                key={f.id}
+                onLongPress={async () => { feedback.warning(); await repository.removeMemoryNode(f.id); reloadFacts(); }}
                 style={[S.resRow, { flexDirection: rowDir }, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.b0 }]}
               >
-                <Ionicons name="git-network-outline" size={16} color={c.t3} />
-                <Text style={{ color: c.t1, fontSize: 14, flex: 1, textAlign }}>{r.label}</Text>
-              </View>
+                <Ionicons name="person-circle-outline" size={16} color={c.accent} />
+                <Text style={{ color: c.t1, fontSize: 14, flex: 1, textAlign }}>{f.label}</Text>
+              </Pressable>
             ))}
           </SmartCard>
         )}
 
-        {/* Review Inbox — same Review Layer */}
-        <View style={[S.inboxHead, { flexDirection: rowDir }]}>
-          <Text style={[S.label, { color: c.t3, textAlign }]}>صندوق المراجعة</Text>
-          {items.some((i) => i.status === 'pending') && (
-            <View style={[S.count, { backgroundColor: c.accent }]}>
-              <Text style={S.countTxt}>{items.filter((i) => i.status === 'pending').length}</Text>
-            </View>
-          )}
-        </View>
-        {items.length > 0 ? (
-          <ReviewLayer items={items} onAction={onAction} onApplyAll={applyAll} />
-        ) : (
-          <Text style={{ color: c.t3, fontSize: 14, textAlign }}>لا شيء بانتظار المراجعة ✨</Text>
-        )}
-
-        {/* Memory + Trust */}
-        <Text style={[S.label, { color: c.t3, textAlign }]}>{t('ai_hub.memory')}</Text>
-        <SmartCard>
-          <View style={[S.row, { flexDirection: rowDir }]}>
-            <Ionicons name="git-network-outline" size={18} color={c.accent} />
-            <Text style={{ flex: 1, color: c.t2, fontSize: 13, lineHeight: 21, textAlign }}>
-              يربط الذكاء أشخاصك وملفاتك ومشاريعك وعاداتك ليفهم «كيف يؤثر هذا على بقية حياتك» — لا مجرد تخزين.
-            </Text>
-          </View>
-        </SmartCard>
+        {/* Trust & privacy */}
         <Pressable onPress={() => router.push('/trust-center')}>
           <SmartCard>
             <View style={[S.row, { flexDirection: rowDir }]}>
               <Ionicons name="shield-checkmark-outline" size={18} color={c.green} />
-              <Text style={{ flex: 1, color: c.t1, fontSize: 14, fontWeight: '600', textAlign }}>مركز الثقة والخصوصية</Text>
+              <Text style={{ flex: 1, color: c.t1, fontSize: 14, fontWeight: '600', textAlign }}>{t('ai_hub.trust_center')}</Text>
               <Ionicons name="chevron-forward" size={16} color={c.t3} />
             </View>
           </SmartCard>
         </Pressable>
       </ScrollView>
+
+      {addingFact && (
+        <QuickLogSheet
+          visible={addingFact}
+          title={t('ai_hub.add_fact')}
+          icon="person-circle-outline"
+          fields={[{ key: 'fact', label: t('ai_hub.fact_label'), placeholder: t('ai_hub.fact_placeholder') }]}
+          submitLabel={t('ai_hub.add_fact')}
+          onClose={() => setAddingFact(false)}
+          onSubmit={addFact}
+        />
+      )}
     </View>
   );
 }
@@ -127,9 +184,9 @@ const S = StyleSheet.create({
   search: { alignItems: 'center', gap: 10, borderRadius: 14, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 10 },
   searchInput: { flex: 1, fontSize: 14 },
   resRow: { alignItems: 'center', gap: 10, padding: 14 },
-  inboxHead: { alignItems: 'center', gap: 8, marginTop: 4 },
+  inboxHead: { alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 4 },
   label: { fontSize: 13, fontWeight: '700' },
-  count: { minWidth: 20, height: 20, borderRadius: 10, paddingHorizontal: 6, alignItems: 'center', justifyContent: 'center' },
-  countTxt: { color: '#FFF', fontSize: 11, fontWeight: '700' },
+  addChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20 },
+  nIcon: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   row: { gap: 12, alignItems: 'center' },
 });

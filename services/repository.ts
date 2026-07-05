@@ -577,6 +577,19 @@ export const repository = {
   },
 
   // ── Memory recall (local graph) ──
+  /** Persist a user-stated fact about themselves — feeds the AI's context. */
+  async addMemoryNode(label: string, type = 'fact'): Promise<string> {
+    const row = await db.insert('memory_nodes', { type, label, data: { source: 'user' } });
+    analytics.log('capture', 'memory_node_added');
+    return row.id;
+  },
+
+  async removeMemoryNode(id: string): Promise<void> {
+    await db.remove('memory_nodes', id);
+    const edges = (await db.find('memory_edges', (e: any) => e.from_node === id || e.to_node === id)) as any[];
+    for (const e of edges) await db.remove('memory_edges', e.id);
+  },
+
   async relatedMemory(query: string, limit = 6): Promise<MemoryHit[]> {
     const q = query.trim().toLowerCase();
     if (!q) return [];
@@ -601,5 +614,56 @@ export const repository = {
     const q = query.trim().toLowerCase();
     const filtered = q ? nodes.filter((n) => String(n.label ?? '').toLowerCase().includes(q)) : nodes;
     return filtered.slice(0, 100).map((n) => ({ id: n.id, type: n.type, label: n.label }));
+  },
+
+  // ── Wellbeing / digital balance (user-defined, real) ──
+  async listWellbeing(): Promise<{ id: string; name: string; type: 'healthy' | 'draining'; loggedToday: boolean }[]> {
+    const today = todayISO();
+    const acts = (await db.list('wellbeing_activities')) as any[];
+    const logs = (await db.find('wellbeing_logs', (r: any) => r.day === today)) as any[];
+    const loggedIds = new Set(logs.map((l) => l.activity_id));
+    return acts
+      .sort((a, b) => (a.created_at ?? '').localeCompare(b.created_at ?? ''))
+      .map((a) => ({ id: a.id, name: a.name ?? '', type: (a.type as 'healthy' | 'draining') ?? 'healthy', loggedToday: loggedIds.has(a.id) }));
+  },
+
+  async addWellbeingActivity(name: string, type: 'healthy' | 'draining'): Promise<string> {
+    const row = await db.insert('wellbeing_activities', { name, type });
+    analytics.log('wellbeing', 'activity_added', 0, { type });
+    return row.id;
+  },
+
+  async removeWellbeingActivity(id: string): Promise<void> {
+    await db.remove('wellbeing_activities', id);
+    const logs = (await db.find('wellbeing_logs', (r: any) => r.activity_id === id)) as any[];
+    for (const l of logs) await db.remove('wellbeing_logs', l.id);
+  },
+
+  /** Toggle today's log for an activity; returns the new logged state. */
+  async toggleWellbeingToday(activityId: string): Promise<boolean> {
+    const today = todayISO();
+    const existing = (await db.find('wellbeing_logs', (r: any) => r.activity_id === activityId && r.day === today)) as any[];
+    if (existing.length) {
+      await db.remove('wellbeing_logs', existing[0].id);
+      return false;
+    }
+    await db.insert('wellbeing_logs', { activity_id: activityId, day: today });
+    return true;
+  },
+
+  /** Last 7 days net balance (healthy +1, draining −1) from real logs. */
+  async wellbeingWeek(): Promise<number[]> {
+    const acts = (await db.list('wellbeing_activities')) as any[];
+    const typeOf = new Map(acts.map((a) => [a.id, a.type]));
+    const logs = (await db.list('wellbeing_logs')) as any[];
+    return Array.from({ length: 7 }, (_, i) => {
+      const day = dayISO(6 - i);
+      let net = 0;
+      for (const l of logs) {
+        if (l.day !== day) continue;
+        net += typeOf.get(l.activity_id) === 'draining' ? -1 : 1;
+      }
+      return net;
+    });
   },
 };

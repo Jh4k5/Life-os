@@ -1,6 +1,8 @@
 // components/ui/SmartCard.tsx
 // Restrained surface: hairline border + frosted glass (dark), clean white (light).
-// No colored card borders, no heavy drop shadows — depth via lines & translucency.
+// The dark surface is a real frosted-glass panel — blurred backdrop, a bright
+// specular hairline along the top edge, and per-side borders that fade from a
+// lit top to a shadowed bottom. Depth via light, not heavy drop shadows.
 import React from 'react';
 import { View, Platform, ViewStyle, StyleProp } from 'react-native';
 import { BlurView } from 'expo-blur';
@@ -17,6 +19,23 @@ interface Props {
   radius?: number;
 }
 
+// A whisper of the section color, top-anchored, never a loud border.
+const AccentTint = ({ accent, radius }: { accent: string; radius: number }) => (
+  <View
+    pointerEvents="none"
+    style={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 64,
+      borderTopLeftRadius: radius,
+      borderTopRightRadius: radius,
+      backgroundColor: accent + '12',
+    }}
+  />
+);
+
 export const SmartCard = ({
   children,
   style,
@@ -29,8 +48,6 @@ export const SmartCard = ({
   const { isDark, c } = useTheme();
   const padMap = { sm: 12, md: 16, lg: 22 };
   const pad = noPad ? 0 : padMap[padSize];
-  // Hairline border — single restrained look regardless of section.
-  const border = c.b1;
 
   if (!isDark) {
     return (
@@ -40,7 +57,7 @@ export const SmartCard = ({
             backgroundColor: c.bg1,
             borderRadius: radius,
             borderWidth: 1,
-            borderColor: border,
+            borderColor: c.b1,
             padding: pad,
             marginVertical: 5,
             shadowColor: '#000',
@@ -48,10 +65,12 @@ export const SmartCard = ({
             shadowOpacity: 0.05,
             shadowRadius: 16,
             elevation: 1,
+            overflow: 'hidden',
           },
           style,
         ]}
       >
+        {accent ? <AccentTint accent={accent} radius={radius} /> : null}
         {children}
       </View>
     );
@@ -65,33 +84,55 @@ export const SmartCard = ({
             backgroundColor: elevated ? c.bg2 : c.bg1,
             borderRadius: radius,
             borderWidth: 1,
-            borderColor: border,
+            borderColor: c.b1,
             padding: pad,
             marginVertical: 5,
+            overflow: 'hidden',
           } as ViewStyle,
           style,
         ]}
       >
+        {accent ? <AccentTint accent={accent} radius={radius} /> : null}
         {children}
       </View>
     );
   }
 
+  // Dark: premium frosted glass. A brighter top border + a specular hairline
+  // reads as light catching the top edge of a glass pane.
   return (
-    <View
-      style={[{ borderRadius: radius, overflow: 'hidden', marginVertical: 5 }, style]}
-    >
+    <View style={[{ borderRadius: radius, overflow: 'hidden', marginVertical: 5 }, style]}>
       <BlurView
-        intensity={elevated ? 40 : 22}
+        intensity={elevated ? 52 : 32}
         tint="dark"
         style={{
           backgroundColor: c.glass,
           borderRadius: radius,
-          borderWidth: 1,
-          borderColor: border,
+          borderTopWidth: 1,
+          borderLeftWidth: 1,
+          borderRightWidth: 1,
+          borderBottomWidth: 1,
+          borderTopColor: 'rgba(255,255,255,0.14)',
+          borderLeftColor: 'rgba(255,255,255,0.06)',
+          borderRightColor: 'rgba(255,255,255,0.06)',
+          borderBottomColor: 'rgba(0,0,0,0.20)',
           padding: pad,
+          overflow: 'hidden',
         }}
       >
+        {/* Specular highlight — a faint bright line just inside the top edge. */}
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: radius * 0.6,
+            right: radius * 0.6,
+            height: 1,
+            backgroundColor: 'rgba(255,255,255,0.22)',
+          }}
+        />
+        {accent ? <AccentTint accent={accent} radius={radius} /> : null}
         {children}
       </BlurView>
     </View>

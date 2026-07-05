@@ -262,7 +262,27 @@
     "add_activity": "Etkinlik ekle",
     "weekly": "Haftalık ilerleme",
     "challenges": "Meydan okumalar",
-    "activities": "Etkinlikler"
+    "activities": "Etkinlikler",
+    "empty_state": "Seni besleyen veya tüketen aktiviteler ekleyerek başla ve haftalık dengeni görmek için günlük kaydet.",
+    "balance_line": "Haftan dengeli — enerjinin %{{pct}} kadarı seni besleyen şeylere gitti.",
+    "day_sun": "Paz",
+    "day_mon": "Pzt",
+    "day_tue": "Sal",
+    "day_wed": "Çar",
+    "day_thu": "Per",
+    "day_fri": "Cum",
+    "day_sat": "Cmt",
+    "from_ai": "Yapay zekândan",
+    "apply": "Uygula",
+    "applied": "Uygulandı",
+    "add_healthy": "Besleyen aktivite",
+    "add_draining": "Tüketen aktivite",
+    "no_activities": "Henüz aktivite yok. Seni besleyeni (okuma, spor) ve tüketeni (sosyal medya, geç yatma) ekle.",
+    "nourishes": "Seni besler",
+    "drains": "Seni tüketir",
+    "long_press_delete": "Silmek için bir aktiviteye uzun bas.",
+    "activity_name": "Aktivite adı",
+    "add": "Ekle"
   },
   "ai_hub": {
     "ask_ph": "Ne istediğini söyle… (örn. sınav tekrar planı oluştur)",
@@ -273,7 +293,17 @@
     "gen_plan_90": "90 günlük plan",
     "weekly_review": "Haftalık değerlendirme",
     "skill_plan": "Beceri öğrenme planı",
-    "habit_system": "Alışkanlık sistemi"
+    "habit_system": "Alışkanlık sistemi",
+    "search_placeholder": "Hayatında ara… (son randevu? HSK planı nerede?)",
+    "no_results": "Henüz sonuç yok — uygulamayı kullandıkça seni daha çok tanır.",
+    "noticed": "Yapay zekânın fark ettikleri",
+    "no_insights": "Henüz içgörü yok. Günlük, görev ve alışkanlık kaydet; yapay zekâ desenleri bağlamaya başlar.",
+    "about_you": "Senin hakkında bildikleri",
+    "add_fact": "Bilgi ekle",
+    "facts_hint": "Yapay zekâya kendinle ilgili bilgiler öğret (üniversite, bölüm, hedefler, önemli kişiler) ki her bölümde bağlamını anlasın.",
+    "fact_label": "Seninle ilgili bir bilgi",
+    "fact_placeholder": "örn. KSU’da Bilgisayar Mühendisliği okuyorum",
+    "trust_center": "Güven ve gizlilik merkezi"
   },
   "settings": {
     "title": "Ayarlar",
@@ -356,7 +386,13 @@
     "log_meal_photo": "Kalori için öğünü fotoğraflayın",
     "estimate_offline": "Tahmin için sunucu gerekli — öğünü elle ekleyin",
     "disclaimer": "Genel tahminler, tıbbi tavsiye değildir — bir uzmana danışın.",
-    "water_week": "Bu hafta su"
+    "water_week": "Bu hafta su",
+    "log_sleep": "Uykuyu kaydet",
+    "log_steps": "Adımları kaydet",
+    "log_weight": "Kiloyu kaydet",
+    "add_meal": "Öğünü elle ekle",
+    "meal_name": "Öğün adı",
+    "no_meals": "Bugün öğün yok — fotoğrafla veya elle ekle."
   },
   "exercise": {
     "this_week": "Bu hafta",

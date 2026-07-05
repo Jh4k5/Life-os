@@ -19,7 +19,7 @@ export type InsightStatus = 'new' | 'seen' | 'acted' | 'dismissed';
 export interface Insight {
   id: string;
   kind: InsightKind;
-  domain: 'tasks' | 'study' | 'habits' | 'health' | 'journal' | 'calendar' | 'general';
+  domain: 'tasks' | 'study' | 'habits' | 'health' | 'journal' | 'calendar' | 'wellbeing' | 'general';
   title: string;
   body?: string;
   evidence: Record<string, unknown>;

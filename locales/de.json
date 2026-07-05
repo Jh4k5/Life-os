@@ -262,7 +262,27 @@
     "add_activity": "Aktivität hinzufügen",
     "weekly": "Wochenfortschritt",
     "challenges": "Herausforderungen",
-    "activities": "Aktivitäten"
+    "activities": "Aktivitäten",
+    "empty_state": "Füge Aktivitäten hinzu, die dich nähren oder auslaugen, und erfasse sie täglich für deine Wochenbalance.",
+    "balance_line": "Deine Woche ist ausgewogen — {{pct}}% deiner Energie floss in Nährendes.",
+    "day_sun": "So",
+    "day_mon": "Mo",
+    "day_tue": "Di",
+    "day_wed": "Mi",
+    "day_thu": "Do",
+    "day_fri": "Fr",
+    "day_sat": "Sa",
+    "from_ai": "Von deiner KI",
+    "apply": "Anwenden",
+    "applied": "Angewendet",
+    "add_healthy": "Nährende Aktivität",
+    "add_draining": "Auslaugende Aktivität",
+    "no_activities": "Noch keine Aktivitäten. Füge Nährendes (Lesen, Sport) und Auslaugendes (Social Media, spätes Zubettgehen) hinzu.",
+    "nourishes": "Nährt dich",
+    "drains": "Laugt dich aus",
+    "long_press_delete": "Zum Löschen lange auf eine Aktivität drücken.",
+    "activity_name": "Name der Aktivität",
+    "add": "Hinzufügen"
   },
   "ai_hub": {
     "ask_ph": "Sag mir, was du willst… (z.B. erstelle einen Lernplan)",
@@ -273,7 +293,17 @@
     "gen_plan_90": "90-Tage-Plan",
     "weekly_review": "Wochenrückblick",
     "skill_plan": "Lernplan",
-    "habit_system": "Gewohnheitssystem"
+    "habit_system": "Gewohnheitssystem",
+    "search_placeholder": "Durchsuche dein Leben… (letzter Termin? wo ist der HSK-Plan?)",
+    "no_results": "Noch keine Ergebnisse — je mehr du die App nutzt, desto mehr weiß sie über dich.",
+    "noticed": "Was deine KI bemerkt hat",
+    "no_insights": "Noch keine Einblicke. Erfasse Journale, Aufgaben und Gewohnheiten, dann verbindet die KI Muster.",
+    "about_you": "Was sie über dich weiß",
+    "add_fact": "Fakt hinzufügen",
+    "facts_hint": "Bring der KI Fakten über dich bei (Universität, Studienfach, Ziele, wichtige Personen), damit sie deinen Kontext überall versteht.",
+    "fact_label": "Ein Fakt über dich",
+    "fact_placeholder": "z. B. Ich studiere Computertechnik an der KSU",
+    "trust_center": "Vertrauens- & Datenschutzzentrum"
   },
   "settings": {
     "title": "Einstellungen",
@@ -356,7 +386,13 @@
     "log_meal_photo": "Mahlzeit fotografieren für Kalorienschätzung",
     "estimate_offline": "Schätzung braucht den Server — Mahlzeit manuell hinzufügen",
     "disclaimer": "Allgemeine Schätzungen, keine medizinische Beratung — Fachperson konsultieren.",
-    "water_week": "Wasser diese Woche"
+    "water_week": "Wasser diese Woche",
+    "log_sleep": "Schlaf erfassen",
+    "log_steps": "Schritte erfassen",
+    "log_weight": "Gewicht erfassen",
+    "add_meal": "Mahlzeit manuell hinzufügen",
+    "meal_name": "Name der Mahlzeit",
+    "no_meals": "Heute keine Mahlzeiten — per Foto oder manuell hinzufügen."
   },
   "exercise": {
     "this_week": "Diese Woche",

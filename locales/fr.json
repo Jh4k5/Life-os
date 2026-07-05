@@ -262,7 +262,27 @@
     "add_activity": "Ajouter une activité",
     "weekly": "Progrès de la semaine",
     "challenges": "Défis",
-    "activities": "Activités"
+    "activities": "Activités",
+    "empty_state": "Commence par ajouter des activités qui te nourrissent ou t’épuisent, puis note-les chaque jour pour voir ton équilibre.",
+    "balance_line": "Ta semaine est équilibrée — {{pct}}% de ton énergie est allée vers ce qui te nourrit.",
+    "day_sun": "Dim",
+    "day_mon": "Lun",
+    "day_tue": "Mar",
+    "day_wed": "Mer",
+    "day_thu": "Jeu",
+    "day_fri": "Ven",
+    "day_sat": "Sam",
+    "from_ai": "De ton IA",
+    "apply": "Appliquer",
+    "applied": "Appliqué",
+    "add_healthy": "Activité nourrissante",
+    "add_draining": "Activité épuisante",
+    "no_activities": "Aucune activité. Ajoute ce qui te nourrit (lecture, sport) et ce qui t’épuise (réseaux, veilles tardives).",
+    "nourishes": "Te nourrit",
+    "drains": "T’épuise",
+    "long_press_delete": "Appui long sur une activité pour la supprimer.",
+    "activity_name": "Nom de l’activité",
+    "add": "Ajouter"
   },
   "ai_hub": {
     "ask_ph": "Dites-moi ce que vous voulez… (ex. créer un plan de révision)",
@@ -273,7 +293,17 @@
     "gen_plan_90": "Plan 90 jours",
     "weekly_review": "Revue hebdomadaire",
     "skill_plan": "Plan d'apprentissage",
-    "habit_system": "Système d'habitudes"
+    "habit_system": "Système d'habitudes",
+    "search_placeholder": "Cherche dans ta vie… (dernier rendez-vous ? où est le plan HSK ?)",
+    "no_results": "Aucun résultat pour l’instant — plus tu utilises l’app, plus elle te connaît.",
+    "noticed": "Ce que ton IA a remarqué",
+    "no_insights": "Aucune analyse encore. Note journaux, tâches et habitudes et l’IA reliera les tendances.",
+    "about_you": "Ce qu’elle sait de toi",
+    "add_fact": "Ajouter un fait",
+    "facts_hint": "Apprends à l’IA des faits sur toi (université, filière, objectifs, personnes clés) pour qu’elle comprenne ton contexte partout.",
+    "fact_label": "Un fait sur toi",
+    "fact_placeholder": "ex. J’étudie le génie informatique à la KSU",
+    "trust_center": "Centre de confiance et confidentialité"
   },
   "settings": {
     "title": "Paramètres",
@@ -356,7 +386,13 @@
     "log_meal_photo": "Photographiez un repas pour estimer les calories",
     "estimate_offline": "Lestimation nécessite le serveur — ajoutez le repas manuellement",
     "disclaimer": "Estimations générales, pas un avis médical — consultez un professionnel.",
-    "water_week": "Eau cette semaine"
+    "water_week": "Eau cette semaine",
+    "log_sleep": "Noter le sommeil",
+    "log_steps": "Noter les pas",
+    "log_weight": "Noter le poids",
+    "add_meal": "Ajouter un repas manuellement",
+    "meal_name": "Nom du repas",
+    "no_meals": "Aucun repas aujourd’hui — ajoutez-en un par photo ou à la main."
   },
   "exercise": {
     "this_week": "Cette semaine",

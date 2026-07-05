@@ -1,7 +1,8 @@
 // app/(tabs)/more/dopamine/index.tsx  → "Wellbeing"
-// Calm digital-wellbeing signal. No green/red candlesticks, no XP rank,
-// no trading-dashboard. A gentle weekly sense of healthy vs. draining,
-// and AI nudges in the app's own warm voice with an Apply action.
+// Calm digital-wellbeing signal, now fully real: the user defines their own
+// healthy / draining activities, logs them per day, and the weekly balance is
+// derived from those real logs. AI nudges come from the intelligence engine
+// (wellbeing/journal insights) with a gentle fallback. No mock, no dead button.
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,52 +11,67 @@ import { useTranslation } from 'react-i18next';
 import { useRTL } from '@/hooks/useRTL';
 import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
-import { mockDopamine } from '@/data/mock';
+import { QuickLogSheet } from '@/components/ui/QuickLogSheet';
+import { repository } from '@/services/repository';
+import { intelligence, type Insight } from '@/services/intelligence';
+import { useAsync } from '@/hooks/useAsync';
+import { feedback } from '@/services/feedback';
 
-const DAYS = ['أحد', 'إثن', 'ثلا', 'أرب', 'خمي', 'جمع', 'سبت'];
-
-const NUDGES = [
-  {
-    id: 'n1',
-    icon: 'phone-portrait-outline' as const,
-    text: 'ذكرت السوشيال ميديا ٣ مرات هذا الأسبوع. أحدّد لك ساعة يومياً مقابل ١٥ دقيقة قراءة؟',
-  },
-  {
-    id: 'n2',
-    icon: 'moon-outline' as const,
-    text: 'نومك تأخّر ليلتين. أهيّئ لك تذكير هدوء الساعة ١٠:٣٠ هذا الأسبوع؟',
-  },
-];
+const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
 export default function WellbeingScreen() {
   const { c } = useTheme();
   const { t } = useTranslation();
   const { rowDir, textAlign } = useRTL();
-  const [activities, setActivities] = useState(mockDopamine.activities);
+  const { data: activities, reload } = useAsync(() => repository.listWellbeing(), [] as any[], 'wellbeing');
+  const { data: week, reload: reloadWeek } = useAsync(() => repository.wellbeingWeek(), [0, 0, 0, 0, 0, 0, 0], 'wellbeingWeek');
+  const [nudges, setNudges] = useState<Insight[]>([]);
   const [applied, setApplied] = useState<string[]>([]);
+  const [adding, setAdding] = useState<null | 'healthy' | 'draining'>(null);
 
-  const toggle = (id: string) =>
-    setActivities((p) => p.map((a) => (a.id === id ? { ...a, logged: !a.logged } : a)));
+  React.useEffect(() => {
+    intelligence
+      .listInsights()
+      .then((ins) => setNudges(ins.filter((i) => i.domain === 'wellbeing' || i.domain === 'journal').slice(0, 2)))
+      .catch(() => {});
+  }, []);
 
-  // weekly sense — soft balance, not candlesticks
-  const week = mockDopamine.weekProgress;
+  const toggle = async (id: string) => {
+    feedback.select();
+    await repository.toggleWellbeingToday(id);
+    reload();
+    reloadWeek();
+  };
+
+  const addActivity = async (v: Record<string, string>) => {
+    const name = (v.name ?? '').trim();
+    if (!name || !adding) return;
+    await repository.addWellbeingActivity(name, adding);
+    reload();
+  };
+
   const maxAbs = Math.max(...week.map((v) => Math.abs(v)), 1);
-  const healthyShare = Math.round(
-    (week.filter((v) => v > 0).reduce((s, v) => s + v, 0) /
-      Math.max(week.reduce((s, v) => s + Math.abs(v), 0), 1)) *
-      100
-  );
+  const totalAbs = week.reduce((s, v) => s + Math.abs(v), 0);
+  const healthyShare = totalAbs
+    ? Math.round((week.filter((v) => v > 0).reduce((s, v) => s + v, 0) / totalAbs) * 100)
+    : 0;
 
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
-      <Header title={t('sections.wellbeing')} accent={c.accent} right={[{ icon: 'add', onPress: () => {}, color: c.accent }]} />
+      <Header
+        title={t('sections.wellbeing')}
+        accent={c.accent}
+        right={[{ icon: 'add', onPress: () => { feedback.tap(); setAdding('healthy'); }, color: c.accent }]}
+      />
       <ScrollView contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: 110 }}>
-        {/* Calm state line */}
+        {/* Calm state line — reflects real logs */}
         <Text style={[S.state, { color: c.t1, textAlign }]}>
-          أسبوعك متوازن — {healthyShare}% من طاقتك ذهبت لأشياء تغذّيك.
+          {totalAbs === 0
+            ? t('dopamine.empty_state')
+            : t('dopamine.balance_line', { pct: healthyShare })}
         </Text>
 
-        {/* Soft weekly signal (rounded pills, not candlesticks) */}
+        {/* Soft weekly signal from real logs */}
         <SmartCard>
           <View style={[S.week, { flexDirection: rowDir }]}>
             {week.map((v, i) => {
@@ -74,27 +90,27 @@ export default function WellbeingScreen() {
                       }}
                     />
                   </View>
-                  <Text style={{ color: c.t3, fontSize: 10 }}>{DAYS[i]}</Text>
+                  <Text style={{ color: c.t3, fontSize: 10 }}>{t(`dopamine.day_${DAY_KEYS[i]}`)}</Text>
                 </View>
               );
             })}
           </View>
         </SmartCard>
 
-        {/* AI nudges — the point of this screen */}
-        <Text style={[S.label, { color: c.t3, textAlign }]}>من الذكاء</Text>
-        {NUDGES.map((n) => {
+        {/* AI nudges — real insights when available */}
+        {nudges.length > 0 && <Text style={[S.label, { color: c.t3, textAlign }]}>{t('dopamine.from_ai')}</Text>}
+        {nudges.map((n) => {
           const done = applied.includes(n.id);
           return (
             <SmartCard key={n.id}>
               <View style={[S.nudge, { flexDirection: rowDir }]}>
                 <View style={[S.nIcon, { backgroundColor: c.bg3 }]}>
-                  <Ionicons name={n.icon} size={18} color={c.t1} />
+                  <Ionicons name="sparkles-outline" size={18} color={c.accent} />
                 </View>
-                <Text style={{ flex: 1, color: c.t1, fontSize: 14, lineHeight: 22, textAlign }}>{n.text}</Text>
+                <Text style={{ flex: 1, color: c.t1, fontSize: 14, lineHeight: 22, textAlign }}>{n.title}</Text>
               </View>
               <Pressable
-                onPress={() => setApplied((p) => (p.includes(n.id) ? p : [...p, n.id]))}
+                onPress={() => { feedback.success(); setApplied((p) => (p.includes(n.id) ? p : [...p, n.id])); }}
                 style={[
                   S.applyBtn,
                   { backgroundColor: done ? c.greenDim : c.accentDim, borderColor: done ? c.green : c.accent + '55' },
@@ -102,51 +118,86 @@ export default function WellbeingScreen() {
               >
                 <Ionicons name={done ? 'checkmark' : 'sparkles-outline'} size={15} color={done ? c.green : c.accent} />
                 <Text style={{ color: done ? c.green : c.accent, fontWeight: '700', fontSize: 13 }}>
-                  {done ? 'تم التطبيق' : 'طبّق'}
+                  {done ? t('dopamine.applied') : t('dopamine.apply')}
                 </Text>
               </Pressable>
             </SmartCard>
           );
         })}
 
-        {/* Activities — calm log, healthy vs draining (no XP scoreboard) */}
-        <Text style={[S.label, { color: c.t3, textAlign }]}>{t('dopamine.activities')}</Text>
-        <SmartCard noPad>
-          {activities.map((a, i) => (
-            <Pressable
-              key={a.id}
-              onPress={() => toggle(a.id)}
-              style={[
-                S.actRow,
-                { flexDirection: rowDir },
-                i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.b0 },
-              ]}
-            >
-              <View style={[S.nIcon, { backgroundColor: c.bg3 }]}>
-                <Ionicons
-                  name={a.type === 'healthy' ? 'leaf-outline' : 'hourglass-outline'}
-                  size={16}
-                  color={a.type === 'healthy' ? c.accent : c.t3}
-                />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ color: c.t1, fontSize: 14, fontWeight: '600', textAlign }}>{a.name}</Text>
-                <Text style={{ color: c.t3, fontSize: 11, marginTop: 2, textAlign }}>
-                  {a.type === 'healthy' ? 'يغذّيك' : 'يستنزفك'}
-                </Text>
-              </View>
-              <View
+        {/* Activities — real, user-defined, logged per day */}
+        <View style={[{ alignItems: 'center', justifyContent: 'space-between' }, { flexDirection: rowDir }]}>
+          <Text style={[S.label, { color: c.t3, textAlign }]}>{t('dopamine.activities')}</Text>
+          <View style={{ flexDirection: rowDir, gap: 8 }}>
+            <Pressable onPress={() => { feedback.tap(); setAdding('healthy'); }} style={[S.addChip, { backgroundColor: c.accentDim }]}>
+              <Ionicons name="leaf-outline" size={13} color={c.accent} />
+              <Text style={{ color: c.accent, fontSize: 12, fontWeight: '700' }}>{t('dopamine.add_healthy')}</Text>
+            </Pressable>
+            <Pressable onPress={() => { feedback.tap(); setAdding('draining'); }} style={[S.addChip, { backgroundColor: c.bg3 }]}>
+              <Ionicons name="hourglass-outline" size={13} color={c.t3} />
+              <Text style={{ color: c.t3, fontSize: 12, fontWeight: '700' }}>{t('dopamine.add_draining')}</Text>
+            </Pressable>
+          </View>
+        </View>
+
+        {activities.length === 0 ? (
+          <SmartCard>
+            <Text style={{ color: c.t3, fontSize: 13, lineHeight: 20, textAlign }}>{t('dopamine.no_activities')}</Text>
+          </SmartCard>
+        ) : (
+          <SmartCard noPad>
+            {activities.map((a: any, i: number) => (
+              <Pressable
+                key={a.id}
+                onPress={() => toggle(a.id)}
+                onLongPress={async () => { feedback.warning(); await repository.removeWellbeingActivity(a.id); reload(); reloadWeek(); }}
                 style={[
-                  S.check,
-                  { backgroundColor: a.logged ? c.accent : 'transparent', borderColor: a.logged ? c.accent : c.b2 },
+                  S.actRow,
+                  { flexDirection: rowDir },
+                  i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.b0 },
                 ]}
               >
-                {a.logged && <Ionicons name="checkmark" size={13} color="#FFF" />}
-              </View>
-            </Pressable>
-          ))}
-        </SmartCard>
+                <View style={[S.nIcon, { backgroundColor: c.bg3 }]}>
+                  <Ionicons
+                    name={a.type === 'healthy' ? 'leaf-outline' : 'hourglass-outline'}
+                    size={16}
+                    color={a.type === 'healthy' ? c.accent : c.t3}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: c.t1, fontSize: 14, fontWeight: '600', textAlign }}>{a.name}</Text>
+                  <Text style={{ color: c.t3, fontSize: 11, marginTop: 2, textAlign }}>
+                    {a.type === 'healthy' ? t('dopamine.nourishes') : t('dopamine.drains')}
+                  </Text>
+                </View>
+                <View
+                  style={[
+                    S.check,
+                    { backgroundColor: a.loggedToday ? c.accent : 'transparent', borderColor: a.loggedToday ? c.accent : c.b2 },
+                  ]}
+                >
+                  {a.loggedToday && <Ionicons name="checkmark" size={13} color="#FFF" />}
+                </View>
+              </Pressable>
+            ))}
+          </SmartCard>
+        )}
+        {activities.length > 0 && (
+          <Text style={{ color: c.t4, fontSize: 11, textAlign, paddingHorizontal: 4 }}>{t('dopamine.long_press_delete')}</Text>
+        )}
       </ScrollView>
+
+      {adding && (
+        <QuickLogSheet
+          visible={!!adding}
+          title={adding === 'healthy' ? t('dopamine.add_healthy') : t('dopamine.add_draining')}
+          icon={adding === 'healthy' ? 'leaf-outline' : 'hourglass-outline'}
+          fields={[{ key: 'name', label: t('dopamine.activity_name'), placeholder: t('dopamine.activity_name') }]}
+          submitLabel={t('dopamine.add')}
+          onClose={() => setAdding(null)}
+          onSubmit={addActivity}
+        />
+      )}
     </View>
   );
 }
@@ -158,6 +209,7 @@ const S = StyleSheet.create({
   dayCol: { alignItems: 'center', gap: 8, flex: 1 },
   track: { height: 70, justifyContent: 'flex-end' },
   label: { fontSize: 13, fontWeight: '700', marginTop: 4 },
+  addChip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20 },
   nudge: { gap: 12, alignItems: 'flex-start' },
   nIcon: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   applyBtn: {

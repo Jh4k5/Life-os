@@ -11,6 +11,7 @@ import { useRTL } from '@/hooks/useRTL';
 import { useHaptics } from '@/hooks/useHaptics';
 import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
+import { QuickLogSheet, type SheetField } from '@/components/ui/QuickLogSheet';
 import { mockHealthToday, mockMeals } from '@/data/mock';
 import { repository } from '@/services/repository';
 import { useAsync } from '@/hooks/useAsync';
@@ -29,8 +30,8 @@ export default function HealthScreen() {
   const { t } = useTranslation();
   const { rowDir, textAlign } = useRTL();
   const haptics = useHaptics();
-  const { data: health } = useAsync(() => repository.getHealthToday(), mockHealthToday);
-  const { data: loadedMeals } = useAsync(() => repository.listMeals(), mockMeals);
+  const { data: health, reload: reloadHealth } = useAsync(() => repository.getHealthToday(), mockHealthToday);
+  const { data: loadedMeals, reload: reloadMeals } = useAsync(() => repository.listMeals(), mockMeals);
 
   const [extra, setExtra] = useState<Meal[]>([]);
   const [estimating, setEstimating] = useState(false);
@@ -38,6 +39,7 @@ export default function HealthScreen() {
   const [waterBoost, setWaterBoost] = useState(0); // optimistic +water taps
   const { data: week } = useAsync(() => repository.listHealthWeek(), [], 'healthWeek');
   const [healthInsights, setHealthInsights] = useState<Insight[]>([]);
+  const [sheet, setSheet] = useState<null | 'sleep' | 'steps' | 'weight' | 'meal'>(null);
 
   React.useEffect(() => {
     intelligence.listInsights().then((ins) => setHealthInsights(ins.filter((i) => i.domain === 'health').slice(0, 2)));
@@ -77,6 +79,60 @@ export default function HealthScreen() {
     }
     const saved = await repository.addMeal(est);
     setExtra((p) => [...p, saved]);
+  };
+
+  // Manual logging — the section is fully editable by hand, not photo-only.
+  const sheetConfig: Record<'sleep' | 'steps' | 'weight' | 'meal', { title: string; icon: any; fields: SheetField[] }> = {
+    sleep: {
+      title: t('health.log_sleep'),
+      icon: 'moon-outline',
+      fields: [{ key: 'hours', label: t('health.sleep'), suffix: 'h', numeric: true, placeholder: '7.5', initial: health.sleepMin ? (health.sleepMin / 60).toString() : '' }],
+    },
+    steps: {
+      title: t('health.log_steps'),
+      icon: 'footsteps-outline',
+      fields: [{ key: 'steps', label: t('health.steps'), numeric: true, placeholder: '8000', initial: health.steps ? String(health.steps) : '' }],
+    },
+    weight: {
+      title: t('health.log_weight'),
+      icon: 'barbell-outline',
+      fields: [{ key: 'weight', label: t('health.weight'), suffix: 'kg', numeric: true, placeholder: '74', initial: health.weightKg ? String(health.weightKg) : '' }],
+    },
+    meal: {
+      title: t('health.add_meal'),
+      icon: 'restaurant-outline',
+      fields: [
+        { key: 'name', label: t('health.meal_name'), placeholder: t('health.meal_name') },
+        { key: 'calories', label: t('health.calories_today'), suffix: 'kcal', numeric: true, placeholder: '450' },
+        { key: 'protein', label: t('health.protein'), suffix: 'g', numeric: true, placeholder: '0' },
+        { key: 'carbs', label: t('health.carbs'), suffix: 'g', numeric: true, placeholder: '0' },
+        { key: 'fat', label: t('health.fat'), suffix: 'g', numeric: true, placeholder: '0' },
+      ],
+    },
+  };
+
+  const onSheetSubmit = async (v: Record<string, string>) => {
+    const num = (s: string) => Math.max(0, Math.round(Number(s) || 0));
+    if (sheet === 'sleep') {
+      await repository.upsertHealthToday({ sleepMin: Math.round((Number(v.hours) || 0) * 60) });
+      reloadHealth();
+    } else if (sheet === 'steps') {
+      await repository.upsertHealthToday({ steps: num(v.steps) });
+      reloadHealth();
+    } else if (sheet === 'weight') {
+      await repository.upsertHealthToday({ weightKg: Number(v.weight) || 0 });
+      reloadHealth();
+    } else if (sheet === 'meal') {
+      await repository.addMeal({
+        name: v.name?.trim() || t('health.add_meal'),
+        calories: num(v.calories),
+        protein: num(v.protein),
+        carbs: num(v.carbs),
+        fat: num(v.fat),
+        aiEstimated: false,
+      });
+      reloadMeals();
+    }
   };
 
   return (
@@ -121,9 +177,9 @@ export default function HealthScreen() {
               </View>
             </View>
           </Pressable>
-          <Metric icon="moon-outline" val={`${Math.round(health.sleepMin / 60)}h`} label={t('health.sleep')} c={c} />
-          <Metric icon="footsteps-outline" val={`${health.steps}`} label={t('health.steps')} c={c} />
-          <Metric icon="barbell-outline" val={`${weight}kg`} label={t('health.weight')} c={c} />
+          <Metric icon="moon-outline" val={`${(health.sleepMin / 60).toFixed(1)}h`} label={t('health.sleep')} c={c} onPress={() => { haptics.select(); setSheet('sleep'); }} />
+          <Metric icon="footsteps-outline" val={`${health.steps}`} label={t('health.steps')} c={c} onPress={() => { haptics.select(); setSheet('steps'); }} />
+          <Metric icon="barbell-outline" val={`${weight}kg`} label={t('health.weight')} c={c} onPress={() => { haptics.select(); setSheet('weight'); }} />
         </View>
 
         {/* Weekly water trend (single series; direction as icon+text) */}
@@ -174,8 +230,28 @@ export default function HealthScreen() {
           <Text style={{ color: c.orange, fontSize: 12, textAlign, paddingHorizontal: 4 }}>{note}</Text>
         )}
 
+        {/* Log meal manually (no photo needed) */}
+        <Pressable onPress={() => { haptics.select(); setSheet('meal'); }}>
+          <SmartCard padSize="sm">
+            <View style={[S.logRow, { flexDirection: rowDir }]}>
+              <View style={[S.logIcon, { backgroundColor: c.bg3 }]}>
+                <Ionicons name="create-outline" size={18} color={c.t2} />
+              </View>
+              <Text style={{ flex: 1, color: c.t1, fontSize: 14, fontWeight: '600', textAlign }}>
+                {t('health.add_meal')}
+              </Text>
+              <Ionicons name="add-circle-outline" size={18} color={c.t3} />
+            </View>
+          </SmartCard>
+        </Pressable>
+
         {/* Meals */}
         <Text style={[S.secTitle, { color: c.t2, textAlign }]}>{t('health.meals_today')}</Text>
+        {meals.length === 0 && (
+          <Text style={{ color: c.t4, fontSize: 13, textAlign, paddingHorizontal: 4, paddingVertical: 8 }}>
+            {t('health.no_meals')}
+          </Text>
+        )}
         {meals.map((m) => (
           <SmartCard key={m.id} padSize="sm">
             <View style={[S.mealRow, { flexDirection: rowDir }]}>
@@ -202,6 +278,17 @@ export default function HealthScreen() {
           </SmartCard>
         ))}
       </ScrollView>
+
+      {sheet && (
+        <QuickLogSheet
+          visible={!!sheet}
+          title={sheetConfig[sheet].title}
+          icon={sheetConfig[sheet].icon}
+          fields={sheetConfig[sheet].fields}
+          onClose={() => setSheet(null)}
+          onSubmit={onSheetSubmit}
+        />
+      )}
     </View>
   );
 }
@@ -213,18 +300,26 @@ const Macro = ({ label, val, c }: any) => (
   </View>
 );
 
-const Metric = ({ icon, val, label, c }: any) => (
-  <View style={[MS.metric, { backgroundColor: c.bg1, borderColor: c.b1 }]}>
-    <Ionicons name={icon} size={18} color={c.t2} />
-    <Text style={{ color: c.t1, fontWeight: '800', fontSize: 15 }}>{val}</Text>
-    <Text style={{ color: c.t3, fontSize: 10 }} numberOfLines={1}>
-      {label}
-    </Text>
-  </View>
+const Metric = ({ icon, val, label, c, onPress }: any) => (
+  <Pressable onPress={onPress} style={{ flex: 1 }}>
+    <View style={[MS.metric, { backgroundColor: c.bg1, borderColor: c.b1 }]}>
+      <Ionicons name={icon} size={18} color={c.t2} />
+      <Text style={{ color: c.t1, fontWeight: '800', fontSize: 15 }}>{val}</Text>
+      <Text style={{ color: c.t3, fontSize: 10 }} numberOfLines={1}>
+        {label}
+      </Text>
+      {onPress ? (
+        <View style={MS.editDot}>
+          <Ionicons name="pencil" size={8} color={c.t3} />
+        </View>
+      ) : null}
+    </View>
+  </Pressable>
 );
 
 const MS = StyleSheet.create({
   metric: { flex: 1, alignItems: 'center', gap: 3, paddingVertical: 12, borderRadius: 14, borderWidth: 1 },
+  editDot: { position: 'absolute', top: 6, insetInlineEnd: 6, opacity: 0.6 },
 });
 
 const S = StyleSheet.create({

@@ -270,7 +270,27 @@
     "add_activity": "Add custom activity",
     "weekly": "Week progress",
     "challenges": "Challenges",
-    "activities": "Activities"
+    "activities": "Activities",
+    "empty_state": "Start by adding activities that nourish or drain you, then log them daily to see your weekly balance.",
+    "balance_line": "Your week is balanced — {{pct}}% of your energy went to things that nourish you.",
+    "day_sun": "Sun",
+    "day_mon": "Mon",
+    "day_tue": "Tue",
+    "day_wed": "Wed",
+    "day_thu": "Thu",
+    "day_fri": "Fri",
+    "day_sat": "Sat",
+    "from_ai": "From your AI",
+    "apply": "Apply",
+    "applied": "Applied",
+    "add_healthy": "Nourishing activity",
+    "add_draining": "Draining activity",
+    "no_activities": "No activities yet. Add what nourishes you (reading, exercise) and what drains you (social, late nights) to track your balance.",
+    "nourishes": "Nourishes you",
+    "drains": "Drains you",
+    "long_press_delete": "Long-press any activity to delete it.",
+    "activity_name": "Activity name",
+    "add": "Add"
   },
   "ai_hub": {
     "ask_ph": "Tell me what you want… (e.g. create an exam review plan)",
@@ -281,7 +301,17 @@
     "gen_plan_90": "90-day plan",
     "weekly_review": "Weekly review",
     "skill_plan": "Skill learning plan",
-    "habit_system": "Habit system"
+    "habit_system": "Habit system",
+    "search_placeholder": "Search your life… (last appointment? where’s the HSK plan?)",
+    "no_results": "No results yet — the more you use the app, the more it knows about you.",
+    "noticed": "What your AI noticed",
+    "no_insights": "No insights yet. Log journals, tasks and habits and the AI will start connecting patterns.",
+    "about_you": "What it knows about you",
+    "add_fact": "Add a fact",
+    "facts_hint": "Teach the AI facts about you (your university, major, goals, key people) so it understands your context in every section.",
+    "fact_label": "A fact about you",
+    "fact_placeholder": "e.g. I study Computer Engineering at KSU",
+    "trust_center": "Trust & privacy center"
   },
   "settings": {
     "title": "Settings",
@@ -361,7 +391,13 @@
     "log_meal_photo": "Photograph a meal to estimate calories",
     "estimate_offline": "Estimation needs the server — add the meal manually",
     "disclaimer": "General estimates, not medical advice — consult a professional for health decisions.",
-    "water_week": "Water this week"
+    "water_week": "Water this week",
+    "log_sleep": "Log sleep",
+    "log_steps": "Log steps",
+    "log_weight": "Log weight",
+    "add_meal": "Add a meal manually",
+    "meal_name": "Meal name",
+    "no_meals": "No meals today — add one by photo or by hand."
   },
   "exercise": {
     "this_week": "This week",
