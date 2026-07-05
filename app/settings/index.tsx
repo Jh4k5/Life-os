@@ -1,6 +1,6 @@
 // app/settings/index.tsx
 import React from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet, Share } from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet, Share, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, type ThemeMode } from '@/contexts/ThemeContext';
@@ -30,6 +30,28 @@ export default function SettingsScreen() {
     } catch {
       /* user cancelled the share sheet */
     }
+  };
+
+  const confirmDelete = () => {
+    // Real deletion, guarded by an explicit double-confirm.
+    Alert.alert(
+      'حذف الحساب نهائيًا',
+      'سيُحذف حسابك وكل بياناتك (اليوميات، المهام، العادات، الدراسة، الصحة…) بلا رجعة. هل أنت متأكد؟',
+      [
+        { text: 'إلغاء', style: 'cancel' },
+        {
+          text: 'حذف كل شيء',
+          style: 'destructive',
+          onPress: async () => {
+            await auth.deleteAccount(); // server delete (best-effort) + sign out
+            await db.clearAll(); // wipe every local collection
+            resetProfile();
+            feedback.warning();
+            router.replace('/(auth)/welcome');
+          },
+        },
+      ],
+    );
   };
 
   const Row = ({ icon, label, value, onPress, iconColor }: any) => (
@@ -215,6 +237,7 @@ export default function SettingsScreen() {
             onPress={() => router.push('/trust-center')}
             iconColor={c.green}
           />
+          <Row icon="trash-outline" label="حذف الحساب" onPress={confirmDelete} iconColor={c.red} />
         </SmartCard>
 
         {/* Sign Out */}

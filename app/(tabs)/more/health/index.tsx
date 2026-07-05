@@ -66,7 +66,7 @@ export default function HealthScreen() {
   const logMealPhoto = async () => {
     haptics.select();
     setNote(null);
-    const img = await captureService.pickImage();
+    const img = await captureService.captureImage();
     if (!img) return;
     setEstimating(true);
     const est = await estimateMeal({ uri: img.uri, base64: img.base64, mimeType: img.mimeType });

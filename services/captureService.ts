@@ -3,6 +3,7 @@
 // image → OCR. Real interfaces; OCR is backed by the Gemini vision Edge
 // Function when configured, with a graceful no-op fallback.
 import * as ImagePicker from 'expo-image-picker';
+import { Alert } from 'react-native';
 import { getClient, BUCKETS, isSupabaseConfigured } from './supabase';
 
 export interface VoiceResult {
@@ -22,18 +23,38 @@ export interface PickedImage {
 }
 
 export const captureService = {
-  /** Open the library/camera to attach a schedule photo/PDF (Universal Capture). */
+  /** Pick from the photo library. */
   async pickImage(): Promise<PickedImage | null> {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) return null;
-    const res = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      base64: true,
-      quality: 0.7,
-    });
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], base64: true, quality: 0.7 });
     if (res.canceled || !res.assets?.length) return null;
     const a = res.assets[0];
     return { uri: a.uri, base64: a.base64 ?? undefined, mimeType: a.mimeType ?? 'image/jpeg' };
+  },
+
+  /** Take a new photo with the camera. */
+  async takePhoto(): Promise<PickedImage | null> {
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) return null;
+    const res = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], base64: true, quality: 0.7 });
+    if (res.canceled || !res.assets?.length) return null;
+    const a = res.assets[0];
+    return { uri: a.uri, base64: a.base64 ?? undefined, mimeType: a.mimeType ?? 'image/jpeg' };
+  },
+
+  /**
+   * Ask the user Camera vs Gallery (the natural expectation), then capture.
+   * Cross-platform via Alert so it works on iOS and Android alike.
+   */
+  async captureImage(): Promise<PickedImage | null> {
+    return new Promise((resolve) => {
+      Alert.alert('إضافة صورة', 'من أين تريد الصورة؟', [
+        { text: '📷 الكاميرا', onPress: () => this.takePhoto().then(resolve).catch(() => resolve(null)) },
+        { text: '🖼️ المعرض', onPress: () => this.pickImage().then(resolve).catch(() => resolve(null)) },
+        { text: 'إلغاء', style: 'cancel', onPress: () => resolve(null) },
+      ]);
+    });
   },
 
   /** Voice → text via the Gemini audio Edge Function (server-side key). */

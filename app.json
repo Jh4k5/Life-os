@@ -15,12 +15,14 @@
       "bundleIdentifier": "com.liveos.app",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "Life OS يحتاج للميكروفون لتسجيل ملاحظاتك",
-        "NSSpeechRecognitionUsageDescription": "Life OS يستخدم التعرف على الكلام"
+        "NSSpeechRecognitionUsageDescription": "Life OS يستخدم التعرف على الكلام",
+        "NSCameraUsageDescription": "Life OS يستخدم الكاميرا لتصوير الوجبات والجداول",
+        "NSPhotoLibraryUsageDescription": "Life OS يصل إلى صورك لإرفاق الوجبات والجداول"
       }
     },
     "android": {
       "package": "com.liveos.app",
-      "permissions": ["android.permission.RECORD_AUDIO"]
+      "permissions": ["android.permission.RECORD_AUDIO", "android.permission.CAMERA"]
     },
     "web": {
       "bundler": "metro",

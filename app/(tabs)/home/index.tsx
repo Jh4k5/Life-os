@@ -114,7 +114,7 @@ const AIView = ({ c, t }: any) => {
 
   // Universal Capture: attach an image/PDF → OCR → parse into typed items.
   const captureImage = async () => {
-    const image = await captureService.pickImage();
+    const image = await captureService.captureImage();
     if (!image) return;
     setBusy(true);
     setApplied(null);

@@ -27,7 +27,7 @@ export default function ScheduleBuilderScreen() {
   const pickAndBuild = async () => {
     setBusy(true);
     setApplied(null);
-    const image = await captureService.pickImage();
+    const image = await captureService.captureImage();
     if (!image) {
       // No image (cancelled / web) — still demonstrate the flow honestly.
       const res = await scheduleService.fromImage({ uri: '', mimeType: 'image/jpeg' });

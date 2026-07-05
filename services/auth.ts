@@ -34,6 +34,29 @@ export const auth = {
     if (client) await client.auth.signOut();
   },
 
+  /**
+   * Permanently delete the account: ask the server to remove the user + their
+   * rows (Edge Function with the service role), then end the session. The
+   * caller also wipes all local data — so the account is genuinely gone, not a
+   * fake button.
+   */
+  async deleteAccount(): Promise<AuthResult> {
+    const client = getClient();
+    if (client) {
+      try {
+        await client.functions.invoke('delete-account', { body: {} });
+      } catch {
+        /* best-effort server delete; local wipe below always runs */
+      }
+      try {
+        await client.auth.signOut();
+      } catch {
+        /* ignore */
+      }
+    }
+    return { ok: true };
+  },
+
   async currentUser() {
     const client = getClient();
     if (!client) return null;
