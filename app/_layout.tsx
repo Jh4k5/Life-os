@@ -6,12 +6,19 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ReducedMotionConfig, ReduceMotion } from 'react-native-reanimated';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { ErrorBoundary } from '@/components/system/ErrorBoundary';
+import { useSettingsStore } from '@/store/settingsStore';
+import { installTextScaling } from '@/lib/textScale';
 import '@/lib/i18n';
 
+// Patch <Text>/<TextInput> once so the Font-size setting scales all text.
+installTextScaling();
+
 export default function RootLayout() {
+  // Re-key the tree when the font scale changes so it applies immediately.
+  const fontSize = useSettingsStore((s) => s.fontSize);
   return (
     <ErrorBoundary>
-      <GestureHandlerRootView style={{ flex: 1 }}>
+      <GestureHandlerRootView style={{ flex: 1 }} key={fontSize}>
         {/* Honor the OS "Reduce Motion" accessibility setting app-wide. */}
         <ReducedMotionConfig mode={ReduceMotion.System} />
         <SafeAreaProvider>
