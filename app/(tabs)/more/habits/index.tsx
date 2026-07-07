@@ -165,13 +165,13 @@ export default function HabitsScreen() {
                     <Text style={{ color: c.t1, fontWeight: '700', fontSize: 15 }}>{h.name}</Text>
                     <Text style={{ color: c.t2, fontSize: 12, marginTop: 3 }}>
                       {h.type === 'checkbox'
-                        ? '☑ صح/خطأ'
+                        ? `☑ ${t('habits.t_check')}`
                         : h.type === 'counter'
                           ? `🔢 ${h.target} ${h.unit ?? ''}`
                           : h.type === 'timer'
-                            ? `⏱ ${h.target} دقيقة`
+                            ? `⏱ ${t('habits.d_min', { n: h.target })}`
                             : h.type === 'stopwatch'
-                              ? '⏱ كرونومتر'
+                              ? `⏱ ${t('habits.t_stop')}`
                               : `📏 ${h.target} ${h.unit ?? ''}`}
                       {' · '}
                       {h.freq === 'daily'
@@ -197,12 +197,12 @@ export default function HabitsScreen() {
               {[
                 {
                   val: `${Math.round((habits.reduce((s, h) => s + (h.done ? 1 : 0), 0) / Math.max(habits.length, 1)) * 100)}%`,
-                  label: 'معدل إكمال اليوم',
+                  label: t('habits.rate_today'),
                   color: c.habits,
                 },
-                { val: `${Math.max(...habits.map((h) => h.streak))}`, label: 'أعلى streak حالي', color: '#F59E0B' },
-                { val: `${Math.max(...habits.map((h) => h.bestStreak))}`, label: 'أفضل streak تاريخياً', color: c.green },
-                { val: `${habits.length}`, label: 'إجمالي العادات', color: c.accent },
+                { val: `${habits.length ? Math.max(...habits.map((h) => h.streak)) : 0}`, label: t('habits.top_streak'), color: '#F59E0B' },
+                { val: `${habits.length ? Math.max(...habits.map((h) => h.bestStreak)) : 0}`, label: t('habits.best_streak_ever'), color: c.green },
+                { val: `${habits.length}`, label: t('habits.total'), color: c.accent },
               ].map((stat, i) => (
                 <SmartCard key={i} style={{ flex: 1, minWidth: '45%', alignItems: 'center', paddingVertical: 18 }}>
                   <Text style={{ fontSize: 28, fontWeight: '800', color: stat.color }}>{stat.val}</Text>

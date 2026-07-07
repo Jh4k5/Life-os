@@ -95,7 +95,7 @@ export default function TaskDetailScreen() {
         <SmartCard accent={c.ai_hub}>
           <Text style={{ color: c.ai_hub, fontWeight: '700', fontSize: 13 }}>🤖 {t('home.ai')}</Text>
           <Text style={{ color: c.t2, fontSize: 13, marginTop: 6, lineHeight: 20 }}>
-            أفضل وقت لإنجاز هذه المهمة: صباحاً بين 9 و 11 — وقت ذروة تركيزك بناءً على سجلك.
+            {t('tasks.ai_suggestion_body')}
           </Text>
         </SmartCard>
         {/* living connections from the memory graph */}

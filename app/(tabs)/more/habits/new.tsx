@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, ScrollView, Switch, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
@@ -15,18 +16,19 @@ type Freq = 'daily' | 'weekly' | 'monthly' | 'custom';
 
 const EMOJIS = ['⭐', '💧', '📖', '🏃', '🧘', '💊', '✍', '🎵', '💪', '🥗', '🌿', '📝', '🎯', '💡', '🌙', '☀', '🙏', '🎓', '🔢', '⏱'];
 const COLORS = ['#3B82F6', '#00D084', '#EF4444', '#A855F7', '#F59E0B', '#14B8A6', '#EC4899', '#8B5CF6', '#06B6D4', '#D97706', '#10B981', '#6366F1'];
-const DAYS_AR = ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س'];
 
-const TYPES: { key: HType; icon: string; label: string; desc: string }[] = [
-  { key: 'checkbox', icon: '☑', label: 'صح/خطأ', desc: 'فعلته أم لا' },
-  { key: 'counter', icon: '🔢', label: 'عداد', desc: 'احسب كم مرة' },
-  { key: 'timer', icon: '⏱', label: 'مؤقت', desc: 'استمر لوقت محدد' },
-  { key: 'stopwatch', icon: '⏱', label: 'كرونومتر', desc: 'سجّل الوقت بحرية' },
-  { key: 'quantity', icon: '📏', label: 'كمية', desc: 'تتبع بوحدة مخصصة' },
+// Labels/descriptions are i18n keys resolved in the component.
+const TYPES: { key: HType; icon: string; labelKey: string; descKey: string }[] = [
+  { key: 'checkbox', icon: '☑', labelKey: 'habits.t_check', descKey: 'habits.t_check_d' },
+  { key: 'counter', icon: '🔢', labelKey: 'habits.t_counter', descKey: 'habits.t_counter_d' },
+  { key: 'timer', icon: '⏱', labelKey: 'habits.t_timer', descKey: 'habits.t_timer_d' },
+  { key: 'stopwatch', icon: '⏱', labelKey: 'habits.t_stop', descKey: 'habits.t_stop_d' },
+  { key: 'quantity', icon: '📏', labelKey: 'habits.t_qty', descKey: 'habits.t_qty_d' },
 ];
 
 export default function NewHabitScreen() {
   const { c } = useTheme();
+  const { t } = useTranslation();
   const router = useRouter();
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState('⭐');
@@ -34,7 +36,7 @@ export default function NewHabitScreen() {
   const [type, setType] = useState<HType>('checkbox');
   const [freq, setFreq] = useState<Freq>('daily');
   const [target, setTarget] = useState(1);
-  const [unit, setUnit] = useState('مرة');
+  const [unit, setUnit] = useState(t('habits.once'));
   const [timePref, setTimePref] = useState<'morning' | 'afternoon' | 'evening' | 'anytime'>('anytime');
   const [customDays, setCustomDays] = useState([1, 2, 3, 4, 5, 6, 7]);
   const [areaId, setAreaId] = useState<string | null>(null);
@@ -56,7 +58,7 @@ export default function NewHabitScreen() {
 
   const preview: HabitData = {
     id: 'preview',
-    name: name || 'اسم العادة',
+    name: name || t('habits.habit_name'),
     emoji,
     color,
     type,
@@ -79,7 +81,7 @@ export default function NewHabitScreen() {
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
       <Header
-        title="عادة جديدة"
+        title={t('habits.new_habit')}
         accent={c.habits}
         right={[{ icon: 'checkmark', onPress: save, color: c.accent }]}
       />
@@ -88,14 +90,14 @@ export default function NewHabitScreen() {
         <HabitCard habit={preview} onUpdate={() => {}} />
 
         {/* الاسم والأيقونة */}
-        <Sec title="الاسم والأيقونة">
+        <Sec title={t('habits.name_icon')}>
           <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
             <Pressable style={[S.emojiSel, { backgroundColor: color + '22', borderColor: color }]}>
               <Text style={{ fontSize: 30 }}>{emoji}</Text>
             </Pressable>
             <TextInput
               style={[S.nameInput, { backgroundColor: c.bg2, borderColor: c.b1, color: c.t1 }]}
-              placeholder="اسم العادة (بأي لغة)…"
+              placeholder={t('habits.name_ph')}
               placeholderTextColor={c.t4}
               value={name}
               onChangeText={setName}
@@ -122,7 +124,7 @@ export default function NewHabitScreen() {
         </Sec>
 
         {/* اللون */}
-        <Sec title="اللون">
+        <Sec title={t('habits.color')}>
           <View style={S.colorRow}>
             {COLORS.map((clr) => (
               <Pressable
@@ -143,7 +145,7 @@ export default function NewHabitScreen() {
         </Sec>
 
         {/* النوع */}
-        <Sec title="نوع العادة">
+        <Sec title={t('habits.type')}>
           <View style={S.typeGrid}>
             {TYPES.map((tp) => (
               <Pressable
@@ -160,9 +162,9 @@ export default function NewHabitScreen() {
               >
                 <Text style={{ fontSize: 22 }}>{tp.icon}</Text>
                 <Text style={{ color: type === tp.key ? color : c.t1, fontWeight: '700', fontSize: 13 }}>
-                  {tp.label}
+                  {t(tp.labelKey)}
                 </Text>
-                <Text style={{ color: c.t3, fontSize: 11, textAlign: 'center' }}>{tp.desc}</Text>
+                <Text style={{ color: c.t3, fontSize: 11, textAlign: 'center' }}>{t(tp.descKey)}</Text>
               </Pressable>
             ))}
           </View>
@@ -170,7 +172,7 @@ export default function NewHabitScreen() {
 
         {/* الهدف */}
         {(type === 'counter' || type === 'timer' || type === 'quantity') && (
-          <Sec title={type === 'timer' ? 'الهدف الزمني (دقائق)' : 'الهدف اليومي'}>
+          <Sec title={type === 'timer' ? t('habits.timer_target') : t('habits.daily_target')}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
               <Pressable
                 onPress={() => setTarget((tv) => Math.max(1, tv - 1))}
@@ -190,24 +192,24 @@ export default function NewHabitScreen() {
                   style={[S.unitInput, { backgroundColor: c.bg2, borderColor: c.b1, color: c.t1 }]}
                   value={unit}
                   onChangeText={setUnit}
-                  placeholder="الوحدة"
+                  placeholder={t('habits.unit')}
                   placeholderTextColor={c.t4}
                 />
               )}
-              {type === 'timer' && <Text style={{ color: c.t2, fontSize: 15 }}>دقيقة</Text>}
+              {type === 'timer' && <Text style={{ color: c.t2, fontSize: 15 }}>{t('habits.minute')}</Text>}
             </View>
           </Sec>
         )}
 
         {/* التكرار */}
-        <Sec title="التكرار">
+        <Sec title={t('habits.freq')}>
           <View style={S.freqRow}>
             {(
               [
-                ['daily', 'يومي'],
-                ['weekly', 'أسبوعي'],
-                ['monthly', 'شهري'],
-                ['custom', 'مخصص'],
+                ['daily', 'habits.daily'],
+                ['weekly', 'habits.weekly'],
+                ['monthly', 'habits.monthly'],
+                ['custom', 'habits.custom'],
               ] as [Freq, string][]
             ).map(([k, lbl]) => (
               <Pressable
@@ -218,13 +220,13 @@ export default function NewHabitScreen() {
                   { backgroundColor: freq === k ? color : c.bg2, borderColor: freq === k ? color : c.b1 },
                 ]}
               >
-                <Text style={{ color: freq === k ? '#FFF' : c.t2, fontWeight: '600', fontSize: 13 }}>{lbl}</Text>
+                <Text style={{ color: freq === k ? '#FFF' : c.t2, fontWeight: '600', fontSize: 13 }}>{t(lbl)}</Text>
               </Pressable>
             ))}
           </View>
           {freq === 'custom' && (
             <View style={S.daysRow}>
-              {DAYS_AR.map((d, i) => (
+              {[0, 1, 2, 3, 4, 5, 6].map((i) => (
                 <Pressable
                   key={i}
                   onPress={() => toggleDay(i + 1)}
@@ -236,7 +238,7 @@ export default function NewHabitScreen() {
                     },
                   ]}
                 >
-                  <Text style={{ color: customDays.includes(i + 1) ? '#FFF' : c.t2, fontWeight: '700' }}>{d}</Text>
+                  <Text style={{ color: customDays.includes(i + 1) ? '#FFF' : c.t2, fontWeight: '700' }}>{t(`days.l${i}`)}</Text>
                 </Pressable>
               ))}
             </View>
@@ -244,16 +246,16 @@ export default function NewHabitScreen() {
         </Sec>
 
         {/* الوقت المفضل */}
-        <Sec title="الوقت المفضل">
+        <Sec title={t('habits.time_pref')}>
           <View style={S.freqRow}>
             {(
               [
-                ['morning', '🌅 صباح'],
-                ['afternoon', '☀ ظهر'],
-                ['evening', '🌙 مساء'],
-                ['anytime', '🕐 أي وقت'],
+                ['morning', '🌅', 'habits.morning'],
+                ['afternoon', '☀', 'habits.afternoon'],
+                ['evening', '🌙', 'habits.evening'],
+                ['anytime', '🕐', 'habits.anytime'],
               ] as const
-            ).map(([k, lbl]) => (
+            ).map(([k, em, lbl]) => (
               <Pressable
                 key={k}
                 onPress={() => setTimePref(k)}
@@ -262,14 +264,14 @@ export default function NewHabitScreen() {
                   { backgroundColor: timePref === k ? color : c.bg2, borderColor: timePref === k ? color : c.b1 },
                 ]}
               >
-                <Text style={{ color: timePref === k ? '#FFF' : c.t2, fontSize: 12, fontWeight: '600' }}>{lbl}</Text>
+                <Text style={{ color: timePref === k ? '#FFF' : c.t2, fontSize: 12, fontWeight: '600' }}>{em} {t(lbl)}</Text>
               </Pressable>
             ))}
           </View>
         </Sec>
 
         {/* التذكيرات */}
-        <Sec title="التذكيرات">
+        <Sec title={t('habits.reminders')}>
           {reminders.map((r, i) => (
             <View key={i} style={[S.reminderRow, { backgroundColor: c.bg2, borderColor: c.b1 }]}>
               <Ionicons name="alarm-outline" size={16} color={color} />
@@ -284,12 +286,12 @@ export default function NewHabitScreen() {
             style={[S.addRemBtn, { borderColor: c.b2 }]}
           >
             <Ionicons name="add" size={16} color={c.accent} />
-            <Text style={{ color: c.accent, fontWeight: '600' }}>إضافة تذكير</Text>
+            <Text style={{ color: c.accent, fontWeight: '600' }}>{t('habits.add_reminder')}</Text>
           </Pressable>
         </Sec>
 
         {/* ربط بمنطقة */}
-        <Sec title="ربط بمنطقة (اختياري)">
+        <Sec title={t('habits.link_area_opt')}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <Pressable
@@ -299,7 +301,7 @@ export default function NewHabitScreen() {
                   { backgroundColor: !areaId ? c.accent + '20' : c.bg2, borderColor: !areaId ? c.accent : c.b1 },
                 ]}
               >
-                <Text style={{ color: !areaId ? c.accent : c.t2, fontSize: 13 }}>بدون ربط</Text>
+                <Text style={{ color: !areaId ? c.accent : c.t2, fontSize: 13 }}>{t('habits.no_link')}</Text>
               </Pressable>
               {areas.map((area) => (
                 <Pressable
@@ -322,11 +324,11 @@ export default function NewHabitScreen() {
         </Sec>
 
         {/* خيارات */}
-        <Sec title="خيارات إضافية">
+        <Sec title={t('habits.extra_options')}>
           <SmartCard>
             <ToggleRow
-              label="ملاحظة عند الإكمال"
-              desc="اكتب تعليقاً عند إكمال العادة"
+              label={t('habits.note_on_done')}
+              desc={t('habits.note_on_done_d')}
               value={noteEnabled}
               onChange={setNoteEnabled}
               color={color}
@@ -334,8 +336,8 @@ export default function NewHabitScreen() {
             />
             <View style={[S.divider, { backgroundColor: c.b0 }]} />
             <ToggleRow
-              label="إكمال بأثر رجعي"
-              desc="أضف إكمال ليوم سابق بدون ذنب"
+              label={t('habits.retro')}
+              desc={t('habits.retro_d')}
               value={retroEnabled}
               onChange={setRetroEnabled}
               color={color}
@@ -346,7 +348,7 @@ export default function NewHabitScreen() {
 
         {/* Save */}
         <Pressable onPress={save} style={[S.saveBtn, { backgroundColor: color }]}>
-          <Text style={S.saveTxt}>+ إضافة العادة</Text>
+          <Text style={S.saveTxt}>+ {t('habits.add_habit')}</Text>
         </Pressable>
       </ScrollView>
     </View>

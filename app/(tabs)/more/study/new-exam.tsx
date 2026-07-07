@@ -28,7 +28,7 @@ export default function NewExamScreen() {
     await repository.addExam({ courseId: courseId ?? null, name: name.trim(), date: cleanDate, chaptersCount: chapters });
     // Cross-domain: a dated exam also lands on the calendar.
     if (cleanDate) {
-      await repository.addEvent({ title: `امتحان: ${name.trim()}`, startsAt: new Date(cleanDate).toISOString(), allDay: true, source: 'exam' });
+      await repository.addEvent({ title: t('study.exam_event_title', { name: name.trim() }), startsAt: new Date(cleanDate).toISOString(), allDay: true, source: 'exam' });
     }
     router.back();
   };
@@ -68,7 +68,7 @@ export default function NewExamScreen() {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <Text style={{ fontSize: 18 }}>🤖</Text>
             <Text style={{ color: c.study, fontWeight: '600', fontSize: 13, flex: 1 }}>
-              سيولّد الذكاء الاصطناعي خطة مراجعة يومية مفصلة وجلسات تلقائية في الجدول
+              {t('study.exam_ai_note')}
             </Text>
           </View>
         </SmartCard>

@@ -9,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export interface HabitData {
@@ -35,6 +36,7 @@ interface Props {
 
 export const HabitCard = ({ habit, onUpdate }: Props) => {
   const { c, isDark } = useTheme();
+  const { t } = useTranslation();
   const scale = useSharedValue(1);
   const anim = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 
@@ -232,7 +234,9 @@ const HabitRow = ({
   habit: HabitData;
   c: ReturnType<typeof useTheme>['c'];
   children: React.ReactNode;
-}) => (
+}) => {
+  const { t } = useTranslation();
+  return (
   <View
     style={{
       flexDirection: 'row',
@@ -258,13 +262,14 @@ const HabitRow = ({
       <Text style={{ fontSize: 15, fontWeight: '600', color: c.t1 }}>{habit.name}</Text>
       {habit.streak > 0 && (
         <Text style={{ fontSize: 12, fontWeight: '500', color: '#F59E0B', marginTop: 2 }}>
-          🔥 {habit.streak} يوم {habit.streak === habit.bestStreak ? '· 🏆 الأفضل' : ''}
+          {t('habits.streak', { n: habit.streak })} {habit.streak === habit.bestStreak ? `· 🏆 ${t('habits.best_word')}` : ''}
         </Text>
       )}
     </View>
     {children}
   </View>
-);
+  );
+};
 
 const S = StyleSheet.create({
   card: { borderRadius: 16, borderWidth: 1, marginVertical: 4, overflow: 'hidden' },

@@ -49,8 +49,8 @@ export default function CourseDetailScreen() {
     const items: DetectedItem[] = Array.from({ length: n }, (_, i) => ({
       id: `plan_${Date.now()}_${i}`,
       type: 'appointment',
-      title: `مراجعة ${course?.name ?? ''} — ${examName}: ${i + 1}/${n}`,
-      detail: daysLeft !== null ? `خلال ${Math.max(daysLeft, n)} يوم` : undefined,
+      title: t('study.rev_session', { course: course?.name ?? '', exam: examName, i: i + 1, n }),
+      detail: daysLeft !== null ? t('study.within_days', { n: Math.max(daysLeft, n) }) : undefined,
       confidence: 0.9,
       status: 'pending',
     }));
@@ -141,7 +141,7 @@ export default function CourseDetailScreen() {
             </View>
             <View style={{ flexDirection: rowDir, alignItems: 'center', gap: 8, marginTop: 4 }}>
               <Text style={{ color: c.t3, fontSize: 12, flex: 1, textAlign }}>
-                {exam.chaptersCount} {t('study.chapters')} · {exam.studyHours} ساعة
+                {exam.chaptersCount} {t('study.chapters')} · {exam.studyHours} {t('study.hours_unit')}
               </Text>
               <View style={[S.readyPill, { flexDirection: rowDir, backgroundColor: readiness >= 60 ? c.bg3 : c.accentDim }]}>
                 <Ionicons name="speedometer-outline" size={12} color={readiness >= 60 ? c.t2 : c.accent} />
@@ -155,7 +155,7 @@ export default function CourseDetailScreen() {
               <View style={[S.planBox, { backgroundColor: c.accentDim, borderColor: c.accent + '40' }]}>
                 <View style={{ flexDirection: rowDir, alignItems: 'center', gap: 6, marginBottom: 6 }}>
                   <Ionicons name="sparkles-outline" size={14} color={c.accent} />
-                  <Text style={{ color: c.accent, fontWeight: '700', fontSize: 13 }}>خطة المراجعة</Text>
+                  <Text style={{ color: c.accent, fontWeight: '700', fontSize: 13 }}>{t('study.revision_plan')}</Text>
                 </View>
                 {exam.aiPlan.map((step, i) => (
                   <View key={i} style={{ flexDirection: rowDir, gap: 8, paddingVertical: 3 }}>

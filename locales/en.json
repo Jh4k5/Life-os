@@ -26,7 +26,10 @@
     "habits_done": "All habits done",
     "urgent_count": "{{n}} urgent",
     "tasks_count": "{{n}} tasks",
-    "no_pending": "No pending tasks"
+    "no_pending": "No pending tasks",
+    "proposal_title": "This request deserves its own space",
+    "proposal_body": "Create a “{{title}}” space in AI Studio?",
+    "new_capture": "New capture"
   },
   "dash": {
     "today": "Today",
@@ -45,7 +48,10 @@
     "trend_flat": "Steady",
     "chip_urgent": "urgent",
     "chip_exams": "exams soon",
-    "chip_cards": "cards due"
+    "chip_cards": "cards due",
+    "timeline_empty": "No events today yet — capture your day or add from the schedule and it’ll appear here.",
+    "passed": "Passed",
+    "next": "Next"
   },
   "sections": {
     "areas": "Areas",
@@ -124,7 +130,42 @@
     "cat_learn": "Learning",
     "cat_disc": "Discipline",
     "all": "All habits",
-    "stats": "Stats"
+    "stats": "Stats",
+    "t_check_d": "Did it or not",
+    "t_counter_d": "Count how many",
+    "t_timer_d": "Run for a set time",
+    "t_stop_d": "Log time freely",
+    "t_qty_d": "Track with a custom unit",
+    "d_min": "{{n}} min",
+    "rate_today": "Today’s completion",
+    "top_streak": "Top current streak",
+    "best_streak_ever": "Best streak ever",
+    "total": "Total habits",
+    "best_word": "Best",
+    "name_icon": "Name & icon",
+    "habit_name": "Habit name",
+    "new_habit": "New habit",
+    "name_ph": "Habit name (any language)…",
+    "color": "Color",
+    "timer_target": "Time goal (minutes)",
+    "daily_target": "Daily goal",
+    "extra_options": "More options",
+    "note_on_done_d": "Write a note when you complete the habit",
+    "retro_d": "Add a completion for a past day, guilt-free",
+    "once": "time",
+    "rate_7d": "7-day rate",
+    "streak_current": "Current streak",
+    "best": "Best streak",
+    "minute": "min",
+    "no_link": "None",
+    "add_habit": "Add habit",
+    "streak_days": "{{n}}-day streak",
+    "last_3mo": "Last 3 months",
+    "legend_none": "Not logged",
+    "legend_done": "Done",
+    "real_pattern": "Your real pattern",
+    "pattern_body": "The day you stick to this habit most is {{day}} ({{n}} times in the last 91 days).",
+    "link_area_opt": "Link to an area (optional)"
   },
   "tasks": {
     "new": "New task",
@@ -156,7 +197,8 @@
     "priority": "Priority",
     "energy": "Energy required",
     "est_time": "Estimated time (min)",
-    "empty": "No tasks here 🎉"
+    "empty": "No tasks here 🎉",
+    "ai_suggestion_body": "Best time to do this task: morning between 9 and 11 — your focus peak based on your history."
   },
   "journal": {
     "new": "New entry",
@@ -186,7 +228,12 @@
     "tpl_problem": "Problem solving",
     "tpl_gratitude": "Gratitude",
     "tpl_free": "Free",
-    "empty": "No entries yet — start your journal"
+    "empty": "No entries yet — start your journal",
+    "streak_days": "{{n}}-day writing streak",
+    "entries_avg": "{{count}} entries · avg {{avg}} words",
+    "words_date": "{{n}} words · {{date}}",
+    "body_placeholder": "This is your personal space to express and reflect. Write freely in any language — the AI understands meaning, not just words.",
+    "ai_summary_body": "A day full of positive energy and progress toward your goals. Keep this momentum."
   },
   "study": {
     "new_course": "New course",
@@ -216,7 +263,14 @@
     "review_cards": "Review cards",
     "readiness": "Ready",
     "weak_topics": "Needs reinforcement",
-    "plan_applied": "Revision sessions added to your calendar"
+    "plan_applied": "Revision sessions added to your calendar",
+    "rev_session": "Review {{course}} — {{exam}}: {{i}}/{{n}}",
+    "within_days": "within {{n}} days",
+    "after_days": "in {{n}} days",
+    "exam_event_title": "Exam: {{name}}",
+    "hours_unit": "h",
+    "revision_plan": "Revision plan",
+    "exam_ai_note": "The AI will generate a detailed daily revision plan and automatic sessions on your schedule"
   },
   "learning": {
     "new": "Add to library",
@@ -237,7 +291,8 @@
     "daily_log": "Learned today…",
     "goal": "Monthly reading goal",
     "all": "All",
-    "empty": "Your library is empty — add your first item"
+    "empty": "Your library is empty — add your first item",
+    "in_library": "In library"
   },
   "focus": {
     "start": "Start session",
@@ -263,7 +318,18 @@
     "title_ph": "Event title",
     "location_ph": "Location (optional)",
     "all_day": "All day",
-    "no_events": "No events — quiet day 😌"
+    "no_events": "No events — quiet day 😌",
+    "build_title": "Smart Schedule Builder",
+    "build_sessions": "Revision sessions",
+    "build_checklist": "Prep checklist",
+    "build_reminders": "Reminders",
+    "build_added": "Added {{n}} sessions to your tasks",
+    "build_apply": "Add to schedule & tasks",
+    "build_drop": "Upload a photo or PDF of your exam schedule",
+    "build_drop_sub": "I’ll turn it into revision sessions, a checklist and reminders — and flag conflicts.",
+    "build_reading": "Reading and organizing the schedule…",
+    "build_conflicts": "Time conflicts",
+    "build_no_conflicts": "No time conflicts"
   },
   "dopamine": {
     "rank": "Your rank",
@@ -360,7 +426,8 @@
     "delete_account": "Delete account",
     "delete_title": "Delete account permanently",
     "delete_msg": "Your account and all your data (journal, tasks, habits, study, health…) will be erased for good. Are you sure?",
-    "delete_confirm": "Delete everything"
+    "delete_confirm": "Delete everything",
+    "rtl_hint": "RTL — right to left"
   },
   "auth": {
     "welcome_title": "Life OS",
@@ -555,5 +622,35 @@
     "per_year": "/ yr",
     "best": "Best value",
     "note": "Real billing is being set up — you’ll be able to subscribe and restore purchases soon."
+  },
+  "days": {
+    "d0": "Sun",
+    "d1": "Mon",
+    "d2": "Tue",
+    "d3": "Wed",
+    "d4": "Thu",
+    "d5": "Fri",
+    "d6": "Sat",
+    "l0": "S",
+    "l1": "M",
+    "l2": "T",
+    "l3": "W",
+    "l4": "T",
+    "l5": "F",
+    "l6": "S"
+  },
+  "ai_studio": {
+    "title": "AI Studio",
+    "not_found": "Space not found",
+    "files": "Files",
+    "sample_file": "Chapter 3 summary.pdf",
+    "from_template": "From template",
+    "blank": "Blank",
+    "prompt_ph": "e.g. I have an exam in a week, build a revision plan",
+    "intro": "Describe your problem — I’ll build a full space to solve it.",
+    "your_spaces": "Your spaces",
+    "blocks_count": "{{n}} blocks",
+    "grow": "This space is growing — add a files section, an advanced revision plan and progress tracking?",
+    "empty_block": "Empty — add items"
   }
 }

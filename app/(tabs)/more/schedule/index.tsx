@@ -24,7 +24,7 @@ const SOURCE_ICON: Record<string, keyof typeof Ionicons.glyphMap> = {
   habit: 'repeat-outline',
 };
 
-const DAYS = ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
+const DAYS = Array.from({ length: 7 }); // labels come from days.d0..d6 via t()
 
 export default function ScheduleScreen() {
   const { c } = useTheme();
@@ -60,7 +60,7 @@ export default function ScheduleScreen() {
       {/* Week strip */}
       {view === 'week' && (
         <View style={[S.weekStrip, { flexDirection: rowDir }]}>
-          {DAYS.map((d, i) => {
+          {DAYS.map((_, i) => {
             const on = selectedDay === i;
             return (
               <Pressable
@@ -71,7 +71,7 @@ export default function ScheduleScreen() {
                   { backgroundColor: on ? c.accent : c.bg2, borderColor: on ? c.accent : c.b1 },
                 ]}
               >
-                <Text style={{ color: on ? '#FFF' : c.t3, fontSize: 11 }}>{d}</Text>
+                <Text style={{ color: on ? '#FFF' : c.t3, fontSize: 11 }}>{t(`days.d${i}`)}</Text>
                 <Text style={{ color: on ? '#FFF' : c.t1, fontWeight: '700', fontSize: 16, marginTop: 2 }}>
                   {26 + i}
                 </Text>

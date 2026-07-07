@@ -207,7 +207,7 @@ export default function SettingsScreen() {
               <Text style={{ fontSize: 24 }}>{lang.flag}</Text>
               <View style={{ flex: 1 }}>
                 <Text style={{ color: c.t1, fontSize: 15 }}>{lang.name}</Text>
-                {lang.rtl && <Text style={{ color: c.t3, fontSize: 11, marginTop: 2 }}>RTL — من اليمين لليسار</Text>}
+                {lang.rtl && <Text style={{ color: c.t3, fontSize: 11, marginTop: 2 }}>{t('settings.rtl_hint')}</Text>}
               </View>
               {i18n.language === lang.code ? (
                 <Ionicons name="checkmark-circle" size={22} color={c.accent} />

@@ -26,7 +26,10 @@
     "habits_done": "Tüm alışkanlıklar tamam",
     "urgent_count": "{{n}} acil",
     "tasks_count": "{{n}} görev",
-    "no_pending": "Bekleyen görev yok"
+    "no_pending": "Bekleyen görev yok",
+    "proposal_title": "Bu istek kendi alanını hak ediyor",
+    "proposal_body": "Yapay Zekâ Stüdyosu’nda bir “{{title}}” alanı oluşturulsun mu?",
+    "new_capture": "Yeni yakalama"
   },
   "dash": {
     "today": "Bugün",
@@ -45,7 +48,10 @@
     "trend_flat": "Sabit",
     "chip_urgent": "acil",
     "chip_exams": "yakın sınav",
-    "chip_cards": "kart hazır"
+    "chip_cards": "kart hazır",
+    "timeline_empty": "Bugün henüz etkinlik yok — gününü yakala ya da programdan ekle, burada görünecek.",
+    "passed": "Geçti",
+    "next": "Sonraki"
   },
   "sections": {
     "areas": "Alanlar",
@@ -60,7 +66,9 @@
     "ai_hub": "Yapay Zekâ Merkezi",
     "health": "Sağlık",
     "exercise": "Egzersiz",
-    "memory": "Hafıza"
+    "memory": "Hafıza",
+    "ai_studio": "Yapay Zekâ Stüdyosu",
+    "wellbeing": "İyi oluş"
   },
   "areas": {
     "new": "Yeni alan",
@@ -116,7 +124,42 @@
     "cat_learn": "Öğrenme",
     "cat_disc": "Disiplin",
     "all": "Tüm alışkanlıklar",
-    "stats": "İstatistikler"
+    "stats": "İstatistikler",
+    "t_check_d": "Yaptın ya da yapmadın",
+    "t_counter_d": "Kaç kez say",
+    "t_timer_d": "Belirli bir süre çalış",
+    "t_stop_d": "Süreyi serbestçe kaydet",
+    "t_qty_d": "Özel birimle takip et",
+    "d_min": "{{n}} dk",
+    "rate_today": "Bugünkü tamamlama",
+    "top_streak": "En yüksek güncel seri",
+    "best_streak_ever": "Tüm zamanların en iyi serisi",
+    "total": "Toplam alışkanlık",
+    "best_word": "En iyi",
+    "name_icon": "Ad ve simge",
+    "habit_name": "Alışkanlık adı",
+    "new_habit": "Yeni alışkanlık",
+    "name_ph": "Alışkanlık adı (herhangi bir dil)…",
+    "color": "Renk",
+    "timer_target": "Süre hedefi (dakika)",
+    "daily_target": "Günlük hedef",
+    "extra_options": "Daha fazla seçenek",
+    "note_on_done_d": "Alışkanlığı tamamlayınca bir not yaz",
+    "retro_d": "Geçmiş bir gün için tamamlama ekle, suçluluk yok",
+    "once": "kez",
+    "rate_7d": "7 günlük oran",
+    "streak_current": "Güncel seri",
+    "best": "En iyi seri",
+    "minute": "dk",
+    "no_link": "Yok",
+    "add_habit": "Alışkanlık ekle",
+    "streak_days": "{{n}} günlük seri",
+    "last_3mo": "Son 3 ay",
+    "legend_none": "Kaydedilmedi",
+    "legend_done": "Tamam",
+    "real_pattern": "Gerçek düzenin",
+    "pattern_body": "Bu alışkanlığı en çok uyduğun gün {{day}} (son 91 günde {{n}} kez).",
+    "link_area_opt": "Bir alana bağla (isteğe bağlı)"
   },
   "tasks": {
     "new": "Yeni görev",
@@ -148,7 +191,8 @@
     "priority": "Öncelik",
     "energy": "Gereken enerji",
     "est_time": "Tahmini süre (dk)",
-    "empty": "Burada görev yok 🎉"
+    "empty": "Burada görev yok 🎉",
+    "ai_suggestion_body": "Bu görev için en iyi zaman: sabah 9-11 arası — geçmişine göre odak zirven."
   },
   "journal": {
     "new": "Yeni kayıt",
@@ -178,7 +222,12 @@
     "tpl_problem": "Problem çözme",
     "tpl_gratitude": "Şükran",
     "tpl_free": "Serbest",
-    "empty": "Henüz kayıt yok — günlüğüne başla"
+    "empty": "Henüz kayıt yok — günlüğüne başla",
+    "streak_days": "{{n}} günlük yazma serisi",
+    "entries_avg": "{{count}} giriş · ort. {{avg}} kelime",
+    "words_date": "{{n}} kelime · {{date}}",
+    "body_placeholder": "Burası kendini ifade etme ve düşünme alanın. Herhangi bir dilde özgürce yaz — yapay zekâ kelimeyi değil anlamı anlar.",
+    "ai_summary_body": "Olumlu enerji ve hedeflerine doğru ilerleme dolu bir gün. Bu ivmeyi koru."
   },
   "study": {
     "new_course": "Yeni ders",
@@ -208,7 +257,14 @@
     "review_cards": "Kartları incele",
     "readiness": "Hazırlık",
     "weak_topics": "Pekiştirilmeli",
-    "plan_applied": "Tekrar oturumları takvime eklendi"
+    "plan_applied": "Tekrar oturumları takvime eklendi",
+    "rev_session": "{{course}} tekrarı — {{exam}}: {{i}}/{{n}}",
+    "within_days": "{{n}} gün içinde",
+    "after_days": "{{n}} gün sonra",
+    "exam_event_title": "Sınav: {{name}}",
+    "hours_unit": "sa",
+    "revision_plan": "Tekrar planı",
+    "exam_ai_note": "Yapay zekâ ayrıntılı bir günlük tekrar planı ve programına otomatik oturumlar oluşturacak"
   },
   "learning": {
     "new": "Kütüphaneye ekle",
@@ -229,7 +285,8 @@
     "daily_log": "Bugün öğrendim…",
     "goal": "Aylık okuma hedefi",
     "all": "Tümü",
-    "empty": "Kütüphane boş — ilk öğeni ekle"
+    "empty": "Kütüphane boş — ilk öğeni ekle",
+    "in_library": "Kütüphanede"
   },
   "focus": {
     "start": "Oturumu başlat",
@@ -255,7 +312,18 @@
     "title_ph": "Etkinlik başlığı",
     "location_ph": "Konum (isteğe bağlı)",
     "all_day": "Tüm gün",
-    "no_events": "Etkinlik yok — sakin bir gün 😌"
+    "no_events": "Etkinlik yok — sakin bir gün 😌",
+    "build_title": "Akıllı Program Oluşturucu",
+    "build_sessions": "Tekrar oturumları",
+    "build_checklist": "Hazırlık listesi",
+    "build_reminders": "Hatırlatmalar",
+    "build_added": "Görevlerine {{n}} oturum eklendi",
+    "build_apply": "Programa ve görevlere ekle",
+    "build_drop": "Sınav programının fotoğrafını veya PDF’sini yükle",
+    "build_drop_sub": "Onu tekrar oturumlarına, bir listeye ve hatırlatmalara dönüştürürüm — ve çakışmaları işaretlerim.",
+    "build_reading": "Program okunuyor ve düzenleniyor…",
+    "build_conflicts": "Zaman çakışmaları",
+    "build_no_conflicts": "Zaman çakışması yok"
   },
   "dopamine": {
     "rank": "Rütben",
@@ -352,7 +420,8 @@
     "delete_account": "Hesabı sil",
     "delete_title": "Hesabı kalıcı olarak sil",
     "delete_msg": "Hesabın ve tüm verilerin (günlük, görevler, alışkanlıklar, çalışma, sağlık…) kalıcı olarak silinecek. Emin misin?",
-    "delete_confirm": "Her şeyi sil"
+    "delete_confirm": "Her şeyi sil",
+    "rtl_hint": "RTL — sağdan sola"
   },
   "auth": {
     "welcome_title": "Life OS",
@@ -402,7 +471,10 @@
     "custom": "Özel"
   },
   "groups": {
-    "body": "Beden"
+    "body": "Beden",
+    "life": "Yaşam",
+    "focus_learn": "Odak ve öğrenme",
+    "intelligence": "Zekâ"
   },
   "health": {
     "calories_today": "Bugünkü kalori",
@@ -550,5 +622,35 @@
     "per_year": "/ yıl",
     "best": "En iyi değer",
     "note": "Gerçek ödeme hazırlanıyor — yakında abone olup satın alımları geri yükleyebileceksin."
+  },
+  "days": {
+    "d0": "Paz",
+    "d1": "Pzt",
+    "d2": "Sal",
+    "d3": "Çar",
+    "d4": "Per",
+    "d5": "Cum",
+    "d6": "Cmt",
+    "l0": "P",
+    "l1": "P",
+    "l2": "S",
+    "l3": "Ç",
+    "l4": "P",
+    "l5": "C",
+    "l6": "C"
+  },
+  "ai_studio": {
+    "title": "Yapay Zekâ Stüdyosu",
+    "not_found": "Alan bulunamadı",
+    "files": "Dosyalar",
+    "sample_file": "3. bölüm özeti.pdf",
+    "from_template": "Şablondan",
+    "blank": "Boş",
+    "prompt_ph": "örn. Bir hafta sonra sınavım var, bir tekrar planı oluştur",
+    "intro": "Sorununu anlat — çözmek için tam bir alan kurayım.",
+    "your_spaces": "Alanların",
+    "blocks_count": "{{n}} blok",
+    "grow": "Bu alan büyüyor — dosyalar bölümü, gelişmiş tekrar planı ve ilerleme takibi eklensin mi?",
+    "empty_block": "Boş — öğe ekle"
   }
 }

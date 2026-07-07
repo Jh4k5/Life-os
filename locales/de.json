@@ -26,7 +26,10 @@
     "habits_done": "Alle Gewohnheiten erledigt",
     "urgent_count": "{{n}} dringend",
     "tasks_count": "{{n}} Aufgaben",
-    "no_pending": "Keine offenen Aufgaben"
+    "no_pending": "Keine offenen Aufgaben",
+    "proposal_title": "Diese Anfrage verdient einen eigenen Raum",
+    "proposal_body": "Einen „{{title}}“-Raum im KI-Studio erstellen?",
+    "new_capture": "Neue Erfassung"
   },
   "dash": {
     "today": "Heute",
@@ -45,7 +48,10 @@
     "trend_flat": "Stabil",
     "chip_urgent": "dringend",
     "chip_exams": "Prüfungen bald",
-    "chip_cards": "Karten fällig"
+    "chip_cards": "Karten fällig",
+    "timeline_empty": "Heute noch keine Termine — erfasse deinen Tag oder füge aus dem Plan hinzu, dann erscheint er hier.",
+    "passed": "Vorbei",
+    "next": "Nächste"
   },
   "sections": {
     "areas": "Bereiche",
@@ -60,7 +66,9 @@
     "ai_hub": "KI-Zentrale",
     "health": "Gesundheit",
     "exercise": "Training",
-    "memory": "Gedächtnis"
+    "memory": "Gedächtnis",
+    "ai_studio": "KI-Studio",
+    "wellbeing": "Wohlbefinden"
   },
   "areas": {
     "new": "Neuer Bereich",
@@ -116,7 +124,42 @@
     "cat_learn": "Lernen",
     "cat_disc": "Disziplin",
     "all": "Alle Gewohnheiten",
-    "stats": "Statistik"
+    "stats": "Statistik",
+    "t_check_d": "Getan oder nicht",
+    "t_counter_d": "Zähle wie oft",
+    "t_timer_d": "Für eine feste Zeit laufen",
+    "t_stop_d": "Zeit frei erfassen",
+    "t_qty_d": "Mit eigener Einheit verfolgen",
+    "d_min": "{{n}} Min",
+    "rate_today": "Heutige Erfüllung",
+    "top_streak": "Höchste aktuelle Serie",
+    "best_streak_ever": "Beste Serie aller Zeiten",
+    "total": "Gewohnheiten gesamt",
+    "best_word": "Beste",
+    "name_icon": "Name & Symbol",
+    "habit_name": "Name der Gewohnheit",
+    "new_habit": "Neue Gewohnheit",
+    "name_ph": "Name der Gewohnheit (beliebige Sprache)…",
+    "color": "Farbe",
+    "timer_target": "Zeitziel (Minuten)",
+    "daily_target": "Tagesziel",
+    "extra_options": "Weitere Optionen",
+    "note_on_done_d": "Schreibe eine Notiz beim Abschließen",
+    "retro_d": "Füge eine Erledigung für einen vergangenen Tag hinzu — ohne schlechtes Gewissen",
+    "once": "Mal",
+    "rate_7d": "7-Tage-Rate",
+    "streak_current": "Aktuelle Serie",
+    "best": "Beste Serie",
+    "minute": "Min",
+    "no_link": "Keine",
+    "add_habit": "Gewohnheit hinzufügen",
+    "streak_days": "{{n}}-Tage-Serie",
+    "last_3mo": "Letzte 3 Monate",
+    "legend_none": "Nicht erfasst",
+    "legend_done": "Erledigt",
+    "real_pattern": "Dein echtes Muster",
+    "pattern_body": "Der Tag, an dem du diese Gewohnheit am meisten einhältst, ist {{day}} ({{n}}× in den letzten 91 Tagen).",
+    "link_area_opt": "Mit einem Bereich verknüpfen (optional)"
   },
   "tasks": {
     "new": "Neue Aufgabe",
@@ -148,7 +191,8 @@
     "priority": "Priorität",
     "energy": "Benötigte Energie",
     "est_time": "Geschätzte Zeit (Min)",
-    "empty": "Keine Aufgaben hier 🎉"
+    "empty": "Keine Aufgaben hier 🎉",
+    "ai_suggestion_body": "Beste Zeit für diese Aufgabe: morgens zwischen 9 und 11 — dein Fokus-Hoch laut deinem Verlauf."
   },
   "journal": {
     "new": "Neuer Eintrag",
@@ -178,7 +222,12 @@
     "tpl_problem": "Problemlösung",
     "tpl_gratitude": "Dankbarkeit",
     "tpl_free": "Frei",
-    "empty": "Keine Einträge — starte dein Tagebuch"
+    "empty": "Keine Einträge — starte dein Tagebuch",
+    "streak_days": "{{n}}-Tage-Schreibserie",
+    "entries_avg": "{{count}} Einträge · Ø {{avg}} Wörter",
+    "words_date": "{{n}} Wörter · {{date}}",
+    "body_placeholder": "Dies ist dein persönlicher Raum zum Ausdrücken und Reflektieren. Schreib frei in jeder Sprache — die KI versteht den Sinn, nicht nur Wörter.",
+    "ai_summary_body": "Ein Tag voller positiver Energie und Fortschritt Richtung deiner Ziele. Halte diesen Schwung."
   },
   "study": {
     "new_course": "Neuer Kurs",
@@ -208,7 +257,14 @@
     "review_cards": "Karten wiederholen",
     "readiness": "Bereit",
     "weak_topics": "Zu festigen",
-    "plan_applied": "Wiederholungs-Sessions im Kalender"
+    "plan_applied": "Wiederholungs-Sessions im Kalender",
+    "rev_session": "{{course}} wiederholen — {{exam}}: {{i}}/{{n}}",
+    "within_days": "in {{n}} Tagen",
+    "after_days": "in {{n}} Tagen",
+    "exam_event_title": "Prüfung: {{name}}",
+    "hours_unit": "Std",
+    "revision_plan": "Wiederholungsplan",
+    "exam_ai_note": "Die KI erstellt einen detaillierten täglichen Wiederholungsplan und automatische Einheiten in deinem Plan"
   },
   "learning": {
     "new": "Zur Bibliothek hinzufügen",
@@ -229,7 +285,8 @@
     "daily_log": "Heute gelernt…",
     "goal": "Monatliches Leseziel",
     "all": "Alle",
-    "empty": "Bibliothek leer — füge dein erstes Element hinzu"
+    "empty": "Bibliothek leer — füge dein erstes Element hinzu",
+    "in_library": "In Bibliothek"
   },
   "focus": {
     "start": "Einheit starten",
@@ -255,7 +312,18 @@
     "title_ph": "Ereignistitel",
     "location_ph": "Ort (optional)",
     "all_day": "Ganztägig",
-    "no_events": "Keine Ereignisse — ruhiger Tag 😌"
+    "no_events": "Keine Ereignisse — ruhiger Tag 😌",
+    "build_title": "Smarter Planbauer",
+    "build_sessions": "Wiederholungseinheiten",
+    "build_checklist": "Vorbereitungsliste",
+    "build_reminders": "Erinnerungen",
+    "build_added": "{{n}} Einheiten zu deinen Aufgaben hinzugefügt",
+    "build_apply": "Zu Plan & Aufgaben hinzufügen",
+    "build_drop": "Lade ein Foto oder PDF deines Prüfungsplans hoch",
+    "build_drop_sub": "Ich mache daraus Wiederholungseinheiten, eine Checkliste und Erinnerungen — und markiere Konflikte.",
+    "build_reading": "Lese und ordne den Plan…",
+    "build_conflicts": "Zeitkonflikte",
+    "build_no_conflicts": "Keine Zeitkonflikte"
   },
   "dopamine": {
     "rank": "Dein Rang",
@@ -352,7 +420,8 @@
     "delete_account": "Konto löschen",
     "delete_title": "Konto endgültig löschen",
     "delete_msg": "Dein Konto und alle Daten (Tagebuch, Aufgaben, Gewohnheiten, Lernen, Gesundheit…) werden unwiderruflich gelöscht. Bist du sicher?",
-    "delete_confirm": "Alles löschen"
+    "delete_confirm": "Alles löschen",
+    "rtl_hint": "RTL — von rechts nach links"
   },
   "auth": {
     "welcome_title": "Life OS",
@@ -402,7 +471,10 @@
     "custom": "Benutzerdefiniert"
   },
   "groups": {
-    "body": "Körper"
+    "body": "Körper",
+    "life": "Leben",
+    "focus_learn": "Fokus & Lernen",
+    "intelligence": "Intelligenz"
   },
   "health": {
     "calories_today": "Kalorien heute",
@@ -550,5 +622,35 @@
     "per_year": "/ Jahr",
     "best": "Bester Wert",
     "note": "Echte Zahlungen werden eingerichtet — du kannst bald abonnieren und Käufe wiederherstellen."
+  },
+  "days": {
+    "d0": "So",
+    "d1": "Mo",
+    "d2": "Di",
+    "d3": "Mi",
+    "d4": "Do",
+    "d5": "Fr",
+    "d6": "Sa",
+    "l0": "S",
+    "l1": "M",
+    "l2": "D",
+    "l3": "M",
+    "l4": "D",
+    "l5": "F",
+    "l6": "S"
+  },
+  "ai_studio": {
+    "title": "KI-Studio",
+    "not_found": "Bereich nicht gefunden",
+    "files": "Dateien",
+    "sample_file": "Kapitel-3-Zusammenfassung.pdf",
+    "from_template": "Aus Vorlage",
+    "blank": "Leer",
+    "prompt_ph": "z. B. Ich habe in einer Woche eine Prüfung, erstelle einen Lernplan",
+    "intro": "Beschreibe dein Problem — ich baue dir einen kompletten Raum zur Lösung.",
+    "your_spaces": "Deine Räume",
+    "blocks_count": "{{n}} Blöcke",
+    "grow": "Dieser Raum wächst — Dateien-Bereich, erweiterten Wiederholungsplan und Fortschritt hinzufügen?",
+    "empty_block": "Leer — Elemente hinzufügen"
   }
 }

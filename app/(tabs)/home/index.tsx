@@ -229,10 +229,10 @@ const AIView = ({ c, t }: any) => {
                 <Ionicons name="sparkles" size={18} color={c.accent} />
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: c.t1, fontSize: 14, fontWeight: '700', textAlign }}>
-                    هذا الطلب يستحق مساحته الخاصة
+                    {t('home.proposal_title')}
                   </Text>
                   <Text style={{ color: c.t2, fontSize: 12, marginTop: 2, textAlign }}>
-                    أنشئ مساحة «{proposal.title}» في استوديو الذكاء؟
+                    {t('home.proposal_body', { title: proposal.title })}
                   </Text>
                 </View>
                 <Ionicons name="arrow-forward" size={18} color={c.accent} />
@@ -248,7 +248,7 @@ const AIView = ({ c, t }: any) => {
             )}
             <Pressable onPress={reset} style={[S.newBtn, { borderColor: c.b1, flexDirection: rowDir }]}>
               <Ionicons name="add" size={18} color={c.t2} />
-              <Text style={{ color: c.t2, fontSize: 14, fontWeight: '600' }}>التقاط جديد</Text>
+              <Text style={{ color: c.t2, fontSize: 14, fontWeight: '600' }}>{t('home.new_capture')}</Text>
             </Pressable>
           </View>
         )}

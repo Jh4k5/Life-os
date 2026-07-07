@@ -16,13 +16,6 @@ import { useAsync } from '@/hooks/useAsync';
 // Mood is data, not chrome: a semantic dot + label (green→red scale is allowed).
 const MOODS = ['great', 'good', 'neutral', 'bad', 'awful'] as const;
 type Mood = (typeof MOODS)[number];
-const MOOD_LABEL: Record<Mood, string> = {
-  great: 'رائع',
-  good: 'جيد',
-  neutral: 'عادي',
-  bad: 'سيئ',
-  awful: 'متعب',
-};
 const moodColor = (m: string, c: any) =>
   m === 'great' || m === 'good' ? c.green : m === 'neutral' ? c.t3 : m === 'bad' ? c.orange : c.red;
 
@@ -69,10 +62,10 @@ export default function JournalScreen() {
         </View>
         <View style={{ flex: 1 }}>
           <Text style={{ color: c.t1, fontWeight: '700', fontSize: 14, textAlign }}>
-            سلسلة كتابة {streak} أيام متتالية
+            {t('journal.streak_days', { n: streak })}
           </Text>
           <Text style={{ color: c.t3, fontSize: 12, marginTop: 2, textAlign }}>
-            {journals.length} مدخلة · متوسط {avgWords} كلمة
+            {t('journal.entries_avg', { count: journals.length, avg: avgWords })}
           </Text>
         </View>
       </View>
@@ -106,7 +99,7 @@ export default function JournalScreen() {
               ]}
             >
               <View style={[S.moodDot, { backgroundColor: moodColor(mood, c) }]} />
-              <Text style={{ color: on ? c.accent : c.t2, fontSize: 12, fontWeight: '600' }}>{MOOD_LABEL[mood]}</Text>
+              <Text style={{ color: on ? c.accent : c.t2, fontSize: 12, fontWeight: '600' }}>{t(`journal.mood_${mood}`)}</Text>
             </Pressable>
           );
         })}
@@ -129,7 +122,7 @@ export default function JournalScreen() {
                   </Text>
                   <View style={[S.moodChip, { flexDirection: rowDir, backgroundColor: c.bg3 }]}>
                     <View style={[S.moodDot, { backgroundColor: moodColor(item.mood, c) }]} />
-                    <Text style={{ color: c.t3, fontSize: 11 }}>{MOOD_LABEL[item.mood as Mood] ?? ''}</Text>
+                    <Text style={{ color: c.t3, fontSize: 11 }}>{item.mood ? t(`journal.mood_${item.mood}`) : ''}</Text>
                   </View>
                 </View>
                 <Text style={[S.entryPreview, { color: c.t2, textAlign }]} numberOfLines={2}>
@@ -144,7 +137,7 @@ export default function JournalScreen() {
                     ))}
                   </View>
                   <Text style={{ color: c.t3, fontSize: 11 }}>
-                    {item.words} كلمة · {item.date}
+                    {t('journal.words_date', { n: item.words, date: item.date })}
                   </Text>
                 </View>
               </SmartCard>

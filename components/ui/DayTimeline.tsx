@@ -5,14 +5,16 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useRTL } from '@/hooks/useRTL';
 import { useAsync } from '@/hooks/useAsync';
 import { repository } from '@/services/repository';
 import type { ScheduleEvent } from '@/data/mock';
 
+// Arabic-Indic digits only where the language uses them (ar/ur); Latin otherwise.
 const AR = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-const toAr = (s: string) => s.replace(/[0-9]/g, (d) => AR[+d]);
+const toArabicDigits = (s: string) => s.replace(/[0-9]/g, (d) => AR[+d]);
 
 const ICON_FOR: Record<string, keyof typeof Ionicons.glyphMap> = {
   event: 'calendar-outline',
@@ -24,8 +26,10 @@ const ICON_FOR: Record<string, keyof typeof Ionicons.glyphMap> = {
 
 export const DayTimeline = () => {
   const { c } = useTheme();
+  const { t, i18n } = useTranslation();
   const { rowDir } = useRTL();
   const { data: events } = useAsync(() => repository.listEvents(), [] as ScheduleEvent[], 'events');
+  const fmtTime = (s: string) => (i18n.language === 'ar' || i18n.language === 'ur' ? toArabicDigits(s) : s);
 
   const nowHM = new Date().toTimeString().slice(0, 5);
   const blocks = [...events].sort((a, b) => a.start.localeCompare(b.start));
@@ -40,7 +44,7 @@ export const DayTimeline = () => {
       <View style={[S.empty, { borderColor: c.b1, backgroundColor: c.bg1 }]}>
         <Ionicons name="sunny-outline" size={20} color={c.t3} />
         <Text style={{ color: c.t2, fontSize: 13, textAlign: 'center' }}>
-          لا مواعيد اليوم بعد — التقط يومك أو أضِف من الجدول وسيظهر هنا.
+          {t('dash.timeline_empty')}
         </Text>
       </View>
     );
@@ -54,7 +58,7 @@ export const DayTimeline = () => {
         return (
           <View key={b.id} style={[S.row, { flexDirection: rowDir }]}>
             <View style={S.timeCol}>
-              <Text style={[S.time, { color: isNow ? c.accent : c.t3 }]}>{b.allDay ? 'اليوم' : toAr(b.start)}</Text>
+              <Text style={[S.time, { color: isNow ? c.accent : c.t3 }]}>{b.allDay ? t('common.today') : fmtTime(b.start)}</Text>
             </View>
             <View style={S.railCol}>
               <View
@@ -76,8 +80,8 @@ export const DayTimeline = () => {
                 <Text style={[S.title, { color: c.t1 }]} numberOfLines={1}>
                   {b.title}
                 </Text>
-                {done && <Text style={{ color: c.green, fontSize: 11, fontWeight: '600' }}>مضى</Text>}
-                {isNow && <Text style={{ color: c.accent, fontSize: 11, fontWeight: '700' }}>التالي</Text>}
+                {done && <Text style={{ color: c.green, fontSize: 11, fontWeight: '600' }}>{t('dash.passed')}</Text>}
+                {isNow && <Text style={{ color: c.accent, fontSize: 11, fontWeight: '700' }}>{t('dash.next')}</Text>}
               </View>
             </View>
           </View>

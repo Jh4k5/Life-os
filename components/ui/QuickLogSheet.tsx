@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useRTL } from '@/hooks/useRTL';
 import { feedback } from '@/services/feedback';
@@ -44,11 +45,12 @@ export const QuickLogSheet = ({
   title,
   icon = 'create-outline',
   fields,
-  submitLabel = 'حفظ',
+  submitLabel,
   onClose,
   onSubmit,
 }: Props) => {
   const { c, isDark } = useTheme();
+  const { t } = useTranslation();
   const { rowDir, textAlign } = useRTL();
   const [values, setValues] = useState<Record<string, string>>({});
 
@@ -120,7 +122,7 @@ export const QuickLogSheet = ({
                 disabled={!canSubmit}
                 style={[S.submit, { backgroundColor: canSubmit ? c.accent : c.b2, opacity: canSubmit ? 1 : 0.6 }]}
               >
-                <Text style={{ color: '#FFF', fontSize: 15, fontWeight: '800' }}>{submitLabel}</Text>
+                <Text style={{ color: '#FFF', fontSize: 15, fontWeight: '800' }}>{submitLabel ?? t('common.save')}</Text>
               </Pressable>
             </BlurView>
           </Pressable>

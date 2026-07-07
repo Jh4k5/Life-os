@@ -53,7 +53,7 @@ export default function LearningScreen() {
       />
       {/* Stats — neutral, hairline */}
       <View style={[S.statsRow, { flexDirection: rowDir, backgroundColor: c.bg1, borderBottomColor: c.b1 }]}>
-        <StatItem val={library.length} label="في المكتبة" c={c} />
+        <StatItem val={library.length} label={t('learning.in_library')} c={c} />
         <View style={[S.vline, { backgroundColor: c.b1 }]} />
         <StatItem val={inProgress} label={t('learning.status_prog')} c={c} />
         <View style={[S.vline, { backgroundColor: c.b1 }]} />

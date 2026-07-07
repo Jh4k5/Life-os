@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useRTL } from '@/hooks/useRTL';
 import { Header } from '@/components/layout/Header';
@@ -18,6 +19,7 @@ import type { DetectedItem } from '@/services/types';
 
 export default function ScheduleBuilderScreen() {
   const { c } = useTheme();
+  const { t } = useTranslation();
   const { rowDir, textAlign } = useRTL();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -55,7 +57,7 @@ export default function ScheduleBuilderScreen() {
 
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
-      <Header title="باني الجدول الذكي" accent={c.accent} />
+      <Header title={t('schedule.build_title')} accent={c.accent} />
       <ScrollView contentContainerStyle={{ padding: 20, gap: 14, paddingBottom: 110 }}>
         {!built && !busy && (
           <Pressable onPress={pickAndBuild}>
@@ -65,10 +67,10 @@ export default function ScheduleBuilderScreen() {
                   <Ionicons name="cloud-upload-outline" size={28} color={c.accent} />
                 </View>
                 <Text style={{ color: c.t1, fontSize: 16, fontWeight: '700', textAlign: 'center' }}>
-                  ارفع صورة أو PDF لجدول الامتحان
+                  {t('schedule.build_drop')}
                 </Text>
                 <Text style={{ color: c.t3, fontSize: 13, textAlign: 'center' }}>
-                  وسأحوّله إلى جلسات مراجعة وقائمة وتذكيرات — وأنبّهك للتعارضات.
+                  {t('schedule.build_drop_sub')}
                 </Text>
               </View>
             </SmartCard>
@@ -78,7 +80,7 @@ export default function ScheduleBuilderScreen() {
         {busy && (
           <View style={{ alignItems: 'center', gap: 12, paddingVertical: 50 }}>
             <ActivityIndicator color={c.accent} />
-            <Text style={{ color: c.t2 }}>أقرأ الجدول وأرتّبه…</Text>
+            <Text style={{ color: c.t2 }}>{t('schedule.build_reading')}</Text>
           </View>
         )}
 
@@ -86,19 +88,19 @@ export default function ScheduleBuilderScreen() {
           <>
             <Text style={[S.title, { color: c.t1, textAlign }]}>{built.title}</Text>
 
-            <Section title="جلسات المراجعة" icon="time-outline" c={c} rowDir={rowDir}>
+            <Section title={t('schedule.build_sessions')} icon="time-outline" c={c} rowDir={rowDir}>
               {built.sessions.map((s, i) => (
                 <Row key={s.id} c={c} rowDir={rowDir} textAlign={textAlign} top={i > 0} label={s.title} />
               ))}
             </Section>
 
-            <Section title="قائمة التحضير" icon="list-outline" c={c} rowDir={rowDir}>
+            <Section title={t('schedule.build_checklist')} icon="list-outline" c={c} rowDir={rowDir}>
               {built.checklist.map((s, i) => (
                 <Row key={s.id} c={c} rowDir={rowDir} textAlign={textAlign} top={i > 0} label={s.label} check />
               ))}
             </Section>
 
-            <Section title="تذكيرات" icon="notifications-outline" c={c} rowDir={rowDir}>
+            <Section title={t('schedule.build_reminders')} icon="notifications-outline" c={c} rowDir={rowDir}>
               {built.reminders.map((r, i) => (
                 <Row key={i} c={c} rowDir={rowDir} textAlign={textAlign} top={i > 0} label={r} />
               ))}
@@ -106,7 +108,7 @@ export default function ScheduleBuilderScreen() {
 
             {built.conflicts.length > 0 ? (
               <SmartCard accent={c.red}>
-                <Text style={{ color: c.red, fontWeight: '700', fontSize: 13, textAlign }}>تعارضات في الوقت</Text>
+                <Text style={{ color: c.red, fontWeight: '700', fontSize: 13, textAlign }}>{t('schedule.build_conflicts')}</Text>
                 {built.conflicts.map((cf, i) => (
                   <Text key={i} style={{ color: c.t2, fontSize: 13, marginTop: 4, textAlign }}>
                     • {cf}
@@ -116,7 +118,7 @@ export default function ScheduleBuilderScreen() {
             ) : (
               <View style={[S.ok, { backgroundColor: c.greenDim, flexDirection: rowDir }]}>
                 <Ionicons name="checkmark-circle" size={16} color={c.green} />
-                <Text style={{ color: c.green, fontSize: 13 }}>لا تعارضات في الوقت</Text>
+                <Text style={{ color: c.green, fontSize: 13 }}>{t('schedule.build_no_conflicts')}</Text>
               </View>
             )}
 
@@ -124,14 +126,14 @@ export default function ScheduleBuilderScreen() {
               <View style={[S.ok, { backgroundColor: c.greenDim, flexDirection: rowDir }]}>
                 <Ionicons name="checkmark-circle" size={16} color={c.green} />
                 <Text style={{ color: c.green, fontSize: 13 }}>
-                  {`أُضيفت ${applied.saved} جلسة لمهامك`}
+                  {t('schedule.build_added', { n: applied.saved })}
                 </Text>
               </View>
             ) : (
-              <Button label="أضِف للجدول والمهام" icon="add" onPress={apply} color={c.accent} />
+              <Button label={t('schedule.build_apply')} icon="add" onPress={apply} color={c.accent} />
             )}
             <Pressable onPress={() => router.back()} style={{ alignItems: 'center', paddingVertical: 8 }}>
-              <Text style={{ color: c.t3, fontSize: 14 }}>تم</Text>
+              <Text style={{ color: c.t3, fontSize: 14 }}>{t('common.done')}</Text>
             </Pressable>
           </>
         )}

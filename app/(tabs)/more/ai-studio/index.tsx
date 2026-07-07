@@ -37,7 +37,7 @@ export default function AIStudioScreen() {
       <Header title={t('sections.ai_studio')} accent={c.accent} />
       <ScrollView contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: 110 }}>
         <Text style={[S.intro, { color: c.t1, textAlign }]}>
-          صف مشكلتك — وأبني لك بيئة كاملة لحلّها.
+          {t('ai_studio.intro')}
         </Text>
 
         {/* Create with AI */}
@@ -45,7 +45,7 @@ export default function AIStudioScreen() {
           <Ionicons name="sparkles-outline" size={18} color={c.accent} />
           <TextInput
             style={[S.promptInput, { color: c.t1, textAlign }]}
-            placeholder="مثال: عندي امتحان بعد أسبوع، ابنِ خطة مراجعة"
+            placeholder={t('ai_studio.prompt_ph')}
             placeholderTextColor={c.t4}
             value={prompt}
             onChangeText={setPrompt}
@@ -60,8 +60,8 @@ export default function AIStudioScreen() {
         {/* Quick create options */}
         <View style={[S.options, { flexDirection: rowDir }]}>
           {[
-            { icon: 'documents-outline' as const, label: 'من قالب' },
-            { icon: 'add-outline' as const, label: 'فارغة' },
+            { icon: 'documents-outline' as const, label: t('ai_studio.from_template') },
+            { icon: 'add-outline' as const, label: t('ai_studio.blank') },
           ].map((o) => (
             <Pressable key={o.label} style={[S.option, { backgroundColor: c.bg1, borderColor: c.b1 }]}>
               <Ionicons name={o.icon} size={18} color={c.t2} />
@@ -71,7 +71,7 @@ export default function AIStudioScreen() {
         </View>
 
         {/* Gallery of living workspaces */}
-        <Text style={[S.label, { color: c.t3, textAlign }]}>مساحاتك</Text>
+        <Text style={[S.label, { color: c.t3, textAlign }]}>{t('ai_studio.your_spaces')}</Text>
         {workspaces.map((ws) => {
           const meta = workspaceMeta(ws.type);
           return (
@@ -97,7 +97,7 @@ export default function AIStudioScreen() {
                   <View style={[S.wsFill, { width: `${ws.progress}%`, backgroundColor: c.accent }]} />
                 </View>
                 <Text style={{ color: c.t3, fontSize: 11, marginTop: 6, textAlign }}>
-                  {ws.blocks.length} عناصر · {ws.progress}%
+                  {t('ai_studio.blocks_count', { n: ws.blocks.length })} · {ws.progress}%
                 </Text>
               </SmartCard>
             </Pressable>

@@ -20,8 +20,6 @@ function streakFrom(logs: { day: string; done: boolean }[]): number {
   return s;
 }
 
-const WEEKDAYS_AR = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-
 export default function HabitDetailScreen() {
   const { c } = useTheme();
   const { t } = useTranslation();
@@ -60,12 +58,12 @@ export default function HabitDetailScreen() {
   const dayCounts = new Array(7).fill(0);
   for (const l of logs) if (l.done) dayCounts[new Date(l.day).getDay()] += 1;
   const doneTotal = dayCounts.reduce((a, b) => a + b, 0);
-  const bestDay = doneTotal >= 5 ? WEEKDAYS_AR[dayCounts.indexOf(Math.max(...dayCounts))] : null;
+  const bestDay = doneTotal >= 5 ? t(`days.d${dayCounts.indexOf(Math.max(...dayCounts))}`) : null;
 
   const stats = [
-    { val: `${rate7}%`, label: 'معدل 7 أيام', color: habit.color },
-    { val: `${realStreak}`, label: 'streak حالي', color: '#F59E0B' },
-    { val: `${Math.max(habit.bestStreak, realStreak)}`, label: 'أفضل streak', color: c.green },
+    { val: `${rate7}%`, label: t('habits.rate_7d'), color: habit.color },
+    { val: `${realStreak}`, label: t('habits.streak_current'), color: '#F59E0B' },
+    { val: `${Math.max(habit.bestStreak, realStreak)}`, label: t('habits.best'), color: c.green },
     { val: `${habit.target}${habit.unit ? ' ' + habit.unit : ''}`, label: t('habits.target'), color: c.accent },
   ];
 
@@ -82,7 +80,7 @@ export default function HabitDetailScreen() {
             <View style={{ flex: 1 }}>
               <Text style={{ color: c.t1, fontWeight: '700', fontSize: 18 }}>{habit.name}</Text>
               <Text style={{ color: '#F59E0B', fontWeight: '600', marginTop: 4 }}>
-                🔥 {habit.streak} يوم متتالي
+                🔥 {t('habits.streak_days', { n: habit.streak })}
               </Text>
             </View>
           </View>
@@ -99,7 +97,7 @@ export default function HabitDetailScreen() {
         </View>
 
         {/* Heatmap */}
-        <Text style={[S.secTitle, { color: c.t2 }]}>📅 آخر 3 أشهر</Text>
+        <Text style={[S.secTitle, { color: c.t2 }]}>📅 {t('habits.last_3mo')}</Text>
         <SmartCard>
           <View style={S.heatmap}>
             {cells.map((bg, i) => (
@@ -107,20 +105,20 @@ export default function HabitDetailScreen() {
             ))}
           </View>
           <View style={S.legend}>
-            <Text style={{ color: c.t3, fontSize: 11 }}>لم يُسجَّل</Text>
+            <Text style={{ color: c.t3, fontSize: 11 }}>{t('habits.legend_none')}</Text>
             <View style={[S.cell, { backgroundColor: c.b1 }]} />
             <View style={[S.cell, { backgroundColor: habit.color + '30' }]} />
             <View style={[S.cell, { backgroundColor: habit.color }]} />
-            <Text style={{ color: c.t3, fontSize: 11 }}>مكتمل</Text>
+            <Text style={{ color: c.t3, fontSize: 11 }}>{t('habits.legend_done')}</Text>
           </View>
         </SmartCard>
 
         {/* Pattern — computed from YOUR real logs (hidden until enough data) */}
         {bestDay && (
           <SmartCard>
-            <Text style={{ color: c.accent, fontWeight: '700', fontSize: 13 }}>نمطك الحقيقي</Text>
+            <Text style={{ color: c.accent, fontWeight: '700', fontSize: 13 }}>{t('habits.real_pattern')}</Text>
             <Text style={{ color: c.t2, fontSize: 13, marginTop: 6, lineHeight: 20 }}>
-              أكثر يوم تلتزم فيه بهذه العادة هو {bestDay} ({Math.max(...dayCounts)} مرة في آخر ٩١ يومًا).
+              {t('habits.pattern_body', { day: bestDay, n: Math.max(...dayCounts) })}
             </Text>
           </SmartCard>
         )}

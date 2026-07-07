@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useRTL } from '@/hooks/useRTL';
 import { Header } from '@/components/layout/Header';
@@ -35,6 +36,7 @@ const BLOCK_ICON: Record<string, keyof typeof import('@expo/vector-icons').Ionic
 
 export default function WorkspaceDetailScreen() {
   const { c } = useTheme();
+  const { t } = useTranslation();
   const { rowDir, textAlign } = useRTL();
   const { id } = useLocalSearchParams<{ id: string }>();
   const ws = useWorkspaceStore((s) => s.workspaces).find((w) => w.id === id);
@@ -43,8 +45,8 @@ export default function WorkspaceDetailScreen() {
   if (!ws) {
     return (
       <View style={[S.screen, { backgroundColor: c.bg0 }]}>
-        <Header title="استوديو الذكاء" accent={c.accent} />
-        <EmptyState emoji="✨" title="المساحة غير موجودة" />
+        <Header title={t('ai_studio.title')} accent={c.accent} />
+        <EmptyState emoji="✨" title={t('ai_studio.not_found')} />
       </View>
     );
   }
@@ -62,7 +64,7 @@ export default function WorkspaceDetailScreen() {
               <Ionicons name={meta.icon as any} size={24} color={c.accent} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: c.t1, fontSize: 16, fontWeight: '700', textAlign }}>{ws.progress}% مكتمل</Text>
+              <Text style={{ color: c.t1, fontSize: 16, fontWeight: '700', textAlign }}>{ws.progress}% {t('study.completed')}</Text>
               <View style={[S.bar, { backgroundColor: c.b1, marginTop: 8 }]}>
                 <View style={[S.fill, { width: `${ws.progress}%`, backgroundColor: c.accent }]} />
               </View>
@@ -77,9 +79,9 @@ export default function WorkspaceDetailScreen() {
               <View style={[S.grow, { flexDirection: rowDir }]}>
                 <Ionicons name="sparkles-outline" size={18} color={c.accent} />
                 <Text style={{ flex: 1, color: c.t1, fontSize: 13, lineHeight: 21, textAlign }}>
-                  هذه المساحة تكبر — أضيف قسم ملفات وخطة مراجعة متقدمة وتتبّع تقدم؟
+                  {t('ai_studio.grow')}
                 </Text>
-                <Text style={{ color: c.accent, fontWeight: '700', fontSize: 13 }}>أضِف</Text>
+                <Text style={{ color: c.accent, fontWeight: '700', fontSize: 13 }}>{t('common.add')}</Text>
               </View>
             </SmartCard>
           </Pressable>
@@ -92,7 +94,7 @@ export default function WorkspaceDetailScreen() {
 
         {grown && (
           <Block
-            block={{ type: 'files', title: 'الملفات', items: [{ id: 'f1', label: 'ملخص الفصل 3.pdf' }] }}
+            block={{ type: 'files', title: t('ai_studio.files'), items: [{ id: 'f1', label: t('ai_studio.sample_file') }] }}
             c={c}
             rowDir={rowDir}
             textAlign={textAlign}
@@ -104,7 +106,9 @@ export default function WorkspaceDetailScreen() {
   );
 }
 
-const Block = ({ block, c, rowDir, textAlign, icon }: { block: WorkspaceBlock; c: any; rowDir: any; textAlign: any; icon: any }) => (
+const Block = ({ block, c, rowDir, textAlign, icon }: { block: WorkspaceBlock; c: any; rowDir: any; textAlign: any; icon: any }) => {
+  const { t } = useTranslation();
+  return (
   <View style={{ gap: 8 }}>
     <View style={[S.blockHead, { flexDirection: rowDir }]}>
       <Ionicons name={icon} size={15} color={c.t3} />
@@ -151,12 +155,13 @@ const Block = ({ block, c, rowDir, textAlign, icon }: { block: WorkspaceBlock; c
         ))
       ) : (
         <View style={{ padding: 16, alignItems: 'center' }}>
-          <Text style={{ color: c.t4, fontSize: 13 }}>فارغ — أضِف عناصر</Text>
+          <Text style={{ color: c.t4, fontSize: 13 }}>{t('ai_studio.empty_block')}</Text>
         </View>
       )}
     </SmartCard>
   </View>
-);
+  );
+};
 
 const S = StyleSheet.create({
   screen: { flex: 1 },

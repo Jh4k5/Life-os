@@ -70,7 +70,7 @@ export default function JournalEntryScreen() {
           <Text style={{ color: c.t1, fontSize: 15, lineHeight: 26, textAlign }}>
             {entry.preview}
             {'\n\n'}
-            هذه مساحة شخصية للتعبير والتأمل. اكتب بحرية بأي لغة — الذكاء الاصطناعي يفهم المعنى لا الكلمة.
+            {t('journal.body_placeholder')}
           </Text>
         </SmartCard>
 
@@ -78,7 +78,7 @@ export default function JournalEntryScreen() {
         <SmartCard accent={c.ai_hub}>
           <Text style={{ color: c.ai_hub, fontWeight: '700', fontSize: 13 }}>✨ {t('journal.ai_summary')}</Text>
           <Text style={{ color: c.t2, fontSize: 13, marginTop: 6, lineHeight: 20, textAlign }}>
-            يوم مليء بالطاقة الإيجابية والتقدم نحو الأهداف. حافظ على هذا الزخم.
+            {t('journal.ai_summary_body')}
           </Text>
         </SmartCard>
         {/* living connections from the memory graph */}

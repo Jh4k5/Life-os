@@ -14,13 +14,7 @@ import { repository } from '@/services/repository';
 import { intelligence } from '@/services/intelligence';
 
 // Mood is data → semantic dot + label (same v3 language as the journal list).
-const MOODS = [
-  { key: 'great', label: 'رائع' },
-  { key: 'good', label: 'جيد' },
-  { key: 'neutral', label: 'عادي' },
-  { key: 'bad', label: 'سيئ' },
-  { key: 'awful', label: 'متعب' },
-] as const;
+const MOODS = ['great', 'good', 'neutral', 'bad', 'awful'] as const;
 const moodColor = (m: string, c: any) =>
   m === 'great' || m === 'good' ? c.green : m === 'neutral' ? c.t3 : m === 'bad' ? c.orange : c.red;
 
@@ -116,18 +110,18 @@ export default function NewJournalScreen() {
             <Text style={[S.label, { color: c.t2 }]}>{t('journal.mood')}</Text>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               {MOODS.map((m) => {
-                const on = mood === m.key;
+                const on = mood === m;
                 return (
                   <Pressable
-                    key={m.key}
-                    onPress={() => setMood(m.key)}
+                    key={m}
+                    onPress={() => setMood(m)}
                     style={[
                       S.moodBtn,
                       { backgroundColor: on ? c.accentDim : c.bg2, borderColor: on ? c.accent : c.b1 },
                     ]}
                   >
-                    <View style={[S.moodDot, { backgroundColor: moodColor(m.key, c) }]} />
-                    <Text style={{ color: on ? c.accent : c.t2, fontSize: 12, fontWeight: '600' }}>{m.label}</Text>
+                    <View style={[S.moodDot, { backgroundColor: moodColor(m, c) }]} />
+                    <Text style={{ color: on ? c.accent : c.t2, fontSize: 12, fontWeight: '600' }}>{t(`journal.mood_${m}`)}</Text>
                   </Pressable>
                 );
               })}

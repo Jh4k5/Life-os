@@ -26,7 +26,10 @@
     "habits_done": "Todos los hábitos hechos",
     "urgent_count": "{{n}} urgentes",
     "tasks_count": "{{n}} tareas",
-    "no_pending": "Sin tareas pendientes"
+    "no_pending": "Sin tareas pendientes",
+    "proposal_title": "Esta petición merece su propio espacio",
+    "proposal_body": "¿Crear un espacio «{{title}}» en Estudio IA?",
+    "new_capture": "Nueva captura"
   },
   "dash": {
     "today": "Hoy",
@@ -45,7 +48,10 @@
     "trend_flat": "Estable",
     "chip_urgent": "urgentes",
     "chip_exams": "exámenes pronto",
-    "chip_cards": "tarjetas pendientes"
+    "chip_cards": "tarjetas pendientes",
+    "timeline_empty": "Aún no hay eventos hoy — captura tu día o añade desde el horario y aparecerá aquí.",
+    "passed": "Pasó",
+    "next": "Siguiente"
   },
   "sections": {
     "areas": "Áreas",
@@ -60,7 +66,9 @@
     "ai_hub": "Centro IA",
     "health": "Salud",
     "exercise": "Ejercicio",
-    "memory": "Memoria"
+    "memory": "Memoria",
+    "ai_studio": "Estudio IA",
+    "wellbeing": "Bienestar"
   },
   "areas": {
     "new": "Nueva área",
@@ -116,7 +124,42 @@
     "cat_learn": "Aprendizaje",
     "cat_disc": "Disciplina",
     "all": "Todos los hábitos",
-    "stats": "Estadísticas"
+    "stats": "Estadísticas",
+    "t_check_d": "Lo hiciste o no",
+    "t_counter_d": "Cuenta cuántas veces",
+    "t_timer_d": "Dura un tiempo fijo",
+    "t_stop_d": "Registra el tiempo libremente",
+    "t_qty_d": "Sigue con una unidad propia",
+    "d_min": "{{n}} min",
+    "rate_today": "Cumplimiento de hoy",
+    "top_streak": "Mejor racha actual",
+    "best_streak_ever": "Mejor racha histórica",
+    "total": "Hábitos totales",
+    "best_word": "Mejor",
+    "name_icon": "Nombre e icono",
+    "habit_name": "Nombre del hábito",
+    "new_habit": "Nuevo hábito",
+    "name_ph": "Nombre del hábito (cualquier idioma)…",
+    "color": "Color",
+    "timer_target": "Meta de tiempo (minutos)",
+    "daily_target": "Meta diaria",
+    "extra_options": "Más opciones",
+    "note_on_done_d": "Escribe una nota al completar el hábito",
+    "retro_d": "Añade una realización de un día pasado, sin culpa",
+    "once": "vez",
+    "rate_7d": "Tasa de 7 días",
+    "streak_current": "Racha actual",
+    "best": "Mejor racha",
+    "minute": "min",
+    "no_link": "Ninguna",
+    "add_habit": "Añadir hábito",
+    "streak_days": "racha de {{n}} días",
+    "last_3mo": "Últimos 3 meses",
+    "legend_none": "Sin registrar",
+    "legend_done": "Hecho",
+    "real_pattern": "Tu patrón real",
+    "pattern_body": "El día que más cumples este hábito es {{day}} ({{n}} veces en los últimos 91 días).",
+    "link_area_opt": "Vincular a un área (opcional)"
   },
   "tasks": {
     "new": "Nueva tarea",
@@ -148,7 +191,8 @@
     "priority": "Prioridad",
     "energy": "Energía requerida",
     "est_time": "Tiempo estimado (min)",
-    "empty": "Sin tareas aquí 🎉"
+    "empty": "Sin tareas aquí 🎉",
+    "ai_suggestion_body": "Mejor momento para esta tarea: por la mañana entre las 9 y las 11 — tu pico de concentración según tu historial."
   },
   "journal": {
     "new": "Nueva entrada",
@@ -178,7 +222,12 @@
     "tpl_problem": "Resolver problema",
     "tpl_gratitude": "Gratitud",
     "tpl_free": "Libre",
-    "empty": "Sin entradas — empieza tu diario"
+    "empty": "Sin entradas — empieza tu diario",
+    "streak_days": "racha de escritura de {{n}} días",
+    "entries_avg": "{{count}} entradas · media {{avg}} palabras",
+    "words_date": "{{n}} palabras · {{date}}",
+    "body_placeholder": "Este es tu espacio personal para expresarte y reflexionar. Escribe libremente en cualquier idioma — la IA entiende el significado, no solo las palabras.",
+    "ai_summary_body": "Un día lleno de energía positiva y progreso hacia tus metas. Mantén este impulso."
   },
   "study": {
     "new_course": "Nuevo curso",
@@ -208,7 +257,14 @@
     "review_cards": "Repasar tarjetas",
     "readiness": "Listo",
     "weak_topics": "Por reforzar",
-    "plan_applied": "Sesiones de repaso añadidas al calendario"
+    "plan_applied": "Sesiones de repaso añadidas al calendario",
+    "rev_session": "Repasar {{course}} — {{exam}}: {{i}}/{{n}}",
+    "within_days": "en {{n}} días",
+    "after_days": "en {{n}} días",
+    "exam_event_title": "Examen: {{name}}",
+    "hours_unit": "h",
+    "revision_plan": "Plan de repaso",
+    "exam_ai_note": "La IA generará un plan de repaso diario detallado y sesiones automáticas en tu horario"
   },
   "learning": {
     "new": "Añadir a biblioteca",
@@ -229,7 +285,8 @@
     "daily_log": "Aprendí hoy…",
     "goal": "Meta de lectura mensual",
     "all": "Todo",
-    "empty": "Biblioteca vacía — añade tu primer elemento"
+    "empty": "Biblioteca vacía — añade tu primer elemento",
+    "in_library": "En biblioteca"
   },
   "focus": {
     "start": "Iniciar sesión",
@@ -255,7 +312,18 @@
     "title_ph": "Título del evento",
     "location_ph": "Ubicación (opcional)",
     "all_day": "Todo el día",
-    "no_events": "Sin eventos — día tranquilo 😌"
+    "no_events": "Sin eventos — día tranquilo 😌",
+    "build_title": "Constructor de horario inteligente",
+    "build_sessions": "Sesiones de repaso",
+    "build_checklist": "Lista de preparación",
+    "build_reminders": "Recordatorios",
+    "build_added": "Se añadieron {{n}} sesiones a tus tareas",
+    "build_apply": "Añadir a horario y tareas",
+    "build_drop": "Sube una foto o PDF de tu horario de exámenes",
+    "build_drop_sub": "Lo convertiré en sesiones de repaso, una lista y recordatorios — y marcaré conflictos.",
+    "build_reading": "Leyendo y organizando el horario…",
+    "build_conflicts": "Conflictos de horario",
+    "build_no_conflicts": "Sin conflictos de horario"
   },
   "dopamine": {
     "rank": "Tu rango",
@@ -352,7 +420,8 @@
     "delete_account": "Eliminar cuenta",
     "delete_title": "Eliminar la cuenta para siempre",
     "delete_msg": "Tu cuenta y todos tus datos (diario, tareas, hábitos, estudio, salud…) se borrarán para siempre. ¿Seguro?",
-    "delete_confirm": "Eliminar todo"
+    "delete_confirm": "Eliminar todo",
+    "rtl_hint": "RTL — de derecha a izquierda"
   },
   "auth": {
     "welcome_title": "Life OS",
@@ -402,7 +471,10 @@
     "custom": "Personalizado"
   },
   "groups": {
-    "body": "Cuerpo"
+    "body": "Cuerpo",
+    "life": "Vida",
+    "focus_learn": "Enfoque y aprendizaje",
+    "intelligence": "Inteligencia"
   },
   "health": {
     "calories_today": "Calorías de hoy",
@@ -550,5 +622,35 @@
     "per_year": "/ año",
     "best": "Mejor valor",
     "note": "El pago real se está preparando — pronto podrás suscribirte y restaurar compras."
+  },
+  "days": {
+    "d0": "Dom",
+    "d1": "Lun",
+    "d2": "Mar",
+    "d3": "Mié",
+    "d4": "Jue",
+    "d5": "Vie",
+    "d6": "Sáb",
+    "l0": "D",
+    "l1": "L",
+    "l2": "M",
+    "l3": "X",
+    "l4": "J",
+    "l5": "V",
+    "l6": "S"
+  },
+  "ai_studio": {
+    "title": "Estudio IA",
+    "not_found": "Espacio no encontrado",
+    "files": "Archivos",
+    "sample_file": "Resumen capítulo 3.pdf",
+    "from_template": "Desde plantilla",
+    "blank": "En blanco",
+    "prompt_ph": "p. ej. Tengo un examen en una semana, crea un plan de repaso",
+    "intro": "Describe tu problema — construiré un espacio completo para resolverlo.",
+    "your_spaces": "Tus espacios",
+    "blocks_count": "{{n}} bloques",
+    "grow": "Este espacio crece — ¿añadir una sección de archivos, un plan de repaso avanzado y seguimiento?",
+    "empty_block": "Vacío — añade elementos"
   }
 }

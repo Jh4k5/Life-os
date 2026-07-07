@@ -106,7 +106,7 @@ export default function StudyScreen() {
                     <View style={[S.countdown, { flexDirection: rowDir, backgroundColor: dleft <= 7 ? c.accentDim : c.bg3 }]}>
                       <Ionicons name="hourglass-outline" size={12} color={dleft <= 7 ? c.accent : c.t3} />
                       <Text style={{ color: dleft <= 7 ? c.accent : c.t3, fontSize: 11, fontWeight: '700' }}>
-                        {dleft > 0 ? `بعد ${dleft} يوم` : 'اليوم'}
+                        {dleft > 0 ? t('study.after_days', { n: dleft }) : t('common.today')}
                       </Text>
                     </View>
                   )}
