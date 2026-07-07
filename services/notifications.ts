@@ -5,6 +5,19 @@
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 
+// Show reminders even when the app is foregrounded (e.g. a Focus phase ends
+// while the running screen is open) — otherwise the banner is swallowed.
+if (Platform.OS !== 'web') {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+}
+
 export const notifications = {
   async ensurePermission(): Promise<boolean> {
     if (Platform.OS === 'web') return false;

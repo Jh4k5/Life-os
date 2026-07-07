@@ -51,6 +51,7 @@ export interface FocusSessionRow {
   task: string;
   durationMin: number;
   energyBefore: number;
+  technique?: string;
   at: string; // ISO
 }
 
@@ -747,17 +748,34 @@ export const repository = {
         task: r.task ?? '',
         durationMin: Number(r.duration_min ?? 0),
         energyBefore: Number(r.energy_before ?? 0),
+        technique: r.technique ?? undefined,
         at: r.created_at as string,
       }));
   },
 
-  async addFocusSession(s: { task: string; durationMin: number; energyBefore: number }): Promise<string> {
+  async addFocusSession(s: { task: string; durationMin: number; energyBefore: number; technique?: string }): Promise<string> {
     const row = await db.insert('focus_sessions', {
       task: s.task,
       duration_min: s.durationMin,
       energy_before: s.energyBefore,
+      technique: s.technique ?? null,
     });
-    analytics.log('focus', 'session_logged', s.durationMin);
+    analytics.log('focus', 'session_logged', s.durationMin, { technique: s.technique });
     return row.id;
+  },
+
+  /** This-week focus totals (last 7 days): minutes + session count. */
+  async focusWeek(): Promise<{ minutes: number; count: number }> {
+    const since = Date.now() - 7 * 86_400_000;
+    const rows = (await db.list('focus_sessions')) as any[];
+    let minutes = 0;
+    let count = 0;
+    for (const r of rows) {
+      if (new Date(r.created_at ?? 0).getTime() >= since) {
+        minutes += Number(r.duration_min ?? 0);
+        count += 1;
+      }
+    }
+    return { minutes, count };
   },
 };
