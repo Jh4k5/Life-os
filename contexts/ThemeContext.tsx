@@ -2,7 +2,10 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useColorScheme, StatusBar } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { dark, light } from '@/tokens/colors';
+import { dark, light, DEFAULT_ACCENT, accentPresets } from '@/tokens/colors';
+
+// Every hex a curated accent can legitimately be (dark + light variants).
+const CURATED_ACCENTS = new Set(accentPresets.flatMap((p) => [p.dark, p.light]));
 
 export type ThemeMode = 'dark' | 'light' | 'system';
 
@@ -20,7 +23,7 @@ const ThemeCtx = createContext<Ctx | null>(null);
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const sys = useColorScheme();
   const [mode, setM] = useState<ThemeMode>('system');
-  const [accent, setA] = useState('#5B6EF5');
+  const [accent, setA] = useState(DEFAULT_ACCENT); // Iris violet — brand default
 
   const isDark = mode === 'system' ? sys === 'dark' : mode === 'dark';
   const base = isDark ? dark : light;
@@ -35,7 +38,13 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     AsyncStorage.multiGet(['@mode', '@accent']).then(([[, m], [, a]]) => {
       if (m) setM(m as ThemeMode);
-      if (a) setA(a);
+      // Migrate any legacy/off-palette accent (e.g. the old blue) back to a
+      // curated jewel tone so identity stays consistent.
+      if (a && CURATED_ACCENTS.has(a)) setA(a);
+      else if (a) {
+        setA(DEFAULT_ACCENT);
+        AsyncStorage.setItem('@accent', DEFAULT_ACCENT).catch(() => {});
+      }
     });
   }, []);
 

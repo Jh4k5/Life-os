@@ -117,19 +117,17 @@ export const areaAccents = [
   { id: 'slate', dark: '#8E94A3', light: '#62656F', name: 'رمادي' },
 ];
 
-// 12 accent presets kept for Settings compatibility (single-accent system,
-// but the user may still pick the chrome accent hue).
+// Curated jewel-tone accents. Iris (amethyst) is the default identity.
+// Every `dark` value passes WCAG AA both as a foreground on the Obsidian
+// canvas (#0A0B0D, ≥4.5:1) AND as a filled surface under white text (≥3:1),
+// so buttons, chips and active states stay legible whichever the user picks.
+export const DEFAULT_ACCENT = '#7C6FFF'; // Iris — fresh-install & reset default
+
 export const accentPresets = [
-  { id: 'violet', dark: '#7C6FFF', light: '#5B4BE6', name: 'بنفسجي' },
-  { id: 'indigo', dark: '#6366F1', light: '#4F46E5', name: 'إنديجو' },
-  { id: 'blue', dark: '#0A84FF', light: '#0A6CFF', name: 'أزرق' },
-  { id: 'sky', dark: '#38BDF8', light: '#0EA5E9', name: 'سماوي' },
-  { id: 'teal', dark: '#2BD4C4', light: '#0E9E92', name: 'فيروزي' },
-  { id: 'green', dark: '#32D74B', light: '#28A745', name: 'أخضر' },
-  { id: 'amber', dark: '#FF9F0A', light: '#E07A00', name: 'كهرماني' },
-  { id: 'orange', dark: '#FF9F0A', light: '#E07A00', name: 'برتقالي' },
-  { id: 'rose', dark: '#FF6482', light: '#E5485F', name: 'وردي' },
-  { id: 'red', dark: '#FF453A', light: '#E5484D', name: 'أحمر' },
-  { id: 'mono', dark: '#E6E7EB', light: '#1A1B1F', name: 'أحادي' },
-  { id: 'custom', dark: '#7C6FFF', light: '#5B4BE6', name: 'مخصص' },
+  { id: 'iris', dark: '#7C6FFF', light: '#5B4BE6', name: 'Iris' },
+  { id: 'sapphire', dark: '#4C8DFF', light: '#2563EB', name: 'Sapphire' },
+  { id: 'jade', dark: '#0FA968', light: '#059669', name: 'Jade' },
+  { id: 'topaz', dark: '#CC7A2E', light: '#B45309', name: 'Topaz' },
+  { id: 'ruby', dark: '#F04E6E', light: '#E11D48', name: 'Ruby' },
+  { id: 'orchid', dark: '#C264F5', light: '#9333EA', name: 'Orchid' },
 ];

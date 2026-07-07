@@ -7,7 +7,7 @@ import { useTheme, type ThemeMode } from '@/contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
-import { accentPresets } from '@/tokens/colors';
+import { accentPresets, DEFAULT_ACCENT } from '@/tokens/colors';
 import { LANGS, changeLang } from '@/lib/i18n';
 import { useSettingsStore } from '@/store/settingsStore';
 import { auth } from '@/services/auth';
@@ -46,6 +46,7 @@ export default function SettingsScreen() {
             await auth.deleteAccount(); // server delete (best-effort) + sign out
             await db.clearAll(); // wipe every local collection
             resetProfile();
+            setAccent(DEFAULT_ACCENT); // reset identity to Iris violet
             feedback.warning();
             router.replace('/(auth)/welcome');
           },
@@ -119,9 +120,7 @@ export default function SettingsScreen() {
           {/* لون النبرة */}
           <Text style={[S.cardLabel, { color: c.t1 }]}>{t('settings.accent')}</Text>
           <View style={S.accentGrid}>
-            {accentPresets
-              .filter((a) => a.id !== 'custom')
-              .map((opt) => {
+            {accentPresets.map((opt) => {
                 const clr = isDark ? opt.dark : opt.light;
                 const isActive = accent === clr;
                 return (
