@@ -10,7 +10,6 @@ import { useRTL } from '@/hooks/useRTL';
 import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { mockWorkouts } from '@/data/mock';
 import { repository } from '@/services/repository';
 import { useAsync } from '@/hooks/useAsync';
 
@@ -19,7 +18,7 @@ export default function ExerciseScreen() {
   const { t } = useTranslation();
   const { rowDir, textAlign } = useRTL();
   const [mode, setMode] = useState<'all' | 'gym' | 'home'>('all');
-  const { data: workouts } = useAsync(() => repository.listWorkouts(), mockWorkouts, "workouts");
+  const { data: workouts } = useAsync(() => repository.listWorkouts(), [], "workouts");
 
   const filtered = workouts.filter((w) => mode === 'all' || w.mode === mode);
   const weekMinutes = workouts.reduce((s, w) => s + w.durationMin, 0);

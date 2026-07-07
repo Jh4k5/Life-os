@@ -8,7 +8,9 @@ import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { mockTasks, type SubTask } from '@/data/mock';
+import type { SubTask } from '@/data/mock';
+import { repository } from '@/services/repository';
+import { useAsync } from '@/hooks/useAsync';
 import { ConnectedLayer } from '@/components/ui/ConnectedLayer';
 
 const ENERGY_ICON = { low: '🌙', medium: '☁', high: '⚡' };
@@ -17,8 +19,10 @@ export default function TaskDetailScreen() {
   const { c } = useTheme();
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const task = mockTasks.find((tk) => tk.id === id);
-  const [subtasks, setSubtasks] = useState<SubTask[]>(task?.subtasks ?? []);
+  const { data: tasks } = useAsync(() => repository.listTasks(), []);
+  const task = tasks.find((tk) => tk.id === id);
+  const [subOverride, setSubOverride] = useState<SubTask[] | null>(null);
+  const subtasks = subOverride ?? task?.subtasks ?? [];
 
   if (!task) {
     return (
@@ -30,7 +34,7 @@ export default function TaskDetailScreen() {
   }
 
   const toggleSub = (sid: string) =>
-    setSubtasks((p) => p.map((s) => (s.id === sid ? { ...s, done: !s.done } : s)));
+    setSubOverride(subtasks.map((s) => (s.id === sid ? { ...s, done: !s.done } : s)));
 
   const subDone = subtasks.filter((s) => s.done).length;
 

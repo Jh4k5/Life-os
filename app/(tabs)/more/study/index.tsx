@@ -10,7 +10,6 @@ import { useTranslation } from 'react-i18next';
 import { useRTL } from '@/hooks/useRTL';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { Header } from '@/components/layout/Header';
-import { mockCourses } from '@/data/mock';
 import { repository } from '@/services/repository';
 import { useAsync } from '@/hooks/useAsync';
 
@@ -24,7 +23,7 @@ export default function StudyScreen() {
   const { t } = useTranslation();
   const { rowDir, textAlign } = useRTL();
   const router = useRouter();
-  const { data: courses } = useAsync(() => repository.listCourses(), mockCourses, "courses");
+  const { data: courses } = useAsync(() => repository.listCourses(), [], "courses");
 
   const totalHours = courses.reduce((s, co) => s + co.totalStudyHours, 0);
   const totalExams = courses.reduce((s, co) => s + co.exams.length, 0);

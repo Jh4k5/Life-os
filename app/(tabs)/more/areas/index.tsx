@@ -8,12 +8,14 @@ import { useTranslation } from 'react-i18next';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { Header } from '@/components/layout/Header';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { mockAreas } from '@/data/mock';
+import { repository } from '@/services/repository';
+import { useAsync } from '@/hooks/useAsync';
 
 export default function AreasScreen() {
   const { c } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const { data: areas } = useAsync(() => repository.listAreas(), []);
 
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
@@ -23,7 +25,7 @@ export default function AreasScreen() {
         right={[{ icon: 'add', onPress: () => router.push('/(tabs)/more/areas/new'), color: c.accent }]}
       />
       <FlatList
-        data={mockAreas}
+        data={areas}
         keyExtractor={(a) => a.id}
         contentContainerStyle={{ padding: 16, gap: 10, paddingBottom: 110 }}
         renderItem={({ item: area }) => {

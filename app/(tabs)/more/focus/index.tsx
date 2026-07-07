@@ -6,7 +6,9 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
-import { mockFocusSessions } from '@/data/mock';
+import { repository } from '@/services/repository';
+import { useAsync } from '@/hooks/useAsync';
+import { feedback } from '@/services/feedback';
 
 export default function FocusScreen() {
   const { c } = useTheme();
@@ -16,6 +18,8 @@ export default function FocusScreen() {
   const [elapsed, setElapsed] = useState(0);
   const [energyBefore, setEnergyBefore] = useState(4);
   const ref = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Real, persisted session history — survives a full app restart.
+  const { data: sessions, reload } = useAsync(() => repository.listFocusSessions(), [], 'focusSessions');
 
   useEffect(
     () => () => {
@@ -34,17 +38,31 @@ export default function FocusScreen() {
     }
   };
 
-  const reset = () => {
+  // Stop = save the session (if it ran ≥1 min) then clear the timer.
+  const stop = async () => {
     if (ref.current) clearInterval(ref.current);
     setRunning(false);
+    const min = Math.round(elapsed / 60);
+    if (min >= 1) {
+      await repository.addFocusSession({ task: task.trim() || t('focus.session'), durationMin: min, energyBefore });
+      feedback.success();
+      reload();
+    }
     setElapsed(0);
+    setTask('');
   };
 
   const fmt = (s: number) =>
     `${String(Math.floor(s / 3600)).padStart(2, '0')}:${String(Math.floor((s % 3600) / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
-  const totalMin = mockFocusSessions.reduce((s, f) => s + f.duration, 0);
-  const avg = Math.round(totalMin / Math.max(mockFocusSessions.length, 1));
+  const fmtWhen = (iso: string) => {
+    const d = new Date(iso);
+    const p = (n: number) => String(n).padStart(2, '0');
+    return `${d.getDate()}/${d.getMonth() + 1} · ${p(d.getHours())}:${p(d.getMinutes())}`;
+  };
+
+  const totalMin = sessions.reduce((s, f) => s + f.durationMin, 0);
+  const avg = sessions.length ? Math.round(totalMin / sessions.length) : 0;
 
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
@@ -59,7 +77,7 @@ export default function FocusScreen() {
                 <Ionicons name={running ? 'pause' : 'play'} size={26} color="#FFF" />
               </Pressable>
               {elapsed > 0 && (
-                <Pressable onPress={reset} style={[S.bigBtn, { backgroundColor: c.bg3, borderColor: c.b2, borderWidth: 1 }]}>
+                <Pressable onPress={stop} style={[S.bigBtn, { backgroundColor: c.bg3, borderColor: c.b2, borderWidth: 1 }]}>
                   <Ionicons name="stop" size={24} color={c.t2} />
                 </Pressable>
               )}
@@ -110,29 +128,31 @@ export default function FocusScreen() {
           </SmartCard>
         </View>
 
-        {/* History */}
+        {/* History — real, persisted sessions */}
         <Text style={[S.label, { color: c.t2 }]}>{t('focus.history')}</Text>
-        <SmartCard>
-          {mockFocusSessions.map((f, i) => (
-            <View
-              key={f.id}
-              style={[S.histRow, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.b0 }]}
-            >
-              <View style={[S.histIcon, { backgroundColor: c.focus + '20' }]}>
-                <Text style={{ color: c.focus, fontWeight: '700', fontSize: 13 }}>{f.duration}m</Text>
+        {sessions.length === 0 ? (
+          <Text style={{ color: c.t4, fontSize: 13, paddingHorizontal: 4 }}>{t('focus.no_sessions')}</Text>
+        ) : (
+          <SmartCard>
+            {sessions.map((f, i) => (
+              <View
+                key={f.id}
+                style={[S.histRow, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.b0 }]}
+              >
+                <View style={[S.histIcon, { backgroundColor: c.focus + '20' }]}>
+                  <Text style={{ color: c.focus, fontWeight: '700', fontSize: 13 }}>{f.durationMin}m</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: c.t1, fontSize: 14 }} numberOfLines={1}>
+                    {f.task}
+                  </Text>
+                  <Text style={{ color: c.t3, fontSize: 11, marginTop: 2 }}>{fmtWhen(f.at)}</Text>
+                </View>
+                <Text style={{ color: c.t3, fontSize: 12 }}>⚡ {f.energyBefore}</Text>
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ color: c.t1, fontSize: 14 }} numberOfLines={1}>
-                  {f.task}
-                </Text>
-                <Text style={{ color: c.t3, fontSize: 11, marginTop: 2 }}>{f.date}</Text>
-              </View>
-              <Text style={{ color: c.t3, fontSize: 12 }}>
-                ⚡ {f.energyBefore}→{f.energyAfter}
-              </Text>
-            </View>
-          ))}
-        </SmartCard>
+            ))}
+          </SmartCard>
+        )}
       </ScrollView>
     </View>
   );

@@ -11,7 +11,6 @@ import { useRTL } from '@/hooks/useRTL';
 import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { ViewToggle } from '@/components/ui/ViewToggle';
-import { mockEvents } from '@/data/mock';
 import { repository } from '@/services/repository';
 import { useAsync } from '@/hooks/useAsync';
 
@@ -34,7 +33,7 @@ export default function ScheduleScreen() {
   const router = useRouter();
   const [view, setView] = useState<SView>('day');
   const [selectedDay, setSelectedDay] = useState(3);
-  const { data: events, loading } = useAsync(() => repository.listEvents(), mockEvents, "events");
+  const { data: events, loading } = useAsync(() => repository.listEvents(), [], "events");
 
   const timed = events.filter((e) => !e.allDay).sort((a, b) => a.start.localeCompare(b.start));
   const allDay = events.filter((e) => e.allDay);

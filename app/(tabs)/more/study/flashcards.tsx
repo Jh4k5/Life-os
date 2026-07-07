@@ -14,7 +14,7 @@ import { useHaptics } from '@/hooks/useHaptics';
 import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { mockFlashcards, type Flashcard } from '@/data/mock';
+import { type Flashcard } from '@/data/mock';
 import { repository } from '@/services/repository';
 import { useAsync } from '@/hooks/useAsync';
 import { REVIEW_GRADES } from '@/services/srs';
@@ -25,10 +25,7 @@ export default function FlashcardsScreen() {
   const { rowDir } = useRTL();
   const haptics = useHaptics();
   const { courseId } = useLocalSearchParams<{ courseId?: string }>();
-  const { data: initial, loading } = useAsync(
-    () => repository.listDueFlashcards(courseId),
-    mockFlashcards.filter((f) => !courseId || f.courseId === courseId)
-  );
+  const { data: initial, loading } = useAsync(() => repository.listDueFlashcards(courseId), []);
 
   const [queue, setQueue] = useState<Flashcard[] | null>(null);
   const [idx, setIdx] = useState(0);

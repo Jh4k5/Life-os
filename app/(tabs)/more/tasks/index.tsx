@@ -10,7 +10,7 @@ import { SmartCard } from '@/components/ui/SmartCard';
 import { TaskCard } from '@/components/ui/TaskCard';
 import { TabPill } from '@/components/ui/TabPill';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { mockTasks, type TaskData } from '@/data/mock';
+import { type TaskData } from '@/data/mock';
 import { repository } from '@/services/repository';
 import { useAsync } from '@/hooks/useAsync';
 import { feedback } from '@/services/feedback';
@@ -22,8 +22,8 @@ export default function TasksScreen() {
   const { c } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
-  const { data: loaded } = useAsync(() => repository.listTasks(), mockTasks, "tasks");
-  const [tasks, setTasks] = useState<TaskData[]>(mockTasks);
+  const { data: loaded } = useAsync(() => repository.listTasks(), [], "tasks");
+  const [tasks, setTasks] = useState<TaskData[]>([]);
   const [view, setView] = useState<TView>('list');
   const [quick, setQuick] = useState('');
 

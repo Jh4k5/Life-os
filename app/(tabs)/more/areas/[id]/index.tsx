@@ -8,14 +8,19 @@ import { useTranslation } from 'react-i18next';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { Header } from '@/components/layout/Header';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { mockAreas, mockHabits } from '@/data/mock';
+import { repository } from '@/services/repository';
+import { useAsync } from '@/hooks/useAsync';
 
 export default function AreaDetailScreen() {
   const { c } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const area = mockAreas.find((a) => a.id === id);
+  const { data: areas } = useAsync(() => repository.listAreas(), []);
+  const { data: allHabits } = useAsync(() => repository.listHabits(), []);
+  const area = areas.find((a) => a.id === id);
+
+  const linkedHabits = allHabits.filter((h) => h.areaId === id);
 
   if (!area) {
     return (
@@ -25,8 +30,6 @@ export default function AreaDetailScreen() {
       </View>
     );
   }
-
-  const linkedHabits = mockHabits.filter((h) => h.areaId === area.id);
 
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>

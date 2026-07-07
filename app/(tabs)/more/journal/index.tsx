@@ -10,7 +10,6 @@ import { useTranslation } from 'react-i18next';
 import { useRTL } from '@/hooks/useRTL';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { Header } from '@/components/layout/Header';
-import { mockJournals } from '@/data/mock';
 import { repository } from '@/services/repository';
 import { useAsync } from '@/hooks/useAsync';
 
@@ -34,7 +33,7 @@ export default function JournalScreen() {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [filterMood, setFilterMood] = useState<string | null>(null);
-  const { data: journals, loading } = useAsync(() => repository.listJournal(), mockJournals, "journal");
+  const { data: journals, loading } = useAsync(() => repository.listJournal(), [], "journal");
 
   const filtered = journals.filter(
     (j) =>

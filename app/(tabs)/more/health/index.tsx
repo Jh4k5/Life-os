@@ -12,7 +12,6 @@ import { useHaptics } from '@/hooks/useHaptics';
 import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { QuickLogSheet, type SheetField } from '@/components/ui/QuickLogSheet';
-import { mockHealthToday, mockMeals } from '@/data/mock';
 import { repository } from '@/services/repository';
 import { useAsync } from '@/hooks/useAsync';
 import { bmr, tdee, targetCalories } from '@/services/nutrition';
@@ -20,7 +19,10 @@ import { estimateMeal } from '@/services/nutrition';
 import { captureService } from '@/services/captureService';
 import { intelligence, type Insight } from '@/services/intelligence';
 import { Sparkline, trendOf } from '@/components/ui/Sparkline';
-import type { Meal } from '@/services/types';
+import type { Meal, HealthDay } from '@/services/types';
+
+// Zero-state default until the real day loads (repository is source of truth).
+const EMPTY_HEALTH: HealthDay = { day: '', weightKg: null, heightCm: null, waterMl: 0, sleepMin: 0, steps: 0 };
 
 // A default profile until the user sets theirs (Settings → Profile, later).
 const PROFILE = { sex: 'male' as const, age: 25, activity: 'moderate' as const, goal: 'maintain' as const };
@@ -30,8 +32,8 @@ export default function HealthScreen() {
   const { t } = useTranslation();
   const { rowDir, textAlign } = useRTL();
   const haptics = useHaptics();
-  const { data: health, reload: reloadHealth } = useAsync(() => repository.getHealthToday(), mockHealthToday);
-  const { data: loadedMeals, reload: reloadMeals } = useAsync(() => repository.listMeals(), mockMeals);
+  const { data: health, reload: reloadHealth } = useAsync(() => repository.getHealthToday(), EMPTY_HEALTH);
+  const { data: loadedMeals, reload: reloadMeals } = useAsync(() => repository.listMeals(), []);
 
   const [extra, setExtra] = useState<Meal[]>([]);
   const [estimating, setEstimating] = useState(false);

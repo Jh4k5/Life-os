@@ -233,7 +233,8 @@
     "history": "Letzte Einheiten",
     "total": "Gesamtfokus",
     "avg": "Durchschnittliche Einheit",
-    "empty": "Keine Einheiten — starte die erste"
+    "empty": "Keine Einheiten — starte die erste",
+    "no_sessions": "Noch keine Fokus-Sitzungen — starte den Timer, dann erscheinen sie hier."
   },
   "schedule": {
     "new_event": "Neues Ereignis",

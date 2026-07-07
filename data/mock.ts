@@ -1,7 +1,53 @@
 // data/mock.ts
+// This file holds TYPE DEFINITIONS and clearly-labeled starter SEED content
+// only. It is never a runtime read for the user's own data — every screen
+// reads through services/repository (db/local is the source of truth). The one
+// exception is SEED_AREAS below: read-only starter life-areas, surfaced solely
+// via repository.listAreas() (no screen imports it directly).
 import type { HabitData } from '@/components/ui/HabitCard';
 
-export const mockAreas = [
+// ── Areas / Projects (read-only starter structure) ──
+export interface AreaGoal {
+  id: string;
+  title: string;
+  progress: number;
+  due?: string;
+}
+export interface AreaTaskRef {
+  id: string;
+  title: string;
+  priority: 'none' | 'low' | 'medium' | 'high' | 'urgent';
+  energy: 'low' | 'medium' | 'high';
+  done: boolean;
+  due?: string;
+}
+export interface AreaJournalRef {
+  id: string;
+  title: string;
+  date: string;
+}
+export interface AreaProject {
+  id: string;
+  name: string;
+  emoji: string;
+  color: string;
+  due: string;
+  status: 'active' | 'completed' | 'paused';
+  progress: number;
+  goals: AreaGoal[];
+  tasks: AreaTaskRef[];
+  journals: AreaJournalRef[];
+}
+export interface Area {
+  id: string;
+  name: string;
+  emoji: string;
+  color: string;
+  description: string;
+  projects: AreaProject[];
+}
+
+export const SEED_AREAS: Area[] = [
   {
     id: 'a1',
     name: 'تعلم اللغة الصينية',
@@ -172,24 +218,8 @@ export interface DopamineChallenge {
   completed: boolean;
 }
 
-export const mockDopamine = {
-  totalXP: 520,
-  todayScore: 8,
-  weekProgress: [5, 12, -3, 8, 15, -5, 8],
-  activities: [
-    { id: 'd1', name: 'قراءة كتاب', type: 'healthy', impact: 6, emoji: '📚', xp: 18, logged: false },
-    { id: 'd2', name: 'تمرين رياضي', type: 'healthy', impact: 8, emoji: '💪', xp: 24, logged: false },
-    { id: 'd3', name: 'تأمل', type: 'healthy', impact: 5, emoji: '🧘', xp: 15, logged: false },
-    { id: 'd4', name: 'سوشيال ميديا < ساعة', type: 'addictive', impact: -5, emoji: '📱', xp: -12, logged: false },
-    { id: 'd5', name: 'نيتفليكس < ساعتين', type: 'addictive', impact: -4, emoji: '📺', xp: -10, logged: false },
-    { id: 'd6', name: 'وقت مع العائلة', type: 'healthy', impact: 7, emoji: '👨‍👩‍👧', xp: 20, logged: false },
-  ] as DopamineActivity[],
-  challenges: [
-    { id: 'ch1', title: '3 أيام بدون سوشيال ميديا', days: 3, reward: 80, icon: '📵', active: false, completed: false },
-    { id: 'ch2', title: 'نوم قبل 11 لأسبوع', days: 7, reward: 150, icon: '🌙', active: true, completed: false },
-    { id: 'ch3', title: '30 دقيقة تمرين يومي لأسبوع', days: 7, reward: 200, icon: '💪', active: false, completed: false },
-  ] as DopamineChallenge[],
-};
+// (No mock dopamine data — the Wellbeing screen reads real user-defined
+//  activities and logs through the repository.)
 
 export interface FocusSession {
   id: string;
@@ -200,11 +230,8 @@ export interface FocusSession {
   date: string;
 }
 
-export const mockFocusSessions: FocusSession[] = [
-  { id: 'f1', task: 'مراجعة الفصل الأول', duration: 45, energyBefore: 4, energyAfter: 3, date: 'اليوم، ٠٣:٢ م' },
-  { id: 'f2', task: 'كتابة التقرير', duration: 60, energyBefore: 3, energyAfter: 2, date: 'اليوم، ٠٠:١٠ ص' },
-  { id: 'f3', task: 'تصميم الواجهة', duration: 90, energyBefore: 5, energyAfter: 4, date: 'أمس، ٠٠:٤ م' },
-];
+// Focus history is real now (focus_sessions collection via the repository).
+export const mockFocusSessions: FocusSession[] = [];
 
 export interface ScheduleEvent {
   id: string;

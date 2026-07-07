@@ -13,7 +13,7 @@ import { SmartCard } from '@/components/ui/SmartCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ConnectedLayer } from '@/components/ui/ConnectedLayer';
 import { ReviewLayer } from '@/components/ai/ReviewLayer';
-import { mockCourses, mockFlashcards, type Flashcard } from '@/data/mock';
+import { type Flashcard } from '@/data/mock';
 import { repository } from '@/services/repository';
 import { useAsync } from '@/hooks/useAsync';
 import type { DetectedItem, ReviewAction } from '@/services/types';
@@ -34,13 +34,11 @@ export default function CourseDetailScreen() {
   const { rowDir, textAlign } = useRTL();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const course = mockCourses.find((co) => co.id === id);
+  const { data: courses } = useAsync(() => repository.listCourses(), []);
+  const course = courses.find((co) => co.id === id);
 
   // weak topics = low-ease cards that HAVE been reviewed (real SRS history)
-  const { data: cards } = useAsync(
-    () => repository.listFlashcards(id),
-    mockFlashcards.filter((f) => f.courseId === id)
-  );
+  const { data: cards } = useAsync(() => repository.listFlashcards(id), []);
   const weak: Flashcard[] = cards.filter((f) => f.reps > 0 && f.ease < 2.3).slice(0, 4);
 
   // revision planner → Review Layer → events (nothing written unapproved)

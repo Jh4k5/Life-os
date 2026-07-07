@@ -233,7 +233,8 @@
     "history": "Son oturumlar",
     "total": "Toplam odak",
     "avg": "Ortalama oturum",
-    "empty": "Henüz oturum yok — ilkini başlat"
+    "empty": "Henüz oturum yok — ilkini başlat",
+    "no_sessions": "Henüz odak oturumu yok — zamanlayıcıyı başlat, burada görünecekler."
   },
   "schedule": {
     "new_event": "Yeni etkinlik",

@@ -233,7 +233,8 @@
     "history": "Sesiones recientes",
     "total": "Concentración total",
     "avg": "Sesión promedio",
-    "empty": "Sin sesiones — inicia la primera"
+    "empty": "Sin sesiones — inicia la primera",
+    "no_sessions": "Aún no hay sesiones de concentración: inicia el temporizador y aparecerán aquí."
   },
   "schedule": {
     "new_event": "Nuevo evento",

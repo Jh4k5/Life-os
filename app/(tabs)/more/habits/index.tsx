@@ -7,10 +7,10 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
-import { HabitCard } from '@/components/ui/HabitCard';
+import { HabitCard, type HabitData } from '@/components/ui/HabitCard';
 import { TabPill } from '@/components/ui/TabPill';
-import { useMockStore } from '@/store/mockStore';
 import { repository } from '@/services/repository';
+import { useAsync } from '@/hooks/useAsync';
 import { feedback } from '@/services/feedback';
 
 type HView = 'today' | 'all' | 'stats';
@@ -19,32 +19,23 @@ export default function HabitsScreen() {
   const { c } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
-  const habits = useMockStore((s) => s.habits);
-  const updateLocal = useMockStore((s) => s.updateHabit);
-  const hydrate = useMockStore((s) => s.hydrate);
+  // Source of truth is the repository; a local overlay makes toggles instant.
+  // useAsync reloads on focus, so returning to the screen reflects real state.
+  const { data: loaded } = useAsync(() => repository.listHabits(), [] as HabitData[], 'habits');
+  const [habits, setHabits] = useState<HabitData[]>([]);
   const [view, setView] = useState<HView>('today');
 
-  // Optimistic local update + real habit_logs row (fire-and-forget when live).
-  const update = React.useCallback(
-    (id: string, val: number, done: boolean) => {
-      updateLocal(id, val, done);
-      repository.logHabit(id, val, done);
-      if (done) feedback.success();
-      else feedback.tap();
-    },
-    [updateLocal]
-  );
-
-  // Load real habits from Supabase once (falls back to mock until they arrive).
   React.useEffect(() => {
-    let alive = true;
-    repository.listHabits().then((list) => {
-      if (alive && list.length) hydrate(list);
-    });
-    return () => {
-      alive = false;
-    };
-  }, [hydrate]);
+    setHabits(loaded);
+  }, [loaded]);
+
+  // Optimistic local update + real habit_logs row persisted via the repository.
+  const update = React.useCallback((id: string, val: number, done: boolean) => {
+    setHabits((p) => p.map((h) => (h.id === id ? { ...h, todayValue: val, done } : h)));
+    repository.logHabit(id, val, done);
+    if (done) feedback.success();
+    else feedback.tap();
+  }, []);
 
   const done = habits.filter((h) => h.done).length;
   const total = habits.length;

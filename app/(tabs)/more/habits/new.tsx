@@ -7,8 +7,8 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { HabitCard, type HabitData } from '@/components/ui/HabitCard';
-import { mockAreas } from '@/data/mock';
 import { repository } from '@/services/repository';
+import { useAsync } from '@/hooks/useAsync';
 
 type HType = 'checkbox' | 'counter' | 'timer' | 'stopwatch' | 'quantity';
 type Freq = 'daily' | 'weekly' | 'monthly' | 'custom';
@@ -42,6 +42,7 @@ export default function NewHabitScreen() {
   const [noteEnabled, setNoteEnabled] = useState(false);
   const [retroEnabled, setRetroEnabled] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { data: areas } = useAsync(() => repository.listAreas(), []);
 
   const save = async () => {
     if (!name.trim() || saving) return;
@@ -300,7 +301,7 @@ export default function NewHabitScreen() {
               >
                 <Text style={{ color: !areaId ? c.accent : c.t2, fontSize: 13 }}>بدون ربط</Text>
               </Pressable>
-              {mockAreas.map((area) => (
+              {areas.map((area) => (
                 <Pressable
                   key={area.id}
                   onPress={() => setAreaId(area.id)}

@@ -10,7 +10,6 @@ import { useTranslation } from 'react-i18next';
 import { useRTL } from '@/hooks/useRTL';
 import { SectionCard } from '@/components/ui/SectionCard';
 import { Header } from '@/components/layout/Header';
-import { mockHabits, mockTasks, mockJournals } from '@/data/mock';
 import { repository } from '@/services/repository';
 import { useAsync } from '@/hooks/useAsync';
 
@@ -58,9 +57,9 @@ export default function MoreScreen() {
   const router = useRouter();
 
   // Live previews — real repository counts, refreshed on focus.
-  const { data: habits } = useAsync(() => repository.listHabits(), mockHabits, 'habits');
-  const { data: tasks } = useAsync(() => repository.listTasks(), mockTasks, 'tasks');
-  const { data: journals } = useAsync(() => repository.listJournal(), mockJournals, 'journal');
+  const { data: habits } = useAsync(() => repository.listHabits(), [], 'habits');
+  const { data: tasks } = useAsync(() => repository.listTasks(), [], 'tasks');
+  const { data: journals } = useAsync(() => repository.listJournal(), [], 'journal');
   const habitsLeft = habits.filter((h) => !h.done).length;
   const tasksLeft = tasks.filter((tk) => !tk.done).length;
 

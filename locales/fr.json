@@ -233,7 +233,8 @@
     "history": "Sessions récentes",
     "total": "Concentration totale",
     "avg": "Session moyenne",
-    "empty": "Aucune session — démarrez la première"
+    "empty": "Aucune session — démarrez la première",
+    "no_sessions": "Aucune session de concentration — lance le minuteur et elles apparaîtront ici."
   },
   "schedule": {
     "new_event": "Nouvel événement",

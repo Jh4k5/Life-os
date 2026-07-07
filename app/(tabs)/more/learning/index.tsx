@@ -11,7 +11,6 @@ import { useRTL } from '@/hooks/useRTL';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { Header } from '@/components/layout/Header';
 import { TabPill } from '@/components/ui/TabPill';
-import { mockLibrary } from '@/data/mock';
 import { repository } from '@/services/repository';
 import { useAsync } from '@/hooks/useAsync';
 
@@ -32,7 +31,7 @@ export default function LearningScreen() {
   const { rowDir, textAlign } = useRTL();
   const router = useRouter();
   const [filter, setFilter] = useState<LibFilter>('all');
-  const { data: library } = useAsync(() => repository.listLibrary(), mockLibrary, "library");
+  const { data: library } = useAsync(() => repository.listLibrary(), [], "library");
 
   const STATUS_LABEL: Record<string, string> = {
     want_to_read: t('learning.status_want'),

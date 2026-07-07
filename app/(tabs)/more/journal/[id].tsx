@@ -8,7 +8,8 @@ import { useRTL } from '@/hooks/useRTL';
 import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { mockJournals } from '@/data/mock';
+import { repository } from '@/services/repository';
+import { useAsync } from '@/hooks/useAsync';
 import { ConnectedLayer } from '@/components/ui/ConnectedLayer';
 
 const MOOD_EMOJI: Record<string, string> = {
@@ -24,7 +25,8 @@ export default function JournalEntryScreen() {
   const { t } = useTranslation();
   const { textAlign } = useRTL();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const entry = mockJournals.find((j) => j.id === id);
+  const { data: journals } = useAsync(() => repository.listJournal(), []);
+  const entry = journals.find((j) => j.id === id);
 
   if (!entry) {
     return (

@@ -9,7 +9,8 @@ import { SmartCard } from '@/components/ui/SmartCard';
 import { Header } from '@/components/layout/Header';
 import { TabPill } from '@/components/ui/TabPill';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { mockAreas } from '@/data/mock';
+import { repository } from '@/services/repository';
+import { useAsync } from '@/hooks/useAsync';
 
 type Tab = 'goals' | 'tasks' | 'journals';
 
@@ -18,7 +19,8 @@ export default function ProjectDetailScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { id, pid } = useLocalSearchParams<{ id: string; pid: string }>();
-  const area = mockAreas.find((a) => a.id === id);
+  const { data: areas } = useAsync(() => repository.listAreas(), []);
+  const area = areas.find((a) => a.id === id);
   const project = area?.projects.find((p) => p.id === pid);
   const [tab, setTab] = useState<Tab>('goals');
 

@@ -7,8 +7,9 @@ import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/layout/Header';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { mockAreas, type TaskData } from '@/data/mock';
+import { type TaskData } from '@/data/mock';
 import { repository } from '@/services/repository';
+import { useAsync } from '@/hooks/useAsync';
 
 const PRIORITIES: { key: TaskData['priority']; dot: string; tkey: string }[] = [
   { key: 'none', dot: '⚪', tkey: 'tasks.p_none' },
@@ -35,6 +36,7 @@ export default function NewTaskScreen() {
   const [due, setDue] = useState('');
   const [areaId, setAreaId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const { data: areas } = useAsync(() => repository.listAreas(), []);
 
   const save = async () => {
     if (!title.trim() || saving) return;
@@ -102,7 +104,7 @@ export default function NewTaskScreen() {
           >
             <Text style={{ color: !areaId ? c.accent : c.t2, fontSize: 13 }}>—</Text>
           </Pressable>
-          {mockAreas.map((area) => (
+          {areas.map((area) => (
             <Pressable
               key={area.id}
               onPress={() => setAreaId(area.id)}

@@ -7,13 +7,15 @@
 import type { DetectedItem, EntityType } from './types';
 import { notifications } from './notifications';
 import * as db from '@/db/local';
-import type {
-  JournalEntry,
-  TaskData,
-  ScheduleEvent,
-  Course,
-  LibraryItem,
-  Flashcard,
+import {
+  SEED_AREAS,
+  type JournalEntry,
+  type TaskData,
+  type ScheduleEvent,
+  type Course,
+  type LibraryItem,
+  type Flashcard,
+  type Area,
 } from '@/data/mock';
 import type { Meal, HealthDay, Workout, MealEstimate } from './types';
 import { sm2, type SrsResult } from './srs';
@@ -42,6 +44,14 @@ export interface Goal {
   progress: number;
   done: boolean;
   targetDate: string | null;
+}
+
+export interface FocusSessionRow {
+  id: string;
+  task: string;
+  durationMin: number;
+  energyBefore: number;
+  at: string; // ISO
 }
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
@@ -665,5 +675,41 @@ export const repository = {
       }
       return net;
     });
+  },
+
+  // ── Areas / Projects (starter content) ──
+  // Areas ship as read-only starter structure (SEED_AREAS in data/mock). They
+  // are not user-editable/persisted yet, so this is the single read seam every
+  // Areas screen goes through — no screen imports the seed directly.
+  async listAreas(): Promise<Area[]> {
+    return SEED_AREAS as Area[];
+  },
+
+  async getArea(id: string): Promise<Area | null> {
+    return (SEED_AREAS as Area[]).find((a) => a.id === id) ?? null;
+  },
+
+  // ── Focus sessions (real, persisted) ──
+  async listFocusSessions(): Promise<FocusSessionRow[]> {
+    const rows = (await db.list('focus_sessions')) as any[];
+    return rows
+      .sort((a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? ''))
+      .map((r) => ({
+        id: r.id,
+        task: r.task ?? '',
+        durationMin: Number(r.duration_min ?? 0),
+        energyBefore: Number(r.energy_before ?? 0),
+        at: r.created_at as string,
+      }));
+  },
+
+  async addFocusSession(s: { task: string; durationMin: number; energyBefore: number }): Promise<string> {
+    const row = await db.insert('focus_sessions', {
+      task: s.task,
+      duration_min: s.durationMin,
+      energy_before: s.energyBefore,
+    });
+    analytics.log('focus', 'session_logged', s.durationMin);
+    return row.id;
   },
 };

@@ -241,7 +241,8 @@
     "history": "Recent sessions",
     "total": "Total focus",
     "avg": "Average session",
-    "empty": "No sessions yet — start your first focus session"
+    "empty": "No sessions yet — start your first focus session",
+    "no_sessions": "No focus sessions yet — start the timer and they’ll appear here."
   },
   "schedule": {
     "new_event": "New event",
