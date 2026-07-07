@@ -433,5 +433,32 @@
   },
   "connected": {
     "title": "Connected"
+  },
+  "review": {
+    "ai": "AI",
+    "add": "Add",
+    "added": "Added",
+    "view": "View",
+    "add_all": "Add all ({{n}})",
+    "ignore": "Ignore",
+    "edit": "Edit",
+    "save": "Save",
+    "uncertain": "unsure",
+    "which": "Is it…?",
+    "type": "Type",
+    "date": "Date",
+    "title": "Title",
+    "type_journal": "Journal",
+    "type_appointment": "Appointment",
+    "type_task": "Task",
+    "type_checklist": "Checklist",
+    "type_exam": "Exam",
+    "type_habit": "Habit",
+    "type_reminder": "Reminder",
+    "type_note": "Note",
+    "type_suggestion": "Suggestion",
+    "type_meal": "Meal",
+    "type_workout": "Workout",
+    "type_study_session": "Study session"
   }
 }

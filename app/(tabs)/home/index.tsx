@@ -143,6 +143,20 @@ const AIView = ({ c, t }: any) => {
     setItems((p) => p.map((it) => (it.id === id ? { ...it, type, confidence: 0.85 } : it)));
   };
 
+  // Per-item Add: persist THIS one item now, then mark it accepted + store its
+  // deep-link so the card can offer "View". The others stay untouched.
+  const onAdd = async (item: DetectedItem) => {
+    const res = await repository.persistOne(item);
+    if (!res) return;
+    setItems((p) => p.map((it) => (it.id === item.id ? { ...it, status: 'accepted' as const, route: res.route } : it)));
+    feedback.success();
+  };
+
+  // Inline edit (title / type / date) before an item is added.
+  const onEdit = (id: string, patch: { title?: string; type?: EntityType; detail?: string }) => {
+    setItems((p) => p.map((it) => (it.id === id ? { ...it, ...patch } : it)));
+  };
+
   const applyAll = async () => {
     const next = items.map((it) => (it.status === 'pending' ? { ...it, status: 'accepted' as const } : it));
     setItems(next);
@@ -205,7 +219,7 @@ const AIView = ({ c, t }: any) => {
 
         {result && !busy && (
           <View style={{ marginTop: 22, gap: 14 }}>
-            <ReviewLayer items={items} reply={result.reply} onAction={onAction} onApplyAll={applyAll} onReclassify={onReclassify} />
+            <ReviewLayer items={items} reply={result.reply} onAction={onAction} onApplyAll={applyAll} onReclassify={onReclassify} onAdd={onAdd} onEdit={onEdit} />
             {proposal && (
               <Pressable
                 onPress={createWorkspace}

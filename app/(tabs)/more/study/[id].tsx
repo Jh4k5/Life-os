@@ -74,6 +74,12 @@ export default function CourseDetailScreen() {
     setPlan(null);
     setPlanApplied(true);
   };
+  // Add a single revision session now; it becomes "Added ✓ · View" → Schedule.
+  const onPlanAdd = async (item: DetectedItem) => {
+    const res = await repository.persistOne(item);
+    if (!res) return;
+    setPlan((p) => (p ?? []).map((it) => (it.id === item.id ? { ...it, status: 'accepted' as const, route: res.route } : it)));
+  };
 
   if (!course) {
     return (
@@ -172,7 +178,7 @@ export default function CourseDetailScreen() {
         })}
 
         {/* Revision planner — nothing is written without the Review Layer */}
-        {plan && <ReviewLayer items={plan} onAction={onPlanAction} onApplyAll={applyPlan} compact />}
+        {plan && <ReviewLayer items={plan} onAction={onPlanAction} onApplyAll={applyPlan} onAdd={onPlanAdd} compact />}
         {planApplied && (
           <View style={{ flexDirection: rowDir, alignItems: 'center', gap: 8, paddingHorizontal: 4 }}>
             <Ionicons name="checkmark-circle-outline" size={16} color={c.green} />

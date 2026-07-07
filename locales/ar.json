@@ -433,5 +433,32 @@
   },
   "connected": {
     "title": "مترابط"
+  },
+  "review": {
+    "ai": "الذكاء",
+    "add": "أضف",
+    "added": "تمت الإضافة",
+    "view": "عرض",
+    "add_all": "أضف الكل ({{n}})",
+    "ignore": "تجاهل",
+    "edit": "تعديل",
+    "save": "حفظ",
+    "uncertain": "غير متأكد",
+    "which": "أهو…؟",
+    "type": "النوع",
+    "date": "التاريخ",
+    "title": "العنوان",
+    "type_journal": "يوميات",
+    "type_appointment": "موعد",
+    "type_task": "مهمة",
+    "type_checklist": "قائمة",
+    "type_exam": "امتحان",
+    "type_habit": "عادة",
+    "type_reminder": "تذكير",
+    "type_note": "ملاحظة",
+    "type_suggestion": "اقتراح",
+    "type_meal": "وجبة",
+    "type_workout": "تمرين",
+    "type_study_session": "جلسة مذاكرة"
   }
 }

@@ -99,6 +99,62 @@ function mapFor(type: EntityType): { coll: db.Collection; row: (i: DetectedItem)
   }
 }
 
+/**
+ * Insert ONE detected item into its collection and return the created primary
+ * row id (or null if the type isn't persistable). Shared by persistAccepted
+ * (bulk) and persistOne (single). Exam is cross-domain: a study record + a
+ * calendar event on its real date — the exam row id is returned.
+ */
+async function insertDetected(item: DetectedItem): Promise<string | null> {
+  if (item.type === 'suggestion') return null;
+  if (item.type === 'exam') {
+    const when = resolveDate(item.source ?? item.title);
+    const exam = await db.insert('exams', {
+      course_id: null,
+      name: item.title,
+      exam_date: when ? when.toISOString().slice(0, 10) : null,
+      chapters_count: 0,
+      ai_plan: [],
+    });
+    await db.insert('events', {
+      title: `امتحان: ${item.title}`,
+      starts_at: (when ?? new Date(Date.now() + 86_400_000)).toISOString(),
+      all_day: true,
+      source: 'exam',
+    });
+    return exam.id;
+  }
+  const map = mapFor(item.type);
+  if (!map) return null;
+  const row = await db.insert(map.coll, map.row(item));
+  return row.id;
+}
+
+/** Deep-link into the section that now holds a just-added item. */
+function routeFor(type: EntityType, id: string): string {
+  switch (type) {
+    case 'task':
+    case 'checklist':
+      return `/(tabs)/more/tasks/${id}`;
+    case 'journal':
+    case 'note':
+      return `/(tabs)/more/journal/${id}`;
+    case 'habit':
+      return `/(tabs)/more/habits/${id}`;
+    case 'study_session':
+      return `/(tabs)/more/study/${id}`;
+    case 'meal':
+      return '/(tabs)/more/health';
+    case 'workout':
+      return '/(tabs)/more/exercise';
+    case 'appointment':
+    case 'reminder':
+    case 'exam':
+    default:
+      return '/(tabs)/more/schedule';
+  }
+}
+
 /** Grow the local memory graph: each item a node, chained relates_to. */
 async function persistMemory(items: DetectedItem[]): Promise<void> {
   const linkable = items.filter((i) => i.type !== 'suggestion');
@@ -122,30 +178,8 @@ export const repository = {
     const errors: string[] = [];
     for (const item of accepted) {
       try {
-        // Cross-domain: an exam becomes a real study record AND a calendar
-        // event on its actual date (from the text) — one capture, connected.
-        if (item.type === 'exam') {
-          const when = resolveDate(item.source ?? item.title);
-          await db.insert('exams', {
-            course_id: null,
-            name: item.title,
-            exam_date: when ? when.toISOString().slice(0, 10) : null,
-            chapters_count: 0,
-            ai_plan: [],
-          });
-          await db.insert('events', {
-            title: `امتحان: ${item.title}`,
-            starts_at: (when ?? new Date(Date.now() + 86_400_000)).toISOString(),
-            all_day: true,
-            source: 'exam',
-          });
-          saved += 1;
-          continue;
-        }
-        const map = mapFor(item.type);
-        if (!map) continue;
-        await db.insert(map.coll, map.row(item));
-        saved += 1;
+        const id = await insertDetected(item);
+        if (id) saved += 1;
       } catch (e: any) {
         errors.push(`${item.title}: ${e?.message ?? 'error'}`);
       }
@@ -154,6 +188,20 @@ export const repository = {
     analytics.log('capture', 'applied', saved);
     // demo:false — the write is real (local), regardless of network/account.
     return { saved, demo: false, errors };
+  },
+
+  /**
+   * Persist exactly ONE detected item immediately and return its created id +
+   * a deep-link route into the section that now holds it. Powers the Review
+   * card's per-item "Add" → "Added ✓ · View". Nothing else is written.
+   */
+  async persistOne(item: DetectedItem): Promise<{ id: string; route: string } | null> {
+    scheduleReminders([item]);
+    const id = await insertDetected(item);
+    if (!id) return null;
+    await persistMemory([item]);
+    analytics.log('capture', 'applied', 1);
+    return { id, route: routeFor(item.type, id) };
   },
 
   // ── Journal ──

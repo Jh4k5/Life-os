@@ -428,5 +428,32 @@
   },
   "connected": {
     "title": "Bağlantılı"
+  },
+  "review": {
+    "ai": "Yapay zekâ",
+    "add": "Ekle",
+    "added": "Eklendi",
+    "view": "Görüntüle",
+    "add_all": "Tümünü ekle ({{n}})",
+    "ignore": "Yoksay",
+    "edit": "Düzenle",
+    "save": "Kaydet",
+    "uncertain": "emin değil",
+    "which": "Bu…?",
+    "type": "Tür",
+    "date": "Tarih",
+    "title": "Başlık",
+    "type_journal": "Günlük",
+    "type_appointment": "Randevu",
+    "type_task": "Görev",
+    "type_checklist": "Liste",
+    "type_exam": "Sınav",
+    "type_habit": "Alışkanlık",
+    "type_reminder": "Hatırlatma",
+    "type_note": "Not",
+    "type_suggestion": "Öneri",
+    "type_meal": "Öğün",
+    "type_workout": "Antrenman",
+    "type_study_session": "Çalışma oturumu"
   }
 }

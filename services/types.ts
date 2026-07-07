@@ -32,6 +32,8 @@ export interface DetectedItem {
   confidence: number;
   /** Pending review state. */
   status: 'pending' | 'accepted' | 'ignored';
+  /** Deep-link into the section holding this item, set once it's been added. */
+  route?: string;
 }
 
 export interface ParsedDay {

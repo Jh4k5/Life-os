@@ -428,5 +428,32 @@
   },
   "connected": {
     "title": "منسلک"
+  },
+  "review": {
+    "ai": "اے آئی",
+    "add": "شامل کریں",
+    "added": "شامل ہو گیا",
+    "view": "دیکھیں",
+    "add_all": "سب شامل کریں ({{n}})",
+    "ignore": "نظر انداز",
+    "edit": "ترمیم",
+    "save": "محفوظ کریں",
+    "uncertain": "غیر یقینی",
+    "which": "کیا یہ…؟",
+    "type": "قسم",
+    "date": "تاریخ",
+    "title": "عنوان",
+    "type_journal": "ڈائری",
+    "type_appointment": "ملاقات",
+    "type_task": "کام",
+    "type_checklist": "فہرست",
+    "type_exam": "امتحان",
+    "type_habit": "عادت",
+    "type_reminder": "یاد دہانی",
+    "type_note": "نوٹ",
+    "type_suggestion": "تجویز",
+    "type_meal": "کھانا",
+    "type_workout": "ورزش",
+    "type_study_session": "مطالعہ سیشن"
   }
 }

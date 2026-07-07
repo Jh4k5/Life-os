@@ -428,5 +428,32 @@
   },
   "connected": {
     "title": "Conectado"
+  },
+  "review": {
+    "ai": "IA",
+    "add": "Añadir",
+    "added": "Añadido",
+    "view": "Ver",
+    "add_all": "Añadir todo ({{n}})",
+    "ignore": "Ignorar",
+    "edit": "Editar",
+    "save": "Guardar",
+    "uncertain": "no seguro",
+    "which": "¿Es…?",
+    "type": "Tipo",
+    "date": "Fecha",
+    "title": "Título",
+    "type_journal": "Diario",
+    "type_appointment": "Cita",
+    "type_task": "Tarea",
+    "type_checklist": "Lista",
+    "type_exam": "Examen",
+    "type_habit": "Hábito",
+    "type_reminder": "Recordatorio",
+    "type_note": "Nota",
+    "type_suggestion": "Sugerencia",
+    "type_meal": "Comida",
+    "type_workout": "Entreno",
+    "type_study_session": "Sesión de estudio"
   }
 }

@@ -428,5 +428,32 @@
   },
   "connected": {
     "title": "Verbunden"
+  },
+  "review": {
+    "ai": "KI",
+    "add": "Hinzufügen",
+    "added": "Hinzugefügt",
+    "view": "Ansehen",
+    "add_all": "Alle hinzufügen ({{n}})",
+    "ignore": "Ignorieren",
+    "edit": "Bearbeiten",
+    "save": "Speichern",
+    "uncertain": "unsicher",
+    "which": "Ist es…?",
+    "type": "Typ",
+    "date": "Datum",
+    "title": "Titel",
+    "type_journal": "Tagebuch",
+    "type_appointment": "Termin",
+    "type_task": "Aufgabe",
+    "type_checklist": "Checkliste",
+    "type_exam": "Prüfung",
+    "type_habit": "Gewohnheit",
+    "type_reminder": "Erinnerung",
+    "type_note": "Notiz",
+    "type_suggestion": "Vorschlag",
+    "type_meal": "Mahlzeit",
+    "type_workout": "Training",
+    "type_study_session": "Lernsession"
   }
 }
