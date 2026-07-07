@@ -6,10 +6,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
+import { LANGS, changeLang } from '@/lib/i18n';
 
 export default function WelcomeScreen() {
   const { c } = useTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const { width } = useWindowDimensions();
   const { top, bottom } = useSafeAreaInsets();
@@ -33,6 +34,28 @@ export default function WelcomeScreen() {
 
   return (
     <View style={[S.screen, { backgroundColor: c.bg0, paddingTop: top }]}>
+      {/* Language picker — choose before signing in; persists app-wide. */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={S.langRow}
+        style={S.langBar}
+      >
+        {LANGS.map((lang) => {
+          const on = i18n.language === lang.code;
+          return (
+            <Pressable
+              key={lang.code}
+              onPress={() => changeLang(lang.code)}
+              style={[S.langChip, { backgroundColor: on ? c.accentDim : c.bg2, borderColor: on ? c.accent : c.b1 }]}
+            >
+              <Text style={{ fontSize: 15 }}>{lang.flag}</Text>
+              <Text style={{ color: on ? c.accent : c.t2, fontSize: 12, fontWeight: '600' }}>{lang.name}</Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+
       <ScrollView
         ref={ref}
         horizontal
@@ -78,6 +101,9 @@ export default function WelcomeScreen() {
 
 const S = StyleSheet.create({
   screen: { flex: 1 },
+  langBar: { maxHeight: 44, flexGrow: 0 },
+  langRow: { gap: 8, paddingHorizontal: 16, paddingVertical: 6, alignItems: 'center' },
+  langChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999, borderWidth: 1 },
   skip: { position: 'absolute', end: 20, zIndex: 10, padding: 8 },
   slide: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40, gap: 24 },
   emojiCircle: { width: 160, height: 160, borderRadius: 80, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },

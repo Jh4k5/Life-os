@@ -94,7 +94,8 @@ const AIView = ({ c, t }: any) => {
   const [proposal, setProposal] = useState<{ type: WorkspaceType; title: string } | null>(null);
 
   const name = useProfileStore((s) => s.name);
-  const greeting = new Date().getHours() < 12 ? 'صباح الخير' : 'مساء الخير';
+  const firstName = name.trim().split(/\s+/)[0] ?? '';
+  const greeting = t(new Date().getHours() < 12 ? 'home.greeting_morning' : 'home.greeting_evening');
 
   const capture = async (text: string) => {
     if (!text.trim()) return;
@@ -185,14 +186,14 @@ const AIView = ({ c, t }: any) => {
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 200 }} keyboardShouldPersistTaps="handled">
         {/* Greeting — presence, never empty */}
         <Text style={[S.greetBig, { color: c.t1, textAlign }]}>
-          {name ? `${greeting}، ${name}` : greeting}
+          {firstName ? t('home.greeting_named', { greeting, name: firstName }) : greeting}
         </Text>
         {mode === 'normal' ? (
           <GlanceWhisper c={c} textAlign={textAlign} rowDir={rowDir} />
         ) : (
           <View style={[S.glance, { flexDirection: rowDir }]}>
             <Ionicons name="ellipse" size={6} color={c.accent} />
-            <Text style={{ color: c.t2, fontSize: 13, textAlign, flex: 1 }}>{mm.greeting}</Text>
+            <Text style={{ color: c.t2, fontSize: 13, textAlign, flex: 1 }}>{t(`modes.${mode}_greeting`)}</Text>
           </View>
         )}
         <View style={{ marginHorizontal: -20, marginTop: 6 }}>
@@ -205,7 +206,7 @@ const AIView = ({ c, t }: any) => {
             {voice.state === 'recording' && voice.partial ? (
               <Text style={[S.partial, { color: c.t1, textAlign }]}>{voice.partial}</Text>
             ) : (
-              <Text style={[S.heroHint, { color: c.t3 }]}>سجّل يومك أو اكتبه — وأنا أرتّبه لك</Text>
+              <Text style={[S.heroHint, { color: c.t3 }]}>{t('home.hero_hint')}</Text>
             )}
           </View>
         )}
@@ -241,7 +242,7 @@ const AIView = ({ c, t }: any) => {
               <View style={[S.applied, { backgroundColor: c.greenDim, flexDirection: rowDir }]}>
                 <Ionicons name="checkmark-circle" size={18} color={c.green} />
                 <Text style={{ color: c.green, fontSize: 13, fontWeight: '600' }}>
-                  {`تم الحفظ ووُزّع على أقسامك (${applied.saved})`}
+                  {t('home.saved_distributed', { n: applied.saved })}
                 </Text>
               </View>
             )}
@@ -288,6 +289,7 @@ const AIView = ({ c, t }: any) => {
 };
 
 const GlanceWhisper = ({ c, textAlign, rowDir }: any) => {
+  const { t } = useTranslation();
   const { data: tasks } = useAsync(() => repository.listTasks(), [] as any[], 'tasks');
   const { data: habits } = useAsync(() => repository.listHabits(), [] as any[], 'habits');
   const urgent = tasks.filter((tk: any) => tk.priority === 'urgent' && !tk.done).length;
@@ -297,10 +299,10 @@ const GlanceWhisper = ({ c, textAlign, rowDir }: any) => {
   // A real, human read of the day — or a warm invitation when it's empty.
   const line =
     tasks.length === 0 && habits.length === 0
-      ? 'ابدأ يومك — التقط ما يدور في ذهنك وسأرتّبه لك.'
+      ? t('home.start_day')
       : [
-          habitsLeft > 0 ? `${habitsLeft} عادة متبقية` : 'عاداتك مكتملة',
-          urgent > 0 ? `${urgent} عاجلة` : openTasks > 0 ? `${openTasks} مهمة` : 'لا مهام عالقة',
+          habitsLeft > 0 ? t('home.habits_left', { n: habitsLeft }) : t('home.habits_done'),
+          urgent > 0 ? t('home.urgent_count', { n: urgent }) : openTasks > 0 ? t('home.tasks_count', { n: openTasks }) : t('home.no_pending'),
         ].join(' · ');
 
   return (
@@ -430,7 +432,7 @@ const DashView = ({ c, t, router }: any) => {
     <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 120 }}>
       <View style={[S.pulseRow, { flexDirection: rowDir }]}>
         <View style={[S.pulseDot, { backgroundColor: pulseColor }]} />
-        <Text style={[S.stateLine, { color: c.t1, textAlign, flex: 1, marginBottom: 0 }]}>{mm.state}</Text>
+        <Text style={[S.stateLine, { color: c.t1, textAlign, flex: 1, marginBottom: 0 }]}>{t(`modes.${mode}_state`)}</Text>
       </View>
 
       {/* NOW — the one thing to do, with the reason */}

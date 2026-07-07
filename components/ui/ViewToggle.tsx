@@ -59,6 +59,7 @@ export const ViewToggle = ({ options, active, onChange }: Props) => {
                 opt.emoji && <Text style={{ fontSize: 14 }}>{opt.emoji}</Text>
               )}
               <Text
+                numberOfLines={1}
                 style={[
                   S.optTxt,
                   {

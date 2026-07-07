@@ -25,7 +25,7 @@ export default function SignUpScreen() {
 
   const submit = async () => {
     if (!name.trim()) {
-      setError('أدخل اسمك');
+      setError(t('auth.enter_name'));
       return;
     }
     setLoading(true);
@@ -39,7 +39,7 @@ export default function SignUpScreen() {
       profile.setEmail(email.trim() || null);
       profile.setOnboarded(true);
       router.replace('/(tabs)/home');
-    } else setError(res.error ?? 'تعذّر إنشاء الحساب');
+    } else setError(res.error ?? t('auth.err_signup'));
   };
 
   return (

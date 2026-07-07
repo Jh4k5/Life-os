@@ -25,7 +25,7 @@ export default function ProfileScreen() {
 
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
-      <Header title="الملف الشخصي" accent={c.accent} right={[{ icon: 'checkmark', onPress: save, color: c.accent }]} />
+      <Header title={t('settings.profile')} accent={c.accent} right={[{ icon: 'checkmark', onPress: save, color: c.accent }]} />
       <ScrollView contentContainerStyle={{ padding: 16, gap: 18, paddingBottom: 120 }}>
         <Input label={t('auth.name')} value={name} onChangeText={setName} />
         {profile.email ? (

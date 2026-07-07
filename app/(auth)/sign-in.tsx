@@ -31,7 +31,7 @@ export default function SignInScreen() {
       profile.setEmail(email.trim() || null);
       profile.setOnboarded(true);
       router.replace('/(tabs)/home');
-    } else setError(res.error ?? 'تعذّر تسجيل الدخول');
+    } else setError(res.error ?? t('auth.err_signin'));
   };
 
   return (

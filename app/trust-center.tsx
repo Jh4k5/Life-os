@@ -4,50 +4,49 @@
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useRTL } from '@/hooks/useRTL';
 import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
 
 const ROWS = [
-  { icon: 'phone-portrait-outline' as const, title: 'يبقى على جهازك', desc: 'بياناتك تُحفظ على جهازك أولاً وتُزامَن بصمت وأمان في الخلفية.' },
-  { icon: 'cloud-upload-outline' as const, title: 'يُخزَّن مشفّراً', desc: 'الملفات والصور والـ PDF في مساحة خاصة بك فقط.' },
-  { icon: 'trash-outline' as const, title: 'يُحذف فوراً', desc: 'التسجيلات الصوتية تُحذف بعد التحويل إلى نص مباشرة.' },
-  { icon: 'people-outline' as const, title: 'لا تتم المشاركة', desc: 'لا شيء يُشارك مع أحد إلا حين تشاركه أنت بنفسك.' },
-];
+  { icon: 'phone-portrait-outline' as const, key: 'on_device' },
+  { icon: 'cloud-upload-outline' as const, key: 'encrypted' },
+  { icon: 'trash-outline' as const, key: 'erased' },
+  { icon: 'people-outline' as const, key: 'not_shared' },
+] as const;
 
 export default function TrustCenterScreen() {
   const { c } = useTheme();
+  const { t } = useTranslation();
   const { rowDir, textAlign } = useRTL();
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
-      <Header title="مركز الثقة" />
+      <Header title={t('trust.center')} />
       <ScrollView contentContainerStyle={{ padding: 20, gap: 14, paddingBottom: 60 }}>
-        <Text style={[S.intro, { color: c.t1, textAlign }]}>بياناتك ملكك — وهذه شفافية كاملة عمّا يحدث لها.</Text>
+        <Text style={[S.intro, { color: c.t1, textAlign }]}>{t('trust.intro')}</Text>
 
         {ROWS.map((r) => (
-          <SmartCard key={r.title}>
+          <SmartCard key={r.key}>
             <View style={[S.row, { flexDirection: rowDir }]}>
               <View style={[S.icon, { backgroundColor: c.bg3 }]}>
                 <Ionicons name={r.icon} size={18} color={c.t1} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ color: c.t1, fontSize: 15, fontWeight: '700', textAlign }}>{r.title}</Text>
-                <Text style={{ color: c.t2, fontSize: 13, marginTop: 3, lineHeight: 20, textAlign }}>{r.desc}</Text>
+                <Text style={{ color: c.t1, fontSize: 15, fontWeight: '700', textAlign }}>{t(`trust.${r.key}`)}</Text>
+                <Text style={{ color: c.t2, fontSize: 13, marginTop: 3, lineHeight: 20, textAlign }}>{t(`trust.${r.key}_d`)}</Text>
               </View>
             </View>
           </SmartCard>
         ))}
 
         {/* Why did the AI suggest this? */}
-        <Text style={[S.label, { color: c.t3, textAlign }]}>لماذا اقترح الذكاء هذا؟</Text>
+        <Text style={[S.label, { color: c.t3, textAlign }]}>{t('trust.why')}</Text>
         <SmartCard accent={c.accent}>
           <View style={[S.row, { flexDirection: rowDir }]}>
             <Ionicons name="sparkles-outline" size={18} color={c.accent} />
-            <Text style={{ flex: 1, color: c.t2, fontSize: 13, lineHeight: 21, textAlign }}>
-              كل اقتراح يأتي مع سببه — مثل: «اقترحت مراجعة الفصل ١ لأن امتحانك بعد ٦ أيام وهذا أصعب فصل عندك».
-              تقدر دائماً تسأل «ليش؟» وتحصل على إجابة واضحة.
-            </Text>
+            <Text style={{ flex: 1, color: c.t2, fontSize: 13, lineHeight: 21, textAlign }}>{t('trust.why_body')}</Text>
           </View>
         </SmartCard>
       </ScrollView>

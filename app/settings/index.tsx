@@ -26,7 +26,7 @@ export default function SettingsScreen() {
   const exportData = async () => {
     try {
       const snapshot = await db.exportAll();
-      await Share.share({ message: JSON.stringify(snapshot, null, 2) }, { dialogTitle: 'تصدير بيانات Life OS' });
+      await Share.share({ message: JSON.stringify(snapshot, null, 2) }, { dialogTitle: t('settings.export_dialog') });
     } catch {
       /* user cancelled the share sheet */
     }
@@ -35,12 +35,12 @@ export default function SettingsScreen() {
   const confirmDelete = () => {
     // Real deletion, guarded by an explicit double-confirm.
     Alert.alert(
-      'حذف الحساب نهائيًا',
-      'سيُحذف حسابك وكل بياناتك (اليوميات، المهام، العادات، الدراسة، الصحة…) بلا رجعة. هل أنت متأكد؟',
+      t('settings.delete_title'),
+      t('settings.delete_msg'),
       [
-        { text: 'إلغاء', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'حذف كل شيء',
+          text: t('settings.delete_confirm'),
           style: 'destructive',
           onPress: async () => {
             await auth.deleteAccount(); // server delete (best-effort) + sign out
@@ -59,7 +59,7 @@ export default function SettingsScreen() {
       <View style={[S.rowIcon, { backgroundColor: (iconColor ?? c.accent) + '20' }]}>
         <Ionicons name={icon} size={18} color={iconColor ?? c.accent} />
       </View>
-      <Text style={[S.rowLabel, { color: c.t1 }]}>{label}</Text>
+      <Text numberOfLines={1} style={[S.rowLabel, { color: c.t1 }]}>{label}</Text>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
         {value && <Text style={{ color: c.t3, fontSize: 14 }}>{value}</Text>}
         <Ionicons name="chevron-forward" size={16} color={c.t3} />
@@ -78,7 +78,7 @@ export default function SettingsScreen() {
       <View style={[S.rowIcon, { backgroundColor: (iconColor ?? c.accent) + '20' }]}>
         <Ionicons name={icon} size={18} color={iconColor ?? c.accent} />
       </View>
-      <Text style={[S.rowLabel, { color: c.t1 }]}>{label}</Text>
+      <Text numberOfLines={1} style={[S.rowLabel, { color: c.t1 }]}>{label}</Text>
       <View style={[S.track, { backgroundColor: value ? c.green : c.b2 }]}>
         <View style={[S.knob, { alignSelf: value ? 'flex-end' : 'flex-start' }]} />
       </View>
@@ -97,9 +97,9 @@ export default function SettingsScreen() {
           <View style={S.threeRow}>
             {(
               [
-                ['dark', '🌙', 'داكن'],
-                ['light', '☀', 'فاتح'],
-                ['system', '📱', 'تلقائي'],
+                ['dark', '🌙', 'settings.dark'],
+                ['light', '☀', 'settings.light'],
+                ['system', '📱', 'settings.system'],
               ] as [ThemeMode, string, string][]
             ).map(([m, em, lbl]) => (
               <Pressable
@@ -111,7 +111,7 @@ export default function SettingsScreen() {
                 ]}
               >
                 <Text style={{ fontSize: 20 }}>{em}</Text>
-                <Text style={{ color: mode === m ? '#FFF' : c.t2, fontSize: 12, fontWeight: '600' }}>{lbl}</Text>
+                <Text style={{ color: mode === m ? '#FFF' : c.t2, fontSize: 12, fontWeight: '600' }}>{t(lbl)}</Text>
               </Pressable>
             ))}
           </View>
@@ -147,9 +147,9 @@ export default function SettingsScreen() {
           <View style={S.threeRow}>
             {(
               [
-                ['sm', 'A', 'صغير'],
-                ['md', 'AA', 'متوسط'],
-                ['lg', 'AAA', 'كبير'],
+                ['sm', 'A', 'settings.font_sm'],
+                ['md', 'AA', 'settings.font_md'],
+                ['lg', 'AAA', 'settings.font_lg'],
               ] as const
             ).map(([k, sym, lbl]) => (
               <Pressable
@@ -163,7 +163,7 @@ export default function SettingsScreen() {
                 <Text style={{ color: fontSize === k ? '#FFF' : c.t1, fontSize: k === 'sm' ? 14 : k === 'md' ? 18 : 22, fontWeight: '700' }}>
                   {sym}
                 </Text>
-                <Text style={{ color: fontSize === k ? '#FFF' : c.t2, fontSize: 11 }}>{lbl}</Text>
+                <Text style={{ color: fontSize === k ? '#FFF' : c.t2, fontSize: 11 }}>{t(lbl)}</Text>
               </Pressable>
             ))}
           </View>
@@ -173,9 +173,9 @@ export default function SettingsScreen() {
           <View style={S.threeRow}>
             {(
               [
-                ['compact', 'مضغوط'],
-                ['default', 'افتراضي'],
-                ['spacious', 'واسع'],
+                ['compact', 'settings.compact'],
+                ['default', 'settings.default'],
+                ['spacious', 'settings.spacious'],
               ] as const
             ).map(([k, lbl]) => (
               <Pressable
@@ -186,7 +186,7 @@ export default function SettingsScreen() {
                   { backgroundColor: density === k ? c.accent : c.bg3, borderColor: density === k ? c.accent : c.b1 },
                 ]}
               >
-                <Text style={{ color: density === k ? '#FFF' : c.t2, fontSize: 12, fontWeight: '600' }}>{lbl}</Text>
+                <Text style={{ color: density === k ? '#FFF' : c.t2, fontSize: 12, fontWeight: '600' }}>{t(lbl)}</Text>
               </Pressable>
             ))}
           </View>
@@ -219,25 +219,25 @@ export default function SettingsScreen() {
         </SmartCard>
 
         {/* ── الأصوات والإحساس ── */}
-        <Text style={[S.groupTitle, { color: c.t2 }]}>الأصوات والإحساس</Text>
+        <Text style={[S.groupTitle, { color: c.t2 }]}>{t('settings.sounds_section')}</Text>
         <SmartCard>
-          <Toggle icon="phone-portrait-outline" label="الاهتزاز اللمسي" value={haptics} onToggle={setHaptics} iconColor={c.accent} />
-          <Toggle icon="volume-high-outline" label="الأصوات" value={sounds} onToggle={setSounds} iconColor={c.habits} />
+          <Toggle icon="phone-portrait-outline" label={t('settings.haptics')} value={haptics} onToggle={setHaptics} iconColor={c.accent} />
+          <Toggle icon="volume-high-outline" label={t('settings.sounds')} value={sounds} onToggle={setSounds} iconColor={c.habits} />
         </SmartCard>
 
         {/* ── الحساب ── */}
         <Text style={[S.groupTitle, { color: c.t2 }]}>{t('settings.account')}</Text>
         <SmartCard>
-          <Row icon="person-outline" label="الملف الشخصي" value={profileName || undefined} onPress={() => router.push('/settings/profile' as never)} iconColor={c.accent} />
-          <Row icon="diamond-outline" label="الاشتراك" value="تجربة مجانية" onPress={() => router.push('/settings/subscription' as never)} iconColor={c.habits} />
-          <Row icon="download-outline" label="تصدير البيانات" onPress={exportData} iconColor={c.tasks} />
+          <Row icon="person-outline" label={t('settings.profile')} value={profileName || undefined} onPress={() => router.push('/settings/profile' as never)} iconColor={c.accent} />
+          <Row icon="diamond-outline" label={t('settings.subscription')} value={t('settings.free_trial')} onPress={() => router.push('/settings/subscription' as never)} iconColor={c.habits} />
+          <Row icon="download-outline" label={t('settings.export')} onPress={exportData} iconColor={c.tasks} />
           <Row
             icon="shield-checkmark-outline"
-            label="مركز الثقة والخصوصية"
+            label={t('settings.trust_center')}
             onPress={() => router.push('/trust-center')}
             iconColor={c.green}
           />
-          <Row icon="trash-outline" label="حذف الحساب" onPress={confirmDelete} iconColor={c.red} />
+          <Row icon="trash-outline" label={t('settings.delete_account')} onPress={confirmDelete} iconColor={c.red} />
         </SmartCard>
 
         {/* Sign Out */}
@@ -251,7 +251,7 @@ export default function SettingsScreen() {
           style={[S.signOutBtn, { borderColor: c.red + '50' }]}
         >
           <Ionicons name="log-out-outline" size={20} color={c.red} />
-          <Text style={{ color: c.red, fontWeight: '600', fontSize: 16 }}>{t('settings.sign_out')}</Text>
+          <Text numberOfLines={1} style={{ color: c.red, fontWeight: '600', fontSize: 16, flexShrink: 1 }}>{t('settings.sign_out')}</Text>
         </Pressable>
       </ScrollView>
     </View>

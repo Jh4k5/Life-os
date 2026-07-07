@@ -21,31 +21,31 @@ type Item = {
   badge?: number;
 };
 
-// Static groups (live counts are injected in the component below).
+// Static groups. `sub` holds an i18n key resolved in the component below.
 const STATIC_GROUPS: { title: string; items: Item[] }[] = [
   {
     title: 'focus_learn',
     items: [
-      { key: 'study', icon: 'school-outline', route: '/(tabs)/more/study', sub: 'امتحانان قادمان' },
-      { key: 'learning', icon: 'library-outline', route: '/(tabs)/more/learning', sub: '٢ قيد القراءة' },
-      { key: 'focus', icon: 'timer-outline', route: '/(tabs)/more/focus', sub: '٣ ساعات هذا الأسبوع' },
-      { key: 'schedule', icon: 'calendar-outline', route: '/(tabs)/more/schedule', sub: 'تقويمك الذكي' },
+      { key: 'study', icon: 'school-outline', route: '/(tabs)/more/study', sub: 'more.sub_study' },
+      { key: 'learning', icon: 'library-outline', route: '/(tabs)/more/learning', sub: 'more.sub_learning' },
+      { key: 'focus', icon: 'timer-outline', route: '/(tabs)/more/focus', sub: 'more.sub_focus' },
+      { key: 'schedule', icon: 'calendar-outline', route: '/(tabs)/more/schedule', sub: 'more.sub_schedule' },
     ],
   },
   {
     title: 'body',
     items: [
-      { key: 'health', icon: 'fitness-outline', route: '/(tabs)/more/health', sub: 'تغذية + صحة' },
-      { key: 'exercise', icon: 'barbell-outline', route: '/(tabs)/more/exercise', sub: 'تمارين + أرقام قياسية' },
+      { key: 'health', icon: 'fitness-outline', route: '/(tabs)/more/health', sub: 'more.sub_health' },
+      { key: 'exercise', icon: 'barbell-outline', route: '/(tabs)/more/exercise', sub: 'more.sub_exercise' },
     ],
   },
   {
     title: 'intelligence',
     items: [
-      { key: 'ai_studio', icon: 'sparkles-outline', route: '/(tabs)/more/ai-studio', sub: 'مساحات ذكية' },
-      { key: 'memory', icon: 'git-network-outline', route: '/(tabs)/more/memory', sub: 'استرجاع ذكي' },
-      { key: 'ai_hub', icon: 'shield-checkmark-outline', route: '/(tabs)/more/ai-hub', sub: 'ذاكرة + خصوصية' },
-      { key: 'wellbeing', icon: 'pulse-outline', route: '/(tabs)/more/dopamine', sub: 'إشارات هادئة' },
+      { key: 'ai_studio', icon: 'sparkles-outline', route: '/(tabs)/more/ai-studio', sub: 'more.sub_ai_studio' },
+      { key: 'memory', icon: 'git-network-outline', route: '/(tabs)/more/memory', sub: 'more.sub_memory' },
+      { key: 'ai_hub', icon: 'shield-checkmark-outline', route: '/(tabs)/more/ai-hub', sub: 'more.sub_ai_hub' },
+      { key: 'wellbeing', icon: 'pulse-outline', route: '/(tabs)/more/dopamine', sub: 'more.sub_wellbeing' },
     ],
   },
 ];
@@ -67,13 +67,14 @@ export default function MoreScreen() {
     {
       title: 'life',
       items: [
-        { key: 'areas', icon: 'map-outline', route: '/(tabs)/more/areas', sub: 'مجالات حياتك' },
-        { key: 'habits', icon: 'repeat-outline', route: '/(tabs)/more/habits', sub: `${habitsLeft} متبقية اليوم`, badge: habitsLeft },
-        { key: 'tasks', icon: 'checkmark-circle-outline', route: '/(tabs)/more/tasks', sub: `${tasksLeft} مهام`, badge: tasksLeft },
-        { key: 'journal', icon: 'book-outline', route: '/(tabs)/more/journal', sub: `${journals.length} مدخلة` },
+        { key: 'areas', icon: 'map-outline', route: '/(tabs)/more/areas', sub: t('more.sub_areas') },
+        { key: 'habits', icon: 'repeat-outline', route: '/(tabs)/more/habits', sub: t('more.sub_habits', { n: habitsLeft }), badge: habitsLeft },
+        { key: 'tasks', icon: 'checkmark-circle-outline', route: '/(tabs)/more/tasks', sub: t('more.sub_tasks', { n: tasksLeft }), badge: tasksLeft },
+        { key: 'journal', icon: 'book-outline', route: '/(tabs)/more/journal', sub: t('more.sub_journal', { n: journals.length }) },
       ],
     },
-    ...STATIC_GROUPS,
+    // STATIC_GROUPS carry i18n keys in `sub` — resolve them now.
+    ...STATIC_GROUPS.map((g) => ({ ...g, items: g.items.map((it) => ({ ...it, sub: t(it.sub) })) })),
   ];
 
   return (

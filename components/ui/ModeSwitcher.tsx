@@ -4,12 +4,14 @@ import React from 'react';
 import { ScrollView, Pressable, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useRTL } from '@/hooks/useRTL';
 import { MODES, useModeStore } from '@/store/modeStore';
 
 export const ModeSwitcher = () => {
   const { c } = useTheme();
+  const { t } = useTranslation();
   const { rowDir } = useRTL();
   const mode = useModeStore((s) => s.mode);
   const setMode = useModeStore((s) => s.setMode);
@@ -38,7 +40,7 @@ export const ModeSwitcher = () => {
             ]}
           >
             <Ionicons name={m.icon as any} size={14} color={active ? '#FFF' : c.t2} />
-            <Text style={{ color: active ? '#FFF' : c.t2, fontSize: 13, fontWeight: '600' }}>{m.label}</Text>
+            <Text style={{ color: active ? '#FFF' : c.t2, fontSize: 13, fontWeight: '600' }}>{t(`modes.${m.key}_label`)}</Text>
           </Pressable>
         );
       })}
