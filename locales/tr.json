@@ -395,7 +395,24 @@
     "drains": "Seni tüketir",
     "long_press_delete": "Silmek için bir aktiviteye uzun bas.",
     "activity_name": "Aktivite adı",
-    "add": "Ekle"
+    "add": "Ekle",
+    "screen_time_goal": "Günlük ekran süresi hedefi",
+    "screen_time_manual": "Kendi belirlediğin bir hedef — sistem takip etmez",
+    "min_value": "{{n}} dk",
+    "min_unit": "dk",
+    "focus_rules": "Odak kuralları",
+    "add_rule": "Kural ekle",
+    "no_rules": "Henüz kural yok. Kendi kuralını koy — örneğin «22:00'den sonra telefon yok» — isteğe bağlı nazik bir hatırlatma ile.",
+    "rule_at": "{{time}} saatinde",
+    "edit_activity": "Etkinliği düzenle",
+    "type": "Tür",
+    "edit_rule": "Kuralı düzenle",
+    "new_rule": "Yeni kural",
+    "rule_text": "Kural",
+    "rule_ph": "örn. 22:00'den sonra telefon yok",
+    "rule_time": "Hatırlatma saati (isteğe bağlı)",
+    "rule_reminder_title": "Odak kuralı",
+    "card_week": "Haftalık denge"
   },
   "ai_hub": {
     "ask_ph": "Ne istediğini söyle… (örn. sınav tekrar planı oluştur)",
@@ -529,7 +546,17 @@
     "log_weight": "Kiloyu kaydet",
     "add_meal": "Öğünü elle ekle",
     "meal_name": "Öğün adı",
-    "no_meals": "Bugün öğün yok — fotoğrafla veya elle ekle."
+    "no_meals": "Bugün öğün yok — fotoğrafla veya elle ekle.",
+    "log_water": "Su ekle",
+    "edit_meal": "Öğünü düzenle",
+    "water_goal": "Hedef: {{goal}}",
+    "goal_calories": "Günlük kalori hedefi",
+    "goal_water": "Günlük su hedefi",
+    "unit_weight": "Ağırlık birimi",
+    "unit_volume": "Hacim birimi",
+    "card_summary": "Enerji özeti",
+    "card_metrics": "Günün ölçümleri",
+    "reminder_title": "Sağlık kontrolü"
   },
   "exercise": {
     "this_week": "Bu hafta",
@@ -540,7 +567,20 @@
     "empty": "Henüz antrenman yok",
     "mode_all": "Tümü",
     "mode_gym": "Salon",
-    "mode_home": "Ev"
+    "mode_home": "Ev",
+    "new_workout": "Yeni antrenman",
+    "edit_workout": "Antrenmanı düzenle",
+    "workout_name": "Antrenman adı",
+    "mode": "Mod",
+    "duration": "Süre",
+    "add_exercise": "Egzersiz ekle",
+    "exercise_name": "Egzersiz adı",
+    "reps": "Tekrar",
+    "weight_kg": "kg",
+    "delete_workout": "Antrenmanı sil",
+    "card_stats": "Haftalık istatistikler",
+    "card_modes": "Mod filtresi",
+    "reminder_title": "Hareket zamanı"
   },
   "memory": {
     "search_ph": "Hayatınızda arayın…",
@@ -686,5 +726,17 @@
     "blocks_count": "{{n}} blok",
     "grow": "Bu alan büyüyor — dosyalar bölümü, gelişmiş tekrar planı ve ilerleme takibi eklensin mi?",
     "empty_block": "Boş — öğe ekle"
+  },
+  "customize": {
+    "goals": "Hedefler",
+    "units": "Birimler",
+    "reminder": "Hatırlatma",
+    "reminder_time": "Günlük hatırlatma saati",
+    "reminder_body": "Life OS'tan nazik bir hatırlatma.",
+    "time_ph": "örn. 22:00",
+    "visible_cards": "Görünür kartlar",
+    "health_title": "Sağlığı özelleştir",
+    "exercise_title": "Egzersizi özelleştir",
+    "wellbeing_title": "İyi oluşu özelleştir"
   }
 }

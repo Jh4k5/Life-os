@@ -395,7 +395,24 @@
     "drains": "Te agota",
     "long_press_delete": "Mantén pulsada una actividad para eliminarla.",
     "activity_name": "Nombre de la actividad",
-    "add": "Añadir"
+    "add": "Añadir",
+    "screen_time_goal": "Meta diaria de tiempo de pantalla",
+    "screen_time_manual": "Una meta que defines tú — no la rastrea el sistema",
+    "min_value": "{{n}} min",
+    "min_unit": "min",
+    "focus_rules": "Reglas de enfoque",
+    "add_rule": "Añadir regla",
+    "no_rules": "Aún no hay reglas. Define la tuya —como «sin teléfono después de las 22:00»— con un recordatorio suave opcional.",
+    "rule_at": "A las {{time}}",
+    "edit_activity": "Editar actividad",
+    "type": "Tipo",
+    "edit_rule": "Editar regla",
+    "new_rule": "Nueva regla",
+    "rule_text": "Regla",
+    "rule_ph": "p. ej. Sin teléfono después de las 22:00",
+    "rule_time": "Hora del recordatorio (opcional)",
+    "rule_reminder_title": "Regla de enfoque",
+    "card_week": "Balance semanal"
   },
   "ai_hub": {
     "ask_ph": "Dime qué quieres… (ej. crear un plan de repaso)",
@@ -529,7 +546,17 @@
     "log_weight": "Registrar peso",
     "add_meal": "Añadir comida manualmente",
     "meal_name": "Nombre de la comida",
-    "no_meals": "Sin comidas hoy — añade una por foto o a mano."
+    "no_meals": "Sin comidas hoy — añade una por foto o a mano.",
+    "log_water": "Registrar agua",
+    "edit_meal": "Editar comida",
+    "water_goal": "Meta: {{goal}}",
+    "goal_calories": "Meta diaria de calorías",
+    "goal_water": "Meta diaria de agua",
+    "unit_weight": "Unidad de peso",
+    "unit_volume": "Unidad de volumen",
+    "card_summary": "Resumen de energía",
+    "card_metrics": "Métricas del día",
+    "reminder_title": "Chequeo de salud"
   },
   "exercise": {
     "this_week": "Esta semana",
@@ -540,7 +567,20 @@
     "empty": "Sin entrenamientos",
     "mode_all": "Todo",
     "mode_gym": "Gym",
-    "mode_home": "Casa"
+    "mode_home": "Casa",
+    "new_workout": "Nuevo entrenamiento",
+    "edit_workout": "Editar entrenamiento",
+    "workout_name": "Nombre del entrenamiento",
+    "mode": "Modo",
+    "duration": "Duración",
+    "add_exercise": "Añadir ejercicio",
+    "exercise_name": "Nombre del ejercicio",
+    "reps": "Reps",
+    "weight_kg": "kg",
+    "delete_workout": "Eliminar entrenamiento",
+    "card_stats": "Estadísticas de la semana",
+    "card_modes": "Filtro de modo",
+    "reminder_title": "Hora de moverse"
   },
   "memory": {
     "search_ph": "Busca en tu vida…",
@@ -686,5 +726,17 @@
     "blocks_count": "{{n}} bloques",
     "grow": "Este espacio crece — ¿añadir una sección de archivos, un plan de repaso avanzado y seguimiento?",
     "empty_block": "Vacío — añade elementos"
+  },
+  "customize": {
+    "goals": "Metas",
+    "units": "Unidades",
+    "reminder": "Recordatorio",
+    "reminder_time": "Hora del recordatorio diario",
+    "reminder_body": "Un chequeo suave de Life OS.",
+    "time_ph": "p. ej. 22:00",
+    "visible_cards": "Tarjetas visibles",
+    "health_title": "Personalizar Salud",
+    "exercise_title": "Personalizar Ejercicio",
+    "wellbeing_title": "Personalizar Bienestar"
   }
 }

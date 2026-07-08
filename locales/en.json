@@ -401,7 +401,24 @@
     "drains": "Drains you",
     "long_press_delete": "Long-press any activity to delete it.",
     "activity_name": "Activity name",
-    "add": "Add"
+    "add": "Add",
+    "screen_time_goal": "Daily screen-time goal",
+    "screen_time_manual": "A goal you set yourself — not tracked by the OS",
+    "min_value": "{{n}} min",
+    "min_unit": "min",
+    "focus_rules": "Focus rules",
+    "add_rule": "Add rule",
+    "no_rules": "No rules yet. Set your own — like “no phone after 22:00” — with an optional gentle reminder.",
+    "rule_at": "At {{time}}",
+    "edit_activity": "Edit activity",
+    "type": "Type",
+    "edit_rule": "Edit rule",
+    "new_rule": "New rule",
+    "rule_text": "Rule",
+    "rule_ph": "e.g. No phone after 22:00",
+    "rule_time": "Reminder time (optional)",
+    "rule_reminder_title": "Focus rule",
+    "card_week": "Weekly balance"
   },
   "ai_hub": {
     "ask_ph": "Tell me what you want… (e.g. create an exam review plan)",
@@ -529,7 +546,17 @@
     "log_weight": "Log weight",
     "add_meal": "Add a meal manually",
     "meal_name": "Meal name",
-    "no_meals": "No meals today — add one by photo or by hand."
+    "no_meals": "No meals today — add one by photo or by hand.",
+    "log_water": "Log water",
+    "edit_meal": "Edit meal",
+    "water_goal": "Goal: {{goal}}",
+    "goal_calories": "Daily calorie goal",
+    "goal_water": "Daily water goal",
+    "unit_weight": "Weight unit",
+    "unit_volume": "Volume unit",
+    "card_summary": "Energy summary",
+    "card_metrics": "Daily metrics",
+    "reminder_title": "Health check-in"
   },
   "exercise": {
     "this_week": "This week",
@@ -540,7 +567,20 @@
     "empty": "No workouts yet",
     "mode_all": "All",
     "mode_gym": "Gym",
-    "mode_home": "Home"
+    "mode_home": "Home",
+    "new_workout": "New workout",
+    "edit_workout": "Edit workout",
+    "workout_name": "Workout name",
+    "mode": "Mode",
+    "duration": "Duration",
+    "add_exercise": "Add exercise",
+    "exercise_name": "Exercise name",
+    "reps": "Reps",
+    "weight_kg": "kg",
+    "delete_workout": "Delete workout",
+    "card_stats": "Weekly stats",
+    "card_modes": "Mode filter",
+    "reminder_title": "Time to move"
   },
   "memory": {
     "search_ph": "Search across your life…",
@@ -686,5 +726,17 @@
     "blocks_count": "{{n}} blocks",
     "grow": "This space is growing — add a files section, an advanced revision plan and progress tracking?",
     "empty_block": "Empty — add items"
+  },
+  "customize": {
+    "goals": "Goals",
+    "units": "Units",
+    "reminder": "Reminder",
+    "reminder_time": "Daily reminder time",
+    "reminder_body": "A gentle check-in from Life OS.",
+    "time_ph": "e.g. 22:00",
+    "visible_cards": "Visible cards",
+    "health_title": "Customize Health",
+    "exercise_title": "Customize Exercise",
+    "wellbeing_title": "Customize Wellbeing"
   }
 }

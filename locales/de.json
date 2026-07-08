@@ -395,7 +395,24 @@
     "drains": "Laugt dich aus",
     "long_press_delete": "Zum Löschen lange auf eine Aktivität drücken.",
     "activity_name": "Name der Aktivität",
-    "add": "Hinzufügen"
+    "add": "Hinzufügen",
+    "screen_time_goal": "Tägliches Bildschirmzeit-Ziel",
+    "screen_time_manual": "Ein selbst gesetztes Ziel — nicht vom System erfasst",
+    "min_value": "{{n}} Min.",
+    "min_unit": "Min.",
+    "focus_rules": "Fokus-Regeln",
+    "add_rule": "Regel hinzufügen",
+    "no_rules": "Noch keine Regeln. Setze deine eigene — z. B. „Kein Handy nach 22:00“ — mit optionaler sanfter Erinnerung.",
+    "rule_at": "Um {{time}}",
+    "edit_activity": "Aktivität bearbeiten",
+    "type": "Typ",
+    "edit_rule": "Regel bearbeiten",
+    "new_rule": "Neue Regel",
+    "rule_text": "Regel",
+    "rule_ph": "z. B. Kein Handy nach 22:00",
+    "rule_time": "Erinnerungszeit (optional)",
+    "rule_reminder_title": "Fokus-Regel",
+    "card_week": "Wochenbalance"
   },
   "ai_hub": {
     "ask_ph": "Sag mir, was du willst… (z.B. erstelle einen Lernplan)",
@@ -529,7 +546,17 @@
     "log_weight": "Gewicht erfassen",
     "add_meal": "Mahlzeit manuell hinzufügen",
     "meal_name": "Name der Mahlzeit",
-    "no_meals": "Heute keine Mahlzeiten — per Foto oder manuell hinzufügen."
+    "no_meals": "Heute keine Mahlzeiten — per Foto oder manuell hinzufügen.",
+    "log_water": "Wasser eintragen",
+    "edit_meal": "Mahlzeit bearbeiten",
+    "water_goal": "Ziel: {{goal}}",
+    "goal_calories": "Tägliches Kalorienziel",
+    "goal_water": "Tägliches Wasserziel",
+    "unit_weight": "Gewichtseinheit",
+    "unit_volume": "Volumeneinheit",
+    "card_summary": "Energieübersicht",
+    "card_metrics": "Tageswerte",
+    "reminder_title": "Gesundheits-Check"
   },
   "exercise": {
     "this_week": "Diese Woche",
@@ -540,7 +567,20 @@
     "empty": "Noch keine Workouts",
     "mode_all": "Alle",
     "mode_gym": "Gym",
-    "mode_home": "Zuhause"
+    "mode_home": "Zuhause",
+    "new_workout": "Neues Workout",
+    "edit_workout": "Workout bearbeiten",
+    "workout_name": "Workout-Name",
+    "mode": "Modus",
+    "duration": "Dauer",
+    "add_exercise": "Übung hinzufügen",
+    "exercise_name": "Übungsname",
+    "reps": "Wdh.",
+    "weight_kg": "kg",
+    "delete_workout": "Workout löschen",
+    "card_stats": "Wochenstatistik",
+    "card_modes": "Modusfilter",
+    "reminder_title": "Zeit für Bewegung"
   },
   "memory": {
     "search_ph": "Durchsuche dein Leben…",
@@ -686,5 +726,17 @@
     "blocks_count": "{{n}} Blöcke",
     "grow": "Dieser Raum wächst — Dateien-Bereich, erweiterten Wiederholungsplan und Fortschritt hinzufügen?",
     "empty_block": "Leer — Elemente hinzufügen"
+  },
+  "customize": {
+    "goals": "Ziele",
+    "units": "Einheiten",
+    "reminder": "Erinnerung",
+    "reminder_time": "Tägliche Erinnerungszeit",
+    "reminder_body": "Ein sanfter Check-in von Life OS.",
+    "time_ph": "z. B. 22:00",
+    "visible_cards": "Sichtbare Karten",
+    "health_title": "Gesundheit anpassen",
+    "exercise_title": "Training anpassen",
+    "wellbeing_title": "Wohlbefinden anpassen"
   }
 }

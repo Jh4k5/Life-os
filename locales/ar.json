@@ -401,7 +401,24 @@
     "drains": "يستنزفك",
     "long_press_delete": "اضغط مطوّلًا على أي نشاط لحذفه.",
     "activity_name": "اسم النشاط",
-    "add": "أضِف"
+    "add": "أضِف",
+    "screen_time_goal": "هدف وقت الشاشة اليومي",
+    "screen_time_manual": "هدف تحدده بنفسك — لا يتتبعه النظام",
+    "min_value": "{{n}} دقيقة",
+    "min_unit": "دقيقة",
+    "focus_rules": "قواعد التركيز",
+    "add_rule": "إضافة قاعدة",
+    "no_rules": "لا قواعد بعد. ضع قاعدتك الخاصة — مثل «لا هاتف بعد 22:00» — مع تذكير لطيف اختياري.",
+    "rule_at": "عند {{time}}",
+    "edit_activity": "تعديل النشاط",
+    "type": "النوع",
+    "edit_rule": "تعديل القاعدة",
+    "new_rule": "قاعدة جديدة",
+    "rule_text": "القاعدة",
+    "rule_ph": "مثال: لا هاتف بعد 22:00",
+    "rule_time": "وقت التذكير (اختياري)",
+    "rule_reminder_title": "قاعدة تركيز",
+    "card_week": "توازن الأسبوع"
   },
   "ai_hub": {
     "ask_ph": "أخبرني ماذا تريد… (مثال: أنشئ خطة مراجعة للامتحان)",
@@ -529,7 +546,17 @@
     "log_weight": "سجّل الوزن",
     "add_meal": "أضف وجبة يدويًا",
     "meal_name": "اسم الوجبة",
-    "no_meals": "لا وجبات اليوم — أضِف واحدة بالصورة أو يدويًا."
+    "no_meals": "لا وجبات اليوم — أضِف واحدة بالصورة أو يدويًا.",
+    "log_water": "تسجيل الماء",
+    "edit_meal": "تعديل الوجبة",
+    "water_goal": "الهدف: {{goal}}",
+    "goal_calories": "هدف السعرات اليومي",
+    "goal_water": "هدف الماء اليومي",
+    "unit_weight": "وحدة الوزن",
+    "unit_volume": "وحدة السوائل",
+    "card_summary": "ملخص الطاقة",
+    "card_metrics": "قياسات اليوم",
+    "reminder_title": "متابعة صحية"
   },
   "exercise": {
     "this_week": "هذا الأسبوع",
@@ -540,7 +567,20 @@
     "empty": "لا تمارين بعد",
     "mode_all": "الكل",
     "mode_gym": "نادي",
-    "mode_home": "منزل"
+    "mode_home": "منزل",
+    "new_workout": "تمرين جديد",
+    "edit_workout": "تعديل التمرين",
+    "workout_name": "اسم التمرين",
+    "mode": "النوع",
+    "duration": "المدة",
+    "add_exercise": "إضافة تمرين",
+    "exercise_name": "اسم التمرين",
+    "reps": "تكرارات",
+    "weight_kg": "كجم",
+    "delete_workout": "حذف التمرين",
+    "card_stats": "إحصائيات الأسبوع",
+    "card_modes": "تصفية النوع",
+    "reminder_title": "حان وقت الحركة"
   },
   "memory": {
     "search_ph": "ابحث في كل حياتك…",
@@ -686,5 +726,17 @@
     "blocks_count": "{{n}} عناصر",
     "grow": "هذه المساحة تكبر — أضيف قسم ملفات وخطة مراجعة متقدمة وتتبّع تقدم؟",
     "empty_block": "فارغ — أضِف عناصر"
+  },
+  "customize": {
+    "goals": "الأهداف",
+    "units": "الوحدات",
+    "reminder": "التذكير",
+    "reminder_time": "وقت التذكير اليومي",
+    "reminder_body": "متابعة لطيفة من Life OS.",
+    "time_ph": "مثال: 22:00",
+    "visible_cards": "البطاقات الظاهرة",
+    "health_title": "تخصيص الصحة",
+    "exercise_title": "تخصيص التمارين",
+    "wellbeing_title": "تخصيص الراحة الرقمية"
   }
 }

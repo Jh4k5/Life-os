@@ -121,11 +121,27 @@ export interface HealthDay {
   steps: number;
 }
 
+export interface WorkoutExercise {
+  name: string;
+  sets: number;
+  reps: number;
+  weight?: number;
+}
+
 export interface Workout {
   id: string;
   name: string;
   mode: 'gym' | 'home';
   durationMin: number;
-  exercises: { name: string; sets: number; reps: number; weight?: number }[];
+  exercises: WorkoutExercise[];
   doneAt: string; // ISO
+}
+
+// A self-defined digital-wellbeing rule (e.g. "no phone after 22:00"). Manual,
+// user-set — there is no OS Screen-Time API here.
+export interface WellbeingRule {
+  id: string;
+  text: string;
+  time: string | null; // 'HH:MM' local, optional
+  enabled: boolean;
 }

@@ -38,6 +38,9 @@ interface Props {
   submitLabel?: string;
   onClose: () => void;
   onSubmit: (values: Record<string, string>) => void;
+  /** Optional destructive action shown under the submit button (e.g. edit sheets). */
+  onDelete?: () => void;
+  deleteLabel?: string;
 }
 
 export const QuickLogSheet = ({
@@ -48,6 +51,8 @@ export const QuickLogSheet = ({
   submitLabel,
   onClose,
   onSubmit,
+  onDelete,
+  deleteLabel,
 }: Props) => {
   const { c, isDark } = useTheme();
   const { t } = useTranslation();
@@ -124,6 +129,16 @@ export const QuickLogSheet = ({
               >
                 <Text style={{ color: '#FFF', fontSize: 15, fontWeight: '800' }}>{submitLabel ?? t('common.save')}</Text>
               </Pressable>
+
+              {onDelete ? (
+                <Pressable
+                  onPress={() => { feedback.warning(); onDelete(); onClose(); }}
+                  style={S.deleteBtn}
+                >
+                  <Ionicons name="trash-outline" size={15} color={c.red} />
+                  <Text style={{ color: c.red, fontSize: 14, fontWeight: '700' }}>{deleteLabel ?? t('common.delete')}</Text>
+                </Pressable>
+              ) : null}
             </BlurView>
           </Pressable>
         </KeyboardAvoidingView>
@@ -140,4 +155,5 @@ const S = StyleSheet.create({
   iconWrap: { width: 36, height: 36, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   inputRow: { alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, height: 52 },
   submit: { marginTop: 18, height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  deleteBtn: { marginTop: 10, height: 44, borderRadius: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
 });

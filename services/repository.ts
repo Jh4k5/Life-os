@@ -17,7 +17,7 @@ import {
   type Flashcard,
   type Area,
 } from '@/data/mock';
-import type { Meal, HealthDay, Workout, MealEstimate } from './types';
+import type { Meal, HealthDay, Workout, WorkoutExercise, MealEstimate, WellbeingRule } from './types';
 import { sm2, type SrsResult } from './srs';
 import { analytics } from './analytics';
 import { resolveDate } from './dateResolve';
@@ -581,6 +581,25 @@ export const repository = {
     return { ...est, id: row.id, eatenAt: row.eaten_at as string };
   },
 
+  async updateMeal(
+    id: string,
+    patch: Partial<{ name: string; calories: number; protein: number; carbs: number; fat: number }>,
+  ): Promise<void> {
+    const data: Record<string, unknown> = {};
+    if (patch.name !== undefined) data.name = patch.name;
+    if (patch.calories !== undefined) data.calories = patch.calories;
+    if (patch.protein !== undefined) data.protein_g = patch.protein;
+    if (patch.carbs !== undefined) data.carbs_g = patch.carbs;
+    if (patch.fat !== undefined) data.fat_g = patch.fat;
+    await db.update('meals', id, data);
+    analytics.log('health', 'meal_updated');
+  },
+
+  async deleteMeal(id: string): Promise<void> {
+    await db.remove('meals', id);
+    analytics.log('health', 'meal_deleted');
+  },
+
   // ── Exercise ──
   async listWorkouts(): Promise<Workout[]> {
     const rows = await db.list('workouts');
@@ -594,15 +613,31 @@ export const repository = {
     }));
   },
 
-  async addWorkout(w: { name: string; mode?: 'gym' | 'home'; durationMin?: number }): Promise<string> {
+  async addWorkout(w: { name: string; mode?: 'gym' | 'home'; durationMin?: number; exercises?: WorkoutExercise[] }): Promise<string> {
     const row = await db.insert('workouts', {
       name: w.name,
       mode: w.mode ?? 'gym',
       duration_min: w.durationMin ?? 0,
-      exercises: [],
+      exercises: w.exercises ?? [],
       done_at: db.nowISO(),
     });
     return row.id;
+  },
+
+  async updateWorkout(
+    id: string,
+    patch: Partial<{ name: string; mode: 'gym' | 'home'; durationMin: number; exercises: WorkoutExercise[] }>,
+  ): Promise<void> {
+    const data: Record<string, unknown> = {};
+    if (patch.name !== undefined) data.name = patch.name;
+    if (patch.mode !== undefined) data.mode = patch.mode;
+    if (patch.durationMin !== undefined) data.duration_min = patch.durationMin;
+    if (patch.exercises !== undefined) data.exercises = patch.exercises;
+    await db.update('workouts', id, data);
+  },
+
+  async deleteWorkout(id: string): Promise<void> {
+    await db.remove('workouts', id);
   },
 
   // ── Events / calendar ──
@@ -692,6 +727,14 @@ export const repository = {
     return row.id;
   },
 
+  async updateWellbeingActivity(id: string, patch: Partial<{ name: string; type: 'healthy' | 'draining' }>): Promise<void> {
+    const data: Record<string, unknown> = {};
+    if (patch.name !== undefined) data.name = patch.name;
+    if (patch.type !== undefined) data.type = patch.type;
+    await db.update('wellbeing_activities', id, data);
+    analytics.log('wellbeing', 'activity_updated');
+  },
+
   async removeWellbeingActivity(id: string): Promise<void> {
     await db.remove('wellbeing_activities', id);
     const logs = (await db.find('wellbeing_logs', (r: any) => r.activity_id === id)) as any[];
@@ -724,6 +767,34 @@ export const repository = {
       }
       return net;
     });
+  },
+
+  // ── Wellbeing focus rules (manual, self-set — no OS Screen-Time API) ──
+  async listWellbeingRules(): Promise<WellbeingRule[]> {
+    const rows = (await db.list('wellbeing_rules')) as any[];
+    return rows
+      .sort((a, b) => (a.created_at ?? '').localeCompare(b.created_at ?? ''))
+      .map((r) => ({ id: r.id, text: r.text ?? '', time: r.time ?? null, enabled: r.enabled !== false }));
+  },
+
+  async addWellbeingRule(rule: { text: string; time?: string | null }): Promise<string> {
+    const row = await db.insert('wellbeing_rules', { text: rule.text, time: rule.time ?? null, enabled: true });
+    analytics.log('wellbeing', 'rule_added');
+    return row.id;
+  },
+
+  async updateWellbeingRule(id: string, patch: Partial<{ text: string; time: string | null; enabled: boolean }>): Promise<void> {
+    const data: Record<string, unknown> = {};
+    if (patch.text !== undefined) data.text = patch.text;
+    if (patch.time !== undefined) data.time = patch.time;
+    if (patch.enabled !== undefined) data.enabled = patch.enabled;
+    await db.update('wellbeing_rules', id, data);
+    analytics.log('wellbeing', 'rule_updated');
+  },
+
+  async deleteWellbeingRule(id: string): Promise<void> {
+    await db.remove('wellbeing_rules', id);
+    analytics.log('wellbeing', 'rule_deleted');
   },
 
   // ── Areas / Projects (starter content) ──
