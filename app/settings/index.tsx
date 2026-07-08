@@ -14,14 +14,32 @@ import { auth } from '@/services/auth';
 import { useProfileStore } from '@/store/profileStore';
 import * as db from '@/db/local';
 import { feedback } from '@/services/feedback';
+import { notifications } from '@/services/notifications';
+import { useDensity } from '@/hooks/useDensity';
 
 export default function SettingsScreen() {
   const { c, isDark, mode, setMode, accent, setAccent } = useTheme();
   const { t, i18n } = useTranslation();
   const router = useRouter();
-  const { fontSize, setFontSize, density, setDensity, haptics, setHaptics, sounds, setSounds } = useSettingsStore();
+  const { fontSize, setFontSize, density, setDensity, haptics, setHaptics, notificationsEnabled, setNotificationsEnabled } =
+    useSettingsStore();
+  const dens = useDensity();
   const profileName = useProfileStore((s) => s.name);
   const resetProfile = useProfileStore((s) => s.reset);
+
+  // Master notifications toggle. Turning ON asks the OS for permission and only
+  // stays on if truly granted (no fake success); turning OFF cancels every
+  // scheduled reminder and blocks new ones (gated in services/notifications).
+  const toggleNotifications = async (next: boolean) => {
+    if (next) {
+      const granted = await notifications.ensurePermission();
+      setNotificationsEnabled(granted);
+      if (!granted) feedback.warning();
+    } else {
+      setNotificationsEnabled(false);
+      await notifications.cancelAll();
+    }
+  };
 
   const exportData = async () => {
     try {
@@ -89,7 +107,7 @@ export default function SettingsScreen() {
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
       <Header title={t('settings.title')} />
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 18, paddingBottom: 110 }}>
+      <ScrollView contentContainerStyle={{ padding: 16, gap: Math.round(18 * dens), paddingBottom: 110 }}>
         {/* ── المظهر ── */}
         <Text style={[S.groupTitle, { color: c.t2 }]}>{t('settings.appearance')}</Text>
         <SmartCard>
@@ -217,11 +235,22 @@ export default function SettingsScreen() {
           ))}
         </SmartCard>
 
-        {/* ── الأصوات والإحساس ── */}
+        {/* ── الإشعارات ── */}
+        <Text style={[S.groupTitle, { color: c.t2 }]}>{t('settings.notifications')}</Text>
+        <SmartCard>
+          <Toggle
+            icon="notifications-outline"
+            label={t('settings.notifications_enabled')}
+            value={notificationsEnabled}
+            onToggle={toggleNotifications}
+            iconColor={c.accent}
+          />
+        </SmartCard>
+
+        {/* ── الإحساس ── */}
         <Text style={[S.groupTitle, { color: c.t2 }]}>{t('settings.sounds_section')}</Text>
         <SmartCard>
           <Toggle icon="phone-portrait-outline" label={t('settings.haptics')} value={haptics} onToggle={setHaptics} iconColor={c.accent} />
-          <Toggle icon="volume-high-outline" label={t('settings.sounds')} value={sounds} onToggle={setSounds} iconColor={c.habits} />
         </SmartCard>
 
         {/* ── الحساب ── */}

@@ -7,6 +7,7 @@ import React from 'react';
 import { View, Platform, ViewStyle, StyleProp } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useDensity } from '@/hooks/useDensity';
 
 interface Props {
   children: React.ReactNode;
@@ -46,8 +47,11 @@ export const SmartCard = ({
   radius = 20,
 }: Props) => {
   const { isDark, c } = useTheme();
+  const dens = useDensity();
   const padMap = { sm: 12, md: 16, lg: 22 };
-  const pad = noPad ? 0 : padMap[padSize];
+  // Internal padding tracks the user's Layout-density preference so the whole
+  // app breathes (spacious) or tightens (compact) with a single control.
+  const pad = noPad ? 0 : Math.round(padMap[padSize] * dens);
 
   if (!isDark) {
     return (

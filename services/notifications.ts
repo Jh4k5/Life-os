@@ -4,6 +4,7 @@
 // push for cross-device nudges. The voice/tone stays human, never an alarm.
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import { useSettingsStore } from '@/store/settingsStore';
 
 // Show reminders even when the app is foregrounded (e.g. a Focus phase ends
 // while the running screen is open) — otherwise the banner is swallowed.
@@ -30,6 +31,9 @@ export const notifications = {
   /** Schedule a contextual, human reminder at a future date. */
   async scheduleReminder(title: string, body: string, date: Date): Promise<string | null> {
     if (Platform.OS === 'web') return null;
+    // Honor the user's master Notifications toggle — a disabled toggle must
+    // actually stop new reminders (incl. every nudgeIn) from scheduling.
+    if (useSettingsStore.getState().notificationsEnabled === false) return null;
     if (!(await this.ensurePermission())) return null;
     return Notifications.scheduleNotificationAsync({
       content: { title, body },
