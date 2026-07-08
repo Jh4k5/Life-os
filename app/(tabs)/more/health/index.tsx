@@ -22,7 +22,7 @@ import { estimateMeal } from '@/services/nutrition';
 import { captureService } from '@/services/captureService';
 import { intelligence, type Insight } from '@/services/intelligence';
 import { Sparkline, trendOf } from '@/components/ui/Sparkline';
-import { useSectionPrefs, kgToLb, lbToKg, mlToOz, ozToMl } from '@/store/sectionPrefs';
+import { useSectionPref, kgToLb, lbToKg, mlToOz, ozToMl } from '@/store/sectionPrefs';
 import type { Meal, HealthDay } from '@/services/types';
 
 // Zero-state default until the real day loads (repository is source of truth).
@@ -36,7 +36,8 @@ export default function HealthScreen() {
   const { t } = useTranslation();
   const { rowDir, textAlign } = useRTL();
   const haptics = useHaptics();
-  const prefs = useSectionPrefs((s) => s.health);
+  const prefs = useSectionPref('health');
+  const accent = prefs.accent || c.accent; // section accent recolors inner surfaces only
   const { data: health, reload: reloadHealth } = useAsync(() => repository.getHealthToday(), EMPTY_HEALTH);
   const { data: meals, reload: reloadMeals } = useAsync(() => repository.listMeals(), []);
 
@@ -187,7 +188,7 @@ export default function HealthScreen() {
             </View>
           </View>
           <View style={[S.pBg, { backgroundColor: c.b1, marginTop: 12 }]}>
-            <View style={[S.pFill, { width: `${calPct}%`, backgroundColor: c.accent }]} />
+            <View style={[S.pFill, { width: `${calPct}%`, backgroundColor: accent }]} />
           </View>
           <View style={[S.macros, { flexDirection: rowDir }]}>
             <Macro label={t('health.protein')} val={`${totals.p}g`} c={c} />
@@ -203,12 +204,12 @@ export default function HealthScreen() {
       node: (
         <View style={[S.metricRow, { flexDirection: rowDir }]}>
           <Pressable onPress={addWater} onLongPress={() => { haptics.select(); setSheet('water'); }} style={{ flex: 1 }}>
-            <View style={[MS.metric, { backgroundColor: c.bg1, borderColor: c.accent + '44' }]}>
-              <Ionicons name="water-outline" size={18} color={c.accent} />
+            <View style={[MS.metric, { backgroundColor: c.bg1, borderColor: accent + '44' }]}>
+              <Ionicons name="water-outline" size={18} color={accent} />
               <Text style={{ color: c.t1, fontWeight: '800', fontSize: 15 }}>{fmtWater(waterNow)}</Text>
               <View style={{ flexDirection: rowDir, alignItems: 'center', gap: 3 }}>
-                <Ionicons name="add" size={10} color={c.accent} />
-                <Text style={{ color: c.accent, fontSize: 10, fontWeight: '700' }}>250ml</Text>
+                <Ionicons name="add" size={10} color={accent} />
+                <Text style={{ color: accent, fontSize: 10, fontWeight: '700' }}>250ml</Text>
               </View>
             </View>
           </Pressable>
@@ -286,7 +287,7 @@ export default function HealthScreen() {
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
       <Header
-        title={t('sections.health')}
+        title={prefs.icon ? `${prefs.icon} ${t('sections.health')}` : t('sections.health')}
         right={[{ icon: 'options-outline', onPress: () => { haptics.select(); setCustomize(true); }, color: c.t2 }]}
       />
       <ScrollView contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: 110 }}>
@@ -368,6 +369,8 @@ export default function HealthScreen() {
           visible={customize}
           section="health"
           title={t('customize.health_title')}
+          iconEnabled
+          accentEnabled
           goalFields={[
             { key: 'calorieTarget', label: t('health.goal_calories'), suffix: 'kcal' },
             { key: 'waterTargetMl', label: t('health.goal_water'), suffix: 'ml' },

@@ -33,7 +33,9 @@ export type Collection =
   | 'wellbeing_activities'
   | 'wellbeing_logs'
   | 'wellbeing_rules'
-  | 'focus_sessions';
+  | 'focus_sessions'
+  | 'areas'
+  | 'projects';
 
 export interface BaseRow {
   id: string;
@@ -186,6 +188,7 @@ const ALL_COLLECTIONS: Collection[] = [
   'exams', 'goals', 'learning_items', 'flashcards', 'meals', 'health_metrics', 'workouts',
   'events', 'memory_nodes', 'memory_edges', 'insights',
   'wellbeing_activities', 'wellbeing_logs', 'wellbeing_rules', 'focus_sessions',
+  'areas', 'projects',
 ];
 
 /** A full snapshot of the user's data (for the real "Export data" setting). */

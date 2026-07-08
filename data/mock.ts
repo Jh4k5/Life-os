@@ -127,6 +127,11 @@ export interface TaskData {
   project: string | null;
   done: boolean;
   subtasks: SubTask[];
+  // Per-object customization (optional — defaults handled at the UI layer).
+  icon?: string; // emoji
+  color?: string; // curated hex
+  areaId?: string | null;
+  projectId?: string | null;
 }
 
 export const mockTasks: TaskData[] = [];
@@ -143,6 +148,8 @@ export interface JournalEntry {
   tags: string[];
   areaId: string | null;
   projectId: string | null;
+  icon?: string; // emoji
+  color?: string; // curated hex
 }
 
 export const mockJournals: JournalEntry[] = [];

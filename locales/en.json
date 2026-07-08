@@ -737,6 +737,23 @@
     "visible_cards": "Visible cards",
     "health_title": "Customize Health",
     "exercise_title": "Customize Exercise",
-    "wellbeing_title": "Customize Wellbeing"
+    "wellbeing_title": "Customize Wellbeing",
+    "icon": "Icon",
+    "accent": "Accent",
+    "default_view": "Default view",
+    "habits_title": "Customize Habits",
+    "tasks_title": "Customize Tasks",
+    "journal_title": "Customize Journal",
+    "study_title": "Customize Study",
+    "learning_title": "Customize Learning",
+    "areas_title": "Customize Areas",
+    "focus_title": "Customize Focus",
+    "schedule_title": "Customize Schedule",
+    "color": "Color",
+    "area": "Area",
+    "project": "Project",
+    "none": "None",
+    "edit_object": "Edit",
+    "schedule_label": "Schedule"
   }
 }

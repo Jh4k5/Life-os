@@ -737,6 +737,23 @@
     "visible_cards": "Cartes visibles",
     "health_title": "Personnaliser la santé",
     "exercise_title": "Personnaliser l'exercice",
-    "wellbeing_title": "Personnaliser le bien-être"
+    "wellbeing_title": "Personnaliser le bien-être",
+    "icon": "Icône",
+    "accent": "Accent",
+    "default_view": "Vue par défaut",
+    "habits_title": "Personnaliser les habitudes",
+    "tasks_title": "Personnaliser les tâches",
+    "journal_title": "Personnaliser le journal",
+    "study_title": "Personnaliser les études",
+    "learning_title": "Personnaliser l’apprentissage",
+    "areas_title": "Personnaliser les domaines",
+    "focus_title": "Personnaliser le focus",
+    "schedule_title": "Personnaliser l’agenda",
+    "color": "Couleur",
+    "area": "Domaine",
+    "project": "Projet",
+    "none": "Aucun",
+    "edit_object": "Modifier",
+    "schedule_label": "Planification"
   }
 }

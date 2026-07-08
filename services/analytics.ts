@@ -14,7 +14,8 @@ export type AnalyticsDomain =
   | 'health'
   | 'focus'
   | 'wellbeing'
-  | 'goals';
+  | 'goals'
+  | 'areas';
 
 export const analytics = {
   log(domain: AnalyticsDomain, name: string, value?: number, meta?: Record<string, unknown>) {

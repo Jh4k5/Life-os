@@ -44,6 +44,8 @@ export interface Goal {
   progress: number;
   done: boolean;
   targetDate: string | null;
+  icon: string;
+  color: string;
 }
 
 export interface FocusSessionRow {
@@ -57,6 +59,62 @@ export interface FocusSessionRow {
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 const dayISO = (offset: number) => new Date(Date.now() - offset * 86_400_000).toISOString().slice(0, 10);
+
+/** Shape a persisted project row into the embedded AreaProject type. */
+function mapProjectRow(p: any): Area['projects'][number] {
+  return {
+    id: p.id,
+    name: p.name ?? '',
+    emoji: p.emoji ?? '📁',
+    color: p.color ?? '#7C6FFF',
+    due: p.due ?? '',
+    status: (p.status as 'active' | 'completed' | 'paused') ?? 'active',
+    progress: Number(p.progress ?? 0),
+    goals: Array.isArray(p.goals) ? p.goals : [],
+    tasks: Array.isArray(p.tasks) ? p.tasks : [],
+    journals: Array.isArray(p.journals) ? p.journals : [],
+  };
+}
+
+/** Shape a persisted area row + its projects into the Area type. */
+function mapAreaRow(r: any, projects: any[]): Area {
+  return {
+    id: r.id,
+    name: r.name ?? '',
+    emoji: r.emoji ?? '🗺',
+    color: r.color ?? '#7C6FFF',
+    description: r.description ?? '',
+    projects: projects.filter((p) => p.area_id === r.id).map(mapProjectRow),
+  };
+}
+
+/**
+ * Materialize SEED_AREAS into the real `areas` / `projects` collections the
+ * first time the user writes, so editing a starter area doesn't erase the rest.
+ * No-op once the store already holds any area.
+ */
+async function ensureAreasSeeded(): Promise<void> {
+  const existing = await db.list('areas');
+  if (existing.length > 0) return;
+  for (const a of SEED_AREAS) {
+    await db.insert('areas', { id: a.id, name: a.name, emoji: a.emoji, color: a.color, description: a.description });
+    for (const p of a.projects) {
+      await db.insert('projects', {
+        id: p.id,
+        area_id: a.id,
+        name: p.name,
+        emoji: p.emoji,
+        color: p.color,
+        due: p.due,
+        status: p.status,
+        progress: p.progress,
+        goals: p.goals,
+        tasks: p.tasks,
+        journals: p.journals,
+      });
+    }
+  }
+}
 
 /** Best-effort proactive reminders for time-bound items (device only). */
 function scheduleReminders(items: DetectedItem[]) {
@@ -222,21 +280,45 @@ export const repository = {
         pinned: !!r.pinned,
         tags: r.tags ?? [],
         areaId: r.area_id ?? null,
-        projectId: null,
+        projectId: r.project_id ?? null,
+        icon: r.icon ?? '',
+        color: r.color ?? '',
       };
     });
   },
 
-  async addJournal(entry: { title: string; content: string; mood: string; tags: string[]; pinned: boolean }): Promise<string | null> {
+  async addJournal(entry: { title: string; content: string; mood: string; tags: string[]; pinned: boolean; areaId?: string | null; projectId?: string | null; icon?: string; color?: string }): Promise<string | null> {
     const row = await db.insert('journal_entries', {
       title: entry.title || entry.content.slice(0, 40),
       content: entry.content,
       mood: entry.mood,
       tags: entry.tags,
       pinned: entry.pinned,
+      area_id: entry.areaId ?? null,
+      project_id: entry.projectId ?? null,
+      icon: entry.icon ?? '',
+      color: entry.color ?? '',
     });
     analytics.log('capture', 'journal_saved', entry.content.length);
     return row.id;
+  },
+
+  async updateJournal(
+    id: string,
+    patch: Partial<{ title: string; content: string; mood: string; tags: string[]; pinned: boolean; areaId: string | null; projectId: string | null; icon: string; color: string }>,
+  ): Promise<void> {
+    const data: Record<string, unknown> = {};
+    if (patch.title !== undefined) data.title = patch.title;
+    if (patch.content !== undefined) data.content = patch.content;
+    if (patch.mood !== undefined) data.mood = patch.mood;
+    if (patch.tags !== undefined) data.tags = patch.tags;
+    if (patch.pinned !== undefined) data.pinned = patch.pinned;
+    if (patch.areaId !== undefined) data.area_id = patch.areaId;
+    if (patch.projectId !== undefined) data.project_id = patch.projectId;
+    if (patch.icon !== undefined) data.icon = patch.icon;
+    if (patch.color !== undefined) data.color = patch.color;
+    await db.update('journal_entries', id, data);
+    analytics.log('capture', 'journal_updated');
   },
 
   // ── Tasks ──
@@ -252,20 +334,58 @@ export const repository = {
       project: r.project ?? null,
       done: !!r.done,
       subtasks: r.subtasks ?? [],
+      icon: r.icon ?? '',
+      color: r.color ?? '',
+      areaId: r.area_id ?? null,
+      projectId: r.project_id ?? null,
     }));
   },
 
-  async addTask(task: { title: string; priority?: string; energy?: string; due?: string | null; areaId?: string | null }): Promise<string> {
+  async addTask(task: { title: string; priority?: string; energy?: string; due?: string | null; areaId?: string | null; projectId?: string | null; icon?: string; color?: string }): Promise<string> {
     const row = await db.insert('tasks', {
       title: task.title,
       priority: task.priority ?? 'medium',
       energy: task.energy ?? 'medium',
       due: task.due ?? null,
       area_id: task.areaId ?? null,
+      project_id: task.projectId ?? null,
+      icon: task.icon ?? '',
+      color: task.color ?? '',
       done: false,
     });
     analytics.log('tasks', 'task_added');
     return row.id;
+  },
+
+  /**
+   * Patch a task. `due` accepts a plain date ('YYYY-MM-DD') OR a date+time
+   * ('YYYY-MM-DD HH:MM' / ISO) — the field is stored verbatim so both a due
+   * date and a due time round-trip. Another scope depends on this.
+   */
+  async updateTask(
+    id: string,
+    patch: Partial<{
+      title: string;
+      priority: string;
+      energy: string;
+      due: string | null;
+      areaId: string | null;
+      projectId: string | null;
+      icon: string;
+      color: string;
+    }>,
+  ): Promise<void> {
+    const data: Record<string, unknown> = {};
+    if (patch.title !== undefined) data.title = patch.title;
+    if (patch.priority !== undefined) data.priority = patch.priority;
+    if (patch.energy !== undefined) data.energy = patch.energy;
+    if (patch.due !== undefined) data.due = patch.due;
+    if (patch.areaId !== undefined) data.area_id = patch.areaId;
+    if (patch.projectId !== undefined) data.project_id = patch.projectId;
+    if (patch.icon !== undefined) data.icon = patch.icon;
+    if (patch.color !== undefined) data.color = patch.color;
+    await db.update('tasks', id, data);
+    analytics.log('tasks', 'task_updated');
   },
 
   async toggleTask(id: string, done: boolean): Promise<void> {
@@ -492,16 +612,20 @@ export const repository = {
       progress: Number(r.progress ?? 0),
       done: !!r.done,
       targetDate: r.target_date ?? null,
+      icon: r.icon ?? '',
+      color: r.color ?? '',
     }));
   },
 
-  async addGoal(goal: { title: string; detail?: string; areaId?: string | null; projectId?: string | null; targetDate?: string | null }): Promise<string> {
+  async addGoal(goal: { title: string; detail?: string; areaId?: string | null; projectId?: string | null; targetDate?: string | null; icon?: string; color?: string }): Promise<string> {
     const row = await db.insert('goals', {
       title: goal.title,
       detail: goal.detail ?? '',
       area_id: goal.areaId ?? null,
       project_id: goal.projectId ?? null,
       target_date: goal.targetDate ?? null,
+      icon: goal.icon ?? '',
+      color: goal.color ?? '',
       progress: 0,
       done: false,
     });
@@ -509,8 +633,18 @@ export const repository = {
     return row.id;
   },
 
-  async updateGoal(id: string, patch: Partial<{ progress: number; done: boolean; title: string; detail: string }>): Promise<void> {
-    await db.update('goals', id, patch);
+  async updateGoal(id: string, patch: Partial<{ progress: number; done: boolean; title: string; detail: string; targetDate: string | null; areaId: string | null; projectId: string | null; icon: string; color: string }>): Promise<void> {
+    const data: Record<string, unknown> = {};
+    if (patch.progress !== undefined) data.progress = patch.progress;
+    if (patch.done !== undefined) data.done = patch.done;
+    if (patch.title !== undefined) data.title = patch.title;
+    if (patch.detail !== undefined) data.detail = patch.detail;
+    if (patch.targetDate !== undefined) data.target_date = patch.targetDate;
+    if (patch.areaId !== undefined) data.area_id = patch.areaId;
+    if (patch.projectId !== undefined) data.project_id = patch.projectId;
+    if (patch.icon !== undefined) data.icon = patch.icon;
+    if (patch.color !== undefined) data.color = patch.color;
+    await db.update('goals', id, data);
   },
 
   async deleteGoal(id: string): Promise<void> {
@@ -797,16 +931,80 @@ export const repository = {
     analytics.log('wellbeing', 'rule_deleted');
   },
 
-  // ── Areas / Projects (starter content) ──
-  // Areas ship as read-only starter structure (SEED_AREAS in data/mock). They
-  // are not user-editable/persisted yet, so this is the single read seam every
-  // Areas screen goes through — no screen imports the seed directly.
+  // ── Areas / Projects (real, persisted) ──
+  // SEED_AREAS are the first-run starter structure. The moment the user makes
+  // any write (add/edit an area or project) the seed is materialized into the
+  // real `areas` / `projects` collections so nothing is lost, and every area
+  // becomes fully editable. Reads prefer the persisted store; they only fall
+  // back to the seed while the store is still empty.
   async listAreas(): Promise<Area[]> {
-    return SEED_AREAS as Area[];
+    const rows = await db.list('areas');
+    if (rows.length === 0) return SEED_AREAS as Area[];
+    const projects = await db.list('projects');
+    return (rows as any[]).map((r) => mapAreaRow(r, projects as any[]));
   },
 
   async getArea(id: string): Promise<Area | null> {
-    return (SEED_AREAS as Area[]).find((a) => a.id === id) ?? null;
+    const rows = await db.list('areas');
+    if (rows.length === 0) return (SEED_AREAS as Area[]).find((a) => a.id === id) ?? null;
+    const row = (rows as any[]).find((r) => r.id === id);
+    if (!row) return null;
+    const projects = await db.list('projects');
+    return mapAreaRow(row, projects as any[]);
+  },
+
+  async addArea(area: { name: string; emoji?: string; color?: string; description?: string }): Promise<string> {
+    await ensureAreasSeeded();
+    const row = await db.insert('areas', {
+      name: area.name,
+      emoji: area.emoji ?? '🗺',
+      color: area.color ?? '#7C6FFF',
+      description: area.description ?? '',
+    });
+    analytics.log('areas', 'area_added');
+    return row.id;
+  },
+
+  async updateArea(id: string, patch: Partial<{ name: string; emoji: string; color: string; description: string }>): Promise<void> {
+    await ensureAreasSeeded();
+    const data: Record<string, unknown> = {};
+    if (patch.name !== undefined) data.name = patch.name;
+    if (patch.emoji !== undefined) data.emoji = patch.emoji;
+    if (patch.color !== undefined) data.color = patch.color;
+    if (patch.description !== undefined) data.description = patch.description;
+    await db.update('areas', id, data);
+    analytics.log('areas', 'area_updated');
+  },
+
+  async addProject(areaId: string, project: { name: string; emoji?: string; color?: string; status?: string; due?: string | null }): Promise<string> {
+    await ensureAreasSeeded();
+    const row = await db.insert('projects', {
+      area_id: areaId,
+      name: project.name,
+      emoji: project.emoji ?? '📁',
+      color: project.color ?? '#7C6FFF',
+      status: project.status ?? 'active',
+      due: project.due ?? '',
+      progress: 0,
+      goals: [],
+      tasks: [],
+      journals: [],
+    });
+    analytics.log('areas', 'project_added');
+    return row.id;
+  },
+
+  async updateProject(id: string, patch: Partial<{ name: string; emoji: string; color: string; status: string; due: string | null; progress: number }>): Promise<void> {
+    await ensureAreasSeeded();
+    const data: Record<string, unknown> = {};
+    if (patch.name !== undefined) data.name = patch.name;
+    if (patch.emoji !== undefined) data.emoji = patch.emoji;
+    if (patch.color !== undefined) data.color = patch.color;
+    if (patch.status !== undefined) data.status = patch.status;
+    if (patch.due !== undefined) data.due = patch.due;
+    if (patch.progress !== undefined) data.progress = patch.progress;
+    await db.update('projects', id, data);
+    analytics.log('areas', 'project_updated');
   },
 
   // ── Focus sessions (real, persisted) ──

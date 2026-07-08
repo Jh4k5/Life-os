@@ -1,6 +1,6 @@
 // app/(tabs)/more/areas/[id]/index.tsx
-import React from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, Pressable, StyleSheet, Modal, TextInput } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -8,19 +8,45 @@ import { useTranslation } from 'react-i18next';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { Header } from '@/components/layout/Header';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { EmojiPicker } from '@/components/ui/EmojiPicker';
+import { ColorPicker } from '@/components/ui/ColorPicker';
 import { repository } from '@/services/repository';
 import { useAsync } from '@/hooks/useAsync';
+import { feedback } from '@/services/feedback';
 
 export default function AreaDetailScreen() {
   const { c } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: areas } = useAsync(() => repository.listAreas(), []);
+  const { data: areas, reload } = useAsync(() => repository.listAreas(), []);
   const { data: allHabits } = useAsync(() => repository.listHabits(), []);
   const area = areas.find((a) => a.id === id);
 
   const linkedHabits = allHabits.filter((h) => h.areaId === id);
+
+  // Inline edit sheet (name / icon / color / description) → repository.updateArea.
+  const [editing, setEditing] = useState(false);
+  const [eName, setEName] = useState('');
+  const [eDesc, setEDesc] = useState('');
+  const [eEmoji, setEEmoji] = useState('🗺');
+  const [eColor, setEColor] = useState('#7C6FFF');
+  const openEdit = () => {
+    if (!area) return;
+    setEName(area.name);
+    setEDesc(area.description ?? '');
+    setEEmoji(area.emoji);
+    setEColor(area.color);
+    feedback.select();
+    setEditing(true);
+  };
+  const saveEdit = async () => {
+    if (!area || !eName.trim()) return;
+    await repository.updateArea(area.id, { name: eName.trim(), emoji: eEmoji, color: eColor, description: eDesc.trim() });
+    feedback.success();
+    setEditing(false);
+    reload();
+  };
 
   if (!area) {
     return (
@@ -38,6 +64,7 @@ export default function AreaDetailScreen() {
         subtitle={area.description}
         accent={area.color}
         right={[
+          { icon: 'create-outline', onPress: openEdit, color: c.t2 },
           { icon: 'add', onPress: () => router.push(`/(tabs)/more/areas/${area.id}/new-project`), color: c.accent },
         ]}
       />
@@ -118,6 +145,53 @@ export default function AreaDetailScreen() {
           </>
         )}
       </ScrollView>
+
+      {/* Edit Area sheet */}
+      <Modal visible={editing} transparent animationType="slide" onRequestClose={() => setEditing(false)}>
+        <Pressable style={S.backdrop} onPress={() => setEditing(false)} />
+        <View style={[S.sheet, { backgroundColor: c.bg1, borderColor: c.b1 }]}>
+          <View style={[S.grab, { backgroundColor: c.b2 }]} />
+          <Text style={{ color: c.t1, fontSize: 18, fontWeight: '800', marginBottom: 14 }}>
+            {t('customize.edit_object')}
+          </Text>
+          <ScrollView keyboardShouldPersistTaps="handled" style={{ maxHeight: 460 }}>
+            <View style={[S.preview, { backgroundColor: eColor + '22', borderColor: eColor }]}>
+              <Text style={{ fontSize: 34 }}>{eEmoji}</Text>
+            </View>
+            <View style={{ marginTop: 12 }}>
+              <EmojiPicker value={eEmoji} onChange={setEEmoji} color={eColor} />
+            </View>
+            <Text style={[S.fLabel, { color: c.t3 }]}>{t('customize.color')}</Text>
+            <ColorPicker value={eColor} onChange={setEColor} />
+            <Text style={[S.fLabel, { color: c.t3 }]}>{t('areas.new')}</Text>
+            <TextInput
+              value={eName}
+              onChangeText={setEName}
+              placeholder={t('areas.name_ph')}
+              placeholderTextColor={c.t4}
+              style={[S.input, { backgroundColor: c.bg3, borderColor: c.b1, color: c.t1 }]}
+            />
+            <Text style={[S.fLabel, { color: c.t3 }]}>{t('common.optional')}</Text>
+            <TextInput
+              value={eDesc}
+              onChangeText={setEDesc}
+              placeholder={t('areas.desc_ph')}
+              placeholderTextColor={c.t4}
+              multiline
+              style={[S.input, { backgroundColor: c.bg3, borderColor: c.b1, color: c.t1, height: 76, textAlignVertical: 'top' }]}
+            />
+          </ScrollView>
+          <Pressable
+            onPress={saveEdit}
+            style={[S.saveBtn, { backgroundColor: eName.trim() ? c.accent : c.bg3 }]}
+            disabled={!eName.trim()}
+          >
+            <Text style={{ color: eName.trim() ? '#FFF' : c.t3, fontWeight: '800', fontSize: 16 }}>
+              {t('common.save')}
+            </Text>
+          </Pressable>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -137,4 +211,11 @@ const S = StyleSheet.create({
   pBg: { height: 6, borderRadius: 3, overflow: 'hidden' },
   pFill: { height: 6, borderRadius: 3 },
   habitRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10 },
+  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' },
+  sheet: { position: 'absolute', left: 0, right: 0, bottom: 0, borderTopLeftRadius: 24, borderTopRightRadius: 24, borderWidth: 1, padding: 20, paddingBottom: 34 },
+  grab: { width: 40, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 14 },
+  preview: { width: 72, height: 72, borderRadius: 18, borderWidth: 2, alignItems: 'center', justifyContent: 'center', alignSelf: 'center' },
+  fLabel: { fontSize: 13, fontWeight: '700', marginTop: 16, marginBottom: 8 },
+  input: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, height: 48 },
+  saveBtn: { marginTop: 14, height: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
 });

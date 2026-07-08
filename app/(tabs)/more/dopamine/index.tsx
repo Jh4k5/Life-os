@@ -31,7 +31,7 @@ import { intelligence, type Insight } from '@/services/intelligence';
 import { useAsync } from '@/hooks/useAsync';
 import { feedback } from '@/services/feedback';
 import { notifications } from '@/services/notifications';
-import { useSectionPrefs, nextAtTime } from '@/store/sectionPrefs';
+import { useSectionPref, nextAtTime } from '@/store/sectionPrefs';
 import type { WellbeingRule } from '@/services/types';
 
 const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
@@ -42,7 +42,7 @@ export default function WellbeingScreen() {
   const { c } = useTheme();
   const { t } = useTranslation();
   const { rowDir, textAlign } = useRTL();
-  const prefs = useSectionPrefs((s) => s.wellbeing);
+  const prefs = useSectionPref('wellbeing');
   const { data: activities, reload } = useAsync(() => repository.listWellbeing(), [] as Activity[], 'wellbeing');
   const { data: week, reload: reloadWeek } = useAsync(() => repository.wellbeingWeek(), [0, 0, 0, 0, 0, 0, 0], 'wellbeingWeek');
   const { data: rules, reload: reloadRules } = useAsync(() => repository.listWellbeingRules(), [] as WellbeingRule[], 'wellbeingRules');
@@ -140,7 +140,7 @@ export default function WellbeingScreen() {
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
       <Header
-        title={t('sections.wellbeing')}
+        title={prefs.icon ? `${prefs.icon} ${t('sections.wellbeing')}` : t('sections.wellbeing')}
         accent={c.accent}
         right={[
           { icon: 'options-outline', onPress: () => { feedback.tap(); setCustomize(true); }, color: c.t2 },
@@ -307,6 +307,7 @@ export default function WellbeingScreen() {
           visible={customize}
           section="wellbeing"
           title={t('customize.wellbeing_title')}
+          iconEnabled
           goalFields={[{ key: 'screenTimeTargetMin', label: t('dopamine.screen_time_goal'), suffix: t('dopamine.min_unit') }]}
           unitToggles={[]}
           cards={[

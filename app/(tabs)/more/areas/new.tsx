@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { EmojiPicker } from '@/components/ui/EmojiPicker';
 import { ColorPicker } from '@/components/ui/ColorPicker';
+import { repository } from '@/services/repository';
+import { feedback } from '@/services/feedback';
 
 export default function NewAreaScreen() {
   const { c } = useTheme();
@@ -18,6 +20,16 @@ export default function NewAreaScreen() {
   const [desc, setDesc] = useState('');
   const [emoji, setEmoji] = useState('🗺');
   const [color, setColor] = useState('#00D084');
+  const [saving, setSaving] = useState(false);
+
+  // Real persistence: create the Area through the repository, then go back.
+  const create = async () => {
+    if (!name.trim() || saving) return;
+    setSaving(true);
+    await repository.addArea({ name: name.trim(), emoji, color, description: desc.trim() });
+    feedback.success();
+    router.back();
+  };
 
   const Sec = ({ title, children }: { title: string; children: React.ReactNode }) => (
     <View style={{ gap: 10 }}>
@@ -31,7 +43,7 @@ export default function NewAreaScreen() {
       <Header
         title={t('areas.new')}
         accent={c.areas}
-        right={[{ icon: 'checkmark', onPress: () => router.back(), color: c.accent }]}
+        right={[{ icon: 'checkmark', onPress: create, color: c.accent }]}
       />
       <ScrollView contentContainerStyle={{ padding: 16, gap: 22, paddingBottom: 120 }}>
         <Sec title={t('areas.icon')}>
@@ -54,7 +66,7 @@ export default function NewAreaScreen() {
           multiline
         />
 
-        <Button label={t('common.create')} onPress={() => router.back()} color={color} />
+        <Button label={t('common.create')} onPress={create} color={color} />
       </ScrollView>
     </View>
   );

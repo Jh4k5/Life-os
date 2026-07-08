@@ -737,6 +737,23 @@
     "visible_cards": "Görünür kartlar",
     "health_title": "Sağlığı özelleştir",
     "exercise_title": "Egzersizi özelleştir",
-    "wellbeing_title": "İyi oluşu özelleştir"
+    "wellbeing_title": "İyi oluşu özelleştir",
+    "icon": "Simge",
+    "accent": "Vurgu",
+    "default_view": "Varsayılan görünüm",
+    "habits_title": "Alışkanlıkları özelleştir",
+    "tasks_title": "Görevleri özelleştir",
+    "journal_title": "Günlüğü özelleştir",
+    "study_title": "Çalışmayı özelleştir",
+    "learning_title": "Öğrenmeyi özelleştir",
+    "areas_title": "Alanları özelleştir",
+    "focus_title": "Odağı özelleştir",
+    "schedule_title": "Takvimi özelleştir",
+    "color": "Renk",
+    "area": "Alan",
+    "project": "Proje",
+    "none": "Yok",
+    "edit_object": "Düzenle",
+    "schedule_label": "Zamanlama"
   }
 }

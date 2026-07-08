@@ -737,6 +737,23 @@
     "visible_cards": "البطاقات الظاهرة",
     "health_title": "تخصيص الصحة",
     "exercise_title": "تخصيص التمارين",
-    "wellbeing_title": "تخصيص الراحة الرقمية"
+    "wellbeing_title": "تخصيص الراحة الرقمية",
+    "icon": "الأيقونة",
+    "accent": "اللون المميز",
+    "default_view": "العرض الافتراضي",
+    "habits_title": "تخصيص العادات",
+    "tasks_title": "تخصيص المهام",
+    "journal_title": "تخصيص اليوميات",
+    "study_title": "تخصيص الدراسة",
+    "learning_title": "تخصيص التعلّم",
+    "areas_title": "تخصيص المجالات",
+    "focus_title": "تخصيص التركيز",
+    "schedule_title": "تخصيص الجدول",
+    "color": "اللون",
+    "area": "المجال",
+    "project": "المشروع",
+    "none": "بدون",
+    "edit_object": "تعديل",
+    "schedule_label": "الجدولة"
   }
 }

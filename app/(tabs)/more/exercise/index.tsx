@@ -28,7 +28,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { SectionCustomizeSheet } from '@/components/ui/SectionCustomizeSheet';
 import { repository } from '@/services/repository';
 import { useAsync } from '@/hooks/useAsync';
-import { useSectionPrefs } from '@/store/sectionPrefs';
+import { useSectionPref } from '@/store/sectionPrefs';
 import { feedback } from '@/services/feedback';
 import type { Workout, WorkoutExercise } from '@/services/types';
 
@@ -37,7 +37,7 @@ export default function ExerciseScreen() {
   const { t } = useTranslation();
   const { rowDir, textAlign } = useRTL();
   const haptics = useHaptics();
-  const prefs = useSectionPrefs((s) => s.exercise);
+  const prefs = useSectionPref('exercise');
   const [mode, setMode] = useState<'all' | 'gym' | 'home'>('all');
   const { data: workouts, reload } = useAsync(() => repository.listWorkouts(), [], 'workouts');
   const [editor, setEditor] = useState<null | 'new' | Workout>(null);
@@ -89,7 +89,7 @@ export default function ExerciseScreen() {
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
       <Header
-        title={t('sections.exercise')}
+        title={prefs.icon ? `${prefs.icon} ${t('sections.exercise')}` : t('sections.exercise')}
         right={[
           { icon: 'options-outline', onPress: () => { haptics.select(); setCustomize(true); }, color: c.t2 },
           { icon: 'add', onPress: () => { haptics.select(); setEditor('new'); }, color: c.accent },
@@ -162,6 +162,7 @@ export default function ExerciseScreen() {
           visible={customize}
           section="exercise"
           title={t('customize.exercise_title')}
+          iconEnabled
           goalFields={[]}
           unitToggles={[]}
           cards={[

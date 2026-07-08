@@ -30,6 +30,7 @@ export const TaskCard = ({ task, onToggle, onPress }: Props) => {
   const { c } = useTheme();
   const { t } = useTranslation();
   const dotColor = c[PRIORITY_DOT[task.priority] as keyof typeof c] as string;
+  const accent = task.color || c.tasks; // personal per-task color (falls back to section)
   const subCount = task.subtasks.length;
   const subDone = task.subtasks.filter((s) => s.done).length;
 
@@ -43,8 +44,8 @@ export const TaskCard = ({ task, onToggle, onPress }: Props) => {
           style={[
             S.check,
             {
-              backgroundColor: task.done ? c.tasks : 'transparent',
-              borderColor: task.done ? c.tasks : c.b2,
+              backgroundColor: task.done ? accent : 'transparent',
+              borderColor: task.done ? accent : c.b2,
             },
           ]}
         >
@@ -62,7 +63,7 @@ export const TaskCard = ({ task, onToggle, onPress }: Props) => {
           }}
           numberOfLines={2}
         >
-          {task.title}
+          {task.icon ? `${task.icon} ` : ''}{task.title}
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <Text style={{ fontSize: 12, color: c.t3 }}>{ENERGY_ICON[task.energy]}</Text>

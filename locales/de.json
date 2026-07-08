@@ -737,6 +737,23 @@
     "visible_cards": "Sichtbare Karten",
     "health_title": "Gesundheit anpassen",
     "exercise_title": "Training anpassen",
-    "wellbeing_title": "Wohlbefinden anpassen"
+    "wellbeing_title": "Wohlbefinden anpassen",
+    "icon": "Symbol",
+    "accent": "Akzent",
+    "default_view": "Standardansicht",
+    "habits_title": "Gewohnheiten anpassen",
+    "tasks_title": "Aufgaben anpassen",
+    "journal_title": "Journal anpassen",
+    "study_title": "Lernen anpassen",
+    "learning_title": "Weiterbildung anpassen",
+    "areas_title": "Bereiche anpassen",
+    "focus_title": "Fokus anpassen",
+    "schedule_title": "Zeitplan anpassen",
+    "color": "Farbe",
+    "area": "Bereich",
+    "project": "Projekt",
+    "none": "Keine",
+    "edit_object": "Bearbeiten",
+    "schedule_label": "Zeitplan"
   }
 }

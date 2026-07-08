@@ -9,21 +9,48 @@ import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { HabitCard, type HabitData } from '@/components/ui/HabitCard';
 import { TabPill } from '@/components/ui/TabPill';
+import { SectionCustomizeSheet } from '@/components/ui/SectionCustomizeSheet';
 import { repository } from '@/services/repository';
 import { useAsync } from '@/hooks/useAsync';
 import { feedback } from '@/services/feedback';
+import { useSectionPref } from '@/store/sectionPrefs';
 
 type HView = 'today' | 'all' | 'stats';
+
+// The habit views double as the section's toggleable "modules": the user can
+// hide any tab and choose which one opens by default (persisted, applies live).
+const TAB_META: { key: HView; emojiKey: string; labelKey: string }[] = [
+  { key: 'today', emojiKey: '☀', labelKey: 'habits.today' },
+  { key: 'all', emojiKey: '💎', labelKey: 'habits.all' },
+  { key: 'stats', emojiKey: '📊', labelKey: 'habits.stats' },
+];
 
 export default function HabitsScreen() {
   const { c } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const prefs = useSectionPref('habits');
+  const accent = prefs.accent || c.habits;
   // Source of truth is the repository; a local overlay makes toggles instant.
   // useAsync reloads on focus, so returning to the screen reflects real state.
   const { data: loaded } = useAsync(() => repository.listHabits(), [] as HabitData[], 'habits');
   const [habits, setHabits] = useState<HabitData[]>([]);
-  const [view, setView] = useState<HView>('today');
+  const [customize, setCustomize] = useState(false);
+
+  // Visible tabs = all minus the ones the user hid.
+  const visibleTabs = TAB_META.filter((tb) => !prefs.hiddenCards.includes(tb.key));
+  const tabs = visibleTabs.length > 0 ? visibleTabs : TAB_META;
+  const defaultView: HView =
+    (prefs.defaultView && tabs.some((tb) => tb.key === prefs.defaultView)
+      ? (prefs.defaultView as HView)
+      : tabs[0].key);
+  const [view, setView] = useState<HView>(defaultView);
+
+  // Keep the active tab valid when visibility/default prefs change.
+  React.useEffect(() => {
+    if (!tabs.some((tb) => tb.key === view)) setView(defaultView);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefs.hiddenCards, prefs.defaultView]);
 
   React.useEffect(() => {
     setHabits(loaded);
@@ -46,28 +73,25 @@ export default function HabitsScreen() {
   return (
     <View style={[S.screen, { backgroundColor: c.bg0 }]}>
       <Header
-        title={t('sections.habits')}
-        accent={c.habits}
+        title={prefs.icon ? `${prefs.icon} ${t('sections.habits')}` : t('sections.habits')}
+        accent={c.accent}
         right={[
+          { icon: 'options-outline', onPress: () => { feedback.select(); setCustomize(true); }, color: c.t2 },
           { icon: 'copy-outline', onPress: () => router.push('/(tabs)/more/habits/templates'), color: c.t2 },
           { icon: 'add', onPress: () => router.push('/(tabs)/more/habits/new'), color: c.accent },
         ]}
       />
       <TabPill
-        tabs={[
-          { key: 'today', label: t('habits.today'), emoji: '☀' },
-          { key: 'all', label: t('habits.all'), emoji: '💎' },
-          { key: 'stats', label: t('habits.stats'), emoji: '📊' },
-        ]}
+        tabs={tabs.map((tb) => ({ key: tb.key, label: t(tb.labelKey), emoji: tb.emojiKey }))}
         active={view}
         onChange={(v) => setView(v as HView)}
-        accent={c.habits}
+        accent={accent}
       />
       <ScrollView contentContainerStyle={{ padding: 16, gap: 10, paddingBottom: 110 }}>
         {/* ── Today ── */}
         {view === 'today' && (
           <>
-            <SmartCard accent={c.habits}>
+            <SmartCard accent={accent}>
               <View style={S.progRow}>
                 <View>
                   <Text style={[S.progLabel, { color: c.t2 }]}>{t('habits.today')}</Text>
@@ -75,22 +99,22 @@ export default function HabitsScreen() {
                     {done} / {total} {t('sections.habits')}
                   </Text>
                 </View>
-                <View style={[S.ringWrap, { borderColor: c.habits + '40' }]}>
+                <View style={[S.ringWrap, { borderColor: accent + '40' }]}>
                   <View
                     style={[
                       S.ringFill,
                       {
-                        backgroundColor: c.habits + '22',
-                        borderColor: c.habits,
-                        borderTopColor: prog < 0.25 ? c.habits + '22' : c.habits,
+                        backgroundColor: accent + '22',
+                        borderColor: accent,
+                        borderTopColor: prog < 0.25 ? accent + '22' : accent,
                       },
                     ]}
                   />
-                  <Text style={[S.ringPct, { color: c.habits }]}>{Math.round(prog * 100)}%</Text>
+                  <Text style={[S.ringPct, { color: accent }]}>{Math.round(prog * 100)}%</Text>
                 </View>
               </View>
               <View style={[S.pBg, { backgroundColor: c.b1 }]}>
-                <View style={[S.pFill, { width: `${prog * 100}%`, backgroundColor: c.habits }]} />
+                <View style={[S.pFill, { width: `${prog * 100}%`, backgroundColor: accent }]} />
               </View>
               {done === total && total > 0 && (
                 <Text style={[S.allDone, { color: c.green }]}>{t('habits.all_done')}</Text>
@@ -198,7 +222,7 @@ export default function HabitsScreen() {
                 {
                   val: `${Math.round((habits.reduce((s, h) => s + (h.done ? 1 : 0), 0) / Math.max(habits.length, 1)) * 100)}%`,
                   label: t('habits.rate_today'),
-                  color: c.habits,
+                  color: accent,
                 },
                 { val: `${habits.length ? Math.max(...habits.map((h) => h.streak)) : 0}`, label: t('habits.top_streak'), color: '#F59E0B' },
                 { val: `${habits.length ? Math.max(...habits.map((h) => h.bestStreak)) : 0}`, label: t('habits.best_streak_ever'), color: c.green },
@@ -235,6 +259,22 @@ export default function HabitsScreen() {
           </>
         )}
       </ScrollView>
+
+      {customize && (
+        <SectionCustomizeSheet
+          visible={customize}
+          section="habits"
+          title={t('customize.habits_title')}
+          iconEnabled
+          accentEnabled
+          goalFields={[]}
+          unitToggles={[]}
+          cards={TAB_META.map((tb) => ({ key: tb.key, label: t(tb.labelKey) }))}
+          viewOptions={TAB_META.map((tb) => ({ key: tb.key, label: t(tb.labelKey) }))}
+          reminderTitle={t('sections.habits')}
+          onClose={() => setCustomize(false)}
+        />
+      )}
     </View>
   );
 }

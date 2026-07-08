@@ -7,9 +7,11 @@ import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/layout/Header';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { EmojiPicker } from '@/components/ui/EmojiPicker';
 import { type TaskData } from '@/data/mock';
 import { repository } from '@/services/repository';
 import { useAsync } from '@/hooks/useAsync';
+import { areaAccents } from '@/tokens/colors';
 
 const PRIORITIES: { key: TaskData['priority']; dot: string; tkey: string }[] = [
   { key: 'none', dot: '⚪', tkey: 'tasks.p_none' },
@@ -26,7 +28,7 @@ const ENERGIES: { key: TaskData['energy']; tkey: string }[] = [
 ];
 
 export default function NewTaskScreen() {
-  const { c } = useTheme();
+  const { c, isDark } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
   const [title, setTitle] = useState('');
@@ -35,13 +37,16 @@ export default function NewTaskScreen() {
   const [energy, setEnergy] = useState<TaskData['energy']>('medium');
   const [due, setDue] = useState('');
   const [areaId, setAreaId] = useState<string | null>(null);
+  const [icon, setIcon] = useState('');
+  const [color, setColor] = useState('');
   const [saving, setSaving] = useState(false);
   const { data: areas } = useAsync(() => repository.listAreas(), []);
+  const colorChoices = areaAccents.map((a) => (isDark ? a.dark : a.light));
 
   const save = async () => {
     if (!title.trim() || saving) return;
     setSaving(true);
-    await repository.addTask({ title: title.trim(), priority, energy, due: due.trim() || null, areaId });
+    await repository.addTask({ title: title.trim(), priority, energy, due: due.trim() || null, areaId, icon, color });
     router.back();
   };
 
@@ -55,6 +60,26 @@ export default function NewTaskScreen() {
       <ScrollView contentContainerStyle={{ padding: 16, gap: 20, paddingBottom: 120 }}>
         <Input label={t('tasks.title_ph')} value={title} onChangeText={setTitle} />
         <Input label={t('tasks.desc_ph')} value={desc} onChangeText={setDesc} multiline />
+
+        {/* Icon & color (personal, lives on the task's own card) */}
+        <Text style={[S.label, { color: c.t2 }]}>{t('customize.icon')}</Text>
+        <EmojiPicker value={icon} onChange={setIcon} color={color || c.tasks} />
+        <Text style={[S.label, { color: c.t2 }]}>{t('customize.color')}</Text>
+        <View style={{ flexDirection: 'row', gap: 12, flexWrap: 'wrap' }}>
+          <Pressable
+            onPress={() => setColor('')}
+            style={[S.colorDot, { backgroundColor: c.bg3, borderColor: color === '' ? c.t1 : c.b2, borderWidth: color === '' ? 2 : 1, alignItems: 'center', justifyContent: 'center' }]}
+          >
+            <Text style={{ color: c.t3, fontSize: 11 }}>{t('customize.none')}</Text>
+          </Pressable>
+          {colorChoices.map((hex) => (
+            <Pressable
+              key={hex}
+              onPress={() => setColor(hex)}
+              style={[S.colorDot, { backgroundColor: hex, borderWidth: color === hex ? 3 : 0, borderColor: '#FFF' }]}
+            />
+          ))}
+        </View>
 
         {/* Priority */}
         <Text style={[S.label, { color: c.t2 }]}>{t('tasks.priority')}</Text>
@@ -129,4 +154,5 @@ const S = StyleSheet.create({
   pBtn: { flex: 1, paddingVertical: 10, borderRadius: 12, alignItems: 'center' },
   eBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, borderWidth: 1, alignItems: 'center' },
   areaChip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1 },
+  colorDot: { width: 40, height: 40, borderRadius: 20 },
 });
