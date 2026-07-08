@@ -7,12 +7,16 @@
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "icon": "./assets/icon.png",
     "splash": {
-      "backgroundColor": "#06080F"
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A1128"
     },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.liveos.app",
+      "icon": "./assets/icon.png",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "Life OS يحتاج للميكروفون لتسجيل ملاحظاتك",
         "NSSpeechRecognitionUsageDescription": "Life OS يستخدم التعرف على الكلام",
@@ -22,6 +26,10 @@
     },
     "android": {
       "package": "com.liveos.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0A1128"
+      },
       "permissions": ["android.permission.RECORD_AUDIO", "android.permission.CAMERA"]
     },
     "web": {
