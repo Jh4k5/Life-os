@@ -215,6 +215,80 @@ function routeFor(type: EntityType, id: string): string {
   }
 }
 
+/** Collection + label field for each command-addressable entity type. */
+function entityColl(type: EntityType): { coll: db.Collection; labelKey: string } | null {
+  switch (type) {
+    case 'task':
+    case 'checklist':
+      return { coll: 'tasks', labelKey: 'title' };
+    case 'habit':
+      return { coll: 'habits', labelKey: 'name' };
+    case 'appointment':
+    case 'reminder':
+      return { coll: 'events', labelKey: 'title' };
+    default:
+      return null;
+  }
+}
+
+// Normalize Arabic (strip diacritics, unify alef/taa-marbuta) for fuzzy matching.
+const normalizeAr = (s: string) =>
+  s.toLowerCase().replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/[ًٌٍَُِّْـ]/g, '').replace(/\s+/g, ' ').trim();
+
+/** Fuzzy-match an existing entity by title within its collection (word overlap). */
+async function resolveEntity(type: EntityType, title: string): Promise<{ coll: db.Collection; id: string } | null> {
+  const ec = entityColl(type);
+  if (!ec) return null;
+  const rows = (await db.list(ec.coll)) as any[];
+  if (rows.length === 0) return null;
+  const target = normalizeAr(title);
+  const tWords = target.split(' ').filter((w) => w.length > 1);
+  let best: { id: string; score: number } | null = null;
+  for (const r of rows) {
+    const label = normalizeAr(String(r[ec.labelKey] ?? ''));
+    if (!label) continue;
+    let score = 0;
+    if (label.includes(target) || target.includes(label)) score = 100;
+    else for (const w of tWords) if (label.includes(w)) score += 1;
+    if (score > 0 && (!best || score > best.score)) best = { id: r.id, score };
+  }
+  return best ? { coll: ec.coll, id: best.id } : null;
+}
+
+/**
+ * Apply one detected item honoring its `op`: create (insert), update (patch an
+ * existing row matched by title — currently rescheduling to a new date/time),
+ * or delete (remove the matched row). Returns the affected id + a deep-link.
+ */
+async function applyDetected(
+  item: DetectedItem,
+): Promise<{ id: string; route: string; op: 'create' | 'update' | 'delete' } | null> {
+  const op = item.op ?? 'create';
+  if (op === 'create') {
+    const id = await insertDetected(item);
+    return id ? { id, route: routeFor(item.type, id), op } : null;
+  }
+  const found = await resolveEntity(item.type, item.title);
+  if (!found) return null;
+  if (op === 'delete') {
+    await db.remove(found.coll, found.id);
+    analytics.log('capture', 'command_delete', 1, { type: item.type });
+    return { id: found.id, route: routeFor(item.type, found.id), op };
+  }
+  // update — reschedule when the command carried a new date/time.
+  const patch: Record<string, unknown> = {};
+  if (item.detail) {
+    const when = resolveDate(item.detail);
+    if (when) {
+      if (found.coll === 'events') patch.starts_at = when.toISOString();
+      else if (found.coll === 'tasks') patch.due = when.toISOString();
+    }
+  }
+  if (Object.keys(patch).length > 0) await db.update(found.coll, found.id, patch);
+  analytics.log('capture', 'command_update', 1, { type: item.type });
+  return { id: found.id, route: routeFor(item.type, found.id), op };
+}
+
 /**
  * Grow the local memory graph. Each item becomes a node that carries its REAL
  * entity id + type in `data`, so the Connected strip can deep-link straight to
@@ -262,9 +336,10 @@ export const repository = {
     const entries: { item: DetectedItem; entityId: string | null }[] = [];
     for (const item of accepted) {
       try {
-        const id = await insertDetected(item);
-        if (id) saved += 1;
-        entries.push({ item, entityId: id });
+        const res = await applyDetected(item);
+        if (res) saved += 1;
+        // Only fresh creations grow the memory graph (not update/delete).
+        if (res && res.op === 'create') entries.push({ item, entityId: res.id });
       } catch (e: any) {
         errors.push(`${item.title}: ${e?.message ?? 'error'}`);
       }
@@ -280,13 +355,13 @@ export const repository = {
    * a deep-link route into the section that now holds it. Powers the Review
    * card's per-item "Add" → "Added ✓ · View". Nothing else is written.
    */
-  async persistOne(item: DetectedItem): Promise<{ id: string; route: string } | null> {
-    scheduleReminders([item]);
-    const id = await insertDetected(item);
-    if (!id) return null;
-    await persistMemory([{ item, entityId: id }]);
+  async persistOne(item: DetectedItem): Promise<{ id: string; route: string; op: 'create' | 'update' | 'delete' } | null> {
+    if ((item.op ?? 'create') === 'create') scheduleReminders([item]);
+    const res = await applyDetected(item);
+    if (!res) return null;
+    if (res.op === 'create') await persistMemory([{ item, entityId: res.id }]);
     analytics.log('capture', 'applied', 1);
-    return { id, route: routeFor(item.type, id) };
+    return res;
   },
 
   // ── Journal ──

@@ -16,6 +16,7 @@ import {
   LayoutAnimation,
   Platform,
   UIManager,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -88,8 +89,8 @@ export const ReviewLayer = ({ items, onAction, onApplyAll, onAdd, onEdit, onRecl
     onAction(id, 'ignore');
   };
 
-  const add = async (item: DetectedItem) => {
-    if (!onAdd || addingId) return;
+  const runAdd = async (item: DetectedItem) => {
+    if (!onAdd) return;
     setEditId(null);
     setAddingId(item.id);
     try {
@@ -98,6 +99,23 @@ export const ReviewLayer = ({ items, onAction, onApplyAll, onAdd, onEdit, onRecl
       animate();
       setAddingId(null);
     }
+  };
+
+  // Destructive commands always ask for an explicit extra confirmation.
+  const add = async (item: DetectedItem) => {
+    if (!onAdd || addingId) return;
+    if (item.op === 'delete') {
+      Alert.alert(
+        t('review.confirm_delete_title'),
+        t('review.confirm_delete_body', { title: item.title }),
+        [
+          { text: t('review.cancel'), style: 'cancel' },
+          { text: t('review.delete'), style: 'destructive', onPress: () => runAdd(item) },
+        ],
+      );
+      return;
+    }
+    runAdd(item);
   };
 
   const openEdit = (item: DetectedItem) => {
@@ -229,9 +247,11 @@ export const ReviewLayer = ({ items, onAction, onApplyAll, onAdd, onEdit, onRecl
                   <>
                     <View style={[S.addedPill, { flexDirection: rowDir }]}>
                       <Ionicons name="checkmark-circle" size={15} color={c.accent} />
-                      <Text style={{ color: c.accent, fontSize: 12, fontWeight: '700' }}>{t('review.added')}</Text>
+                      <Text style={{ color: c.accent, fontSize: 12, fontWeight: '700' }}>
+                        {item.op === 'delete' ? t('review.deleted') : item.op === 'update' ? t('review.updated') : t('review.added')}
+                      </Text>
                     </View>
-                    {item.route ? (
+                    {item.route && item.op !== 'delete' ? (
                       <Pressable onPress={() => view(item)} style={[S.viewBtn, { borderColor: c.b2, flexDirection: rowDir }]}>
                         <Text style={{ color: c.t1, fontSize: 12, fontWeight: '700' }}>{t('review.view')}</Text>
                         <Ionicons name={rowDir === 'row-reverse' ? 'chevron-back' : 'chevron-forward'} size={13} color={c.t2} />
@@ -243,14 +263,16 @@ export const ReviewLayer = ({ items, onAction, onApplyAll, onAdd, onEdit, onRecl
                     <Pressable
                       onPress={() => add(item)}
                       disabled={adding}
-                      style={[S.addBtn, { backgroundColor: c.accent, flexDirection: rowDir }]}
+                      style={[S.addBtn, { backgroundColor: item.op === 'delete' ? c.red : c.accent, flexDirection: rowDir }]}
                     >
                       {adding ? (
                         <ActivityIndicator size="small" color="#FFF" />
                       ) : (
                         <>
-                          <Ionicons name="add" size={16} color="#FFF" />
-                          <Text style={{ color: '#FFF', fontSize: 13, fontWeight: '700' }}>{t('review.add')}</Text>
+                          <Ionicons name={item.op === 'delete' ? 'trash-outline' : item.op === 'update' ? 'sync-outline' : 'add'} size={16} color="#FFF" />
+                          <Text style={{ color: '#FFF', fontSize: 13, fontWeight: '700' }}>
+                            {item.op === 'delete' ? t('review.delete') : item.op === 'update' ? t('review.apply_change') : t('review.add')}
+                          </Text>
                         </>
                       )}
                     </Pressable>

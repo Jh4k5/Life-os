@@ -630,7 +630,14 @@
     "type_suggestion": "اقتراح",
     "type_meal": "وجبة",
     "type_workout": "تمرين",
-    "type_study_session": "جلسة مذاكرة"
+    "type_study_session": "جلسة مذاكرة",
+    "delete": "حذف",
+    "deleted": "تم الحذف",
+    "updated": "تم التحديث",
+    "apply_change": "طبّق التغيير",
+    "cancel": "إلغاء",
+    "confirm_delete_title": "حذف هذا؟",
+    "confirm_delete_body": "سيُحذف «{{title}}» نهائياً."
   },
   "modes": {
     "normal_label": "عادي",

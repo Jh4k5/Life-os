@@ -22,6 +22,12 @@ export type ReviewAction = 'accept' | 'edit' | 'merge' | 'ignore' | 'delete';
 export interface DetectedItem {
   id: string;
   type: EntityType;
+  /**
+   * The operation to perform on Apply. 'create' (default) inserts a new entity;
+   * 'update' patches an existing one matched by title; 'delete' removes it
+   * (always behind an explicit confirmation in the Review layer).
+   */
+  op?: 'create' | 'update' | 'delete';
   /** Short, human title in the user's own language/dialect. */
   title: string;
   /** Optional secondary line (time, date, detail). */

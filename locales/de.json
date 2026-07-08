@@ -630,7 +630,14 @@
     "type_suggestion": "Vorschlag",
     "type_meal": "Mahlzeit",
     "type_workout": "Training",
-    "type_study_session": "Lernsession"
+    "type_study_session": "Lernsession",
+    "delete": "Löschen",
+    "deleted": "Gelöscht",
+    "updated": "Aktualisiert",
+    "apply_change": "Änderung anwenden",
+    "cancel": "Abbrechen",
+    "confirm_delete_title": "Dies löschen?",
+    "confirm_delete_body": "„{{title}}“ wird endgültig entfernt."
   },
   "modes": {
     "normal_label": "Normal",

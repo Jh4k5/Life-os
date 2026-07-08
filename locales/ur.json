@@ -630,7 +630,14 @@
     "type_suggestion": "تجویز",
     "type_meal": "کھانا",
     "type_workout": "ورزش",
-    "type_study_session": "مطالعہ سیشن"
+    "type_study_session": "مطالعہ سیشن",
+    "delete": "حذف کریں",
+    "deleted": "حذف ہو گیا",
+    "updated": "اپ ڈیٹ ہو گیا",
+    "apply_change": "تبدیلی لاگو کریں",
+    "cancel": "منسوخ کریں",
+    "confirm_delete_title": "یہ حذف کریں؟",
+    "confirm_delete_body": "”{{title}}“ مستقل طور پر حذف ہو جائے گا۔"
   },
   "modes": {
     "normal_label": "عام",

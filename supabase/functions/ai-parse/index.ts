@@ -21,9 +21,10 @@ const corsHeaders = {
 };
 
 const SYSTEM = `أنت مساعد ينظّم يوم المستخدم. حلّل النص واستخرج عناصر مكتوبة الأنواع.
+النص قد يكون التقاطاً (أنشئ عناصر جديدة) أو أمراً: إضافة (أضف/add) أو تعديل (غيّر/عدّل/change) أو حذف (احذف/امسح/delete) عنصر موجود.
 أعد JSON فقط بالشكل:
-{"reply":"رد دافئ بجملة واحدة","items":[{"type":"journal|appointment|task|checklist|exam|habit|reminder|note|suggestion|meal|workout|study_session","title":"عنوان قصير بلهجة المستخدم","detail":"وقت/تفصيل اختياري","confidence":0.0}]}
-احفظ النص الكامل دائماً كعنصر journal. لا تكتب أي شيء خارج JSON.`;
+{"reply":"رد دافئ بجملة واحدة","items":[{"op":"create|update|delete","type":"journal|appointment|task|checklist|exam|habit|reminder|note|suggestion|meal|workout|study_session","title":"عنوان قصير بلهجة المستخدم — لعمليات التعديل/الحذف ضع اسم العنصر المستهدف","detail":"وقت/تفصيل أو القيمة الجديدة","confidence":0.0}]}
+"op" اختياري وقيمته الافتراضية "create". احفظ النص الكامل دائماً كعنصر journal بعملية create. لا تكتب أي شيء خارج JSON.`;
 
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });

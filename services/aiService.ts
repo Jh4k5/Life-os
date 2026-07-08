@@ -75,6 +75,71 @@ function detectType(line: string): { type: EntityType; confidence: number } {
   return { type: 'note', confidence: 0.5 };
 }
 
+// ── Imperative command grammar (AR + EN) ──
+// The parser also understands COMMANDS, not just captures: add / change /
+// delete / build. A command carries an `op` and (for update/delete) the target
+// entity's title, so the Review layer can update or remove a real row.
+const CMD_DELETE = ['احذف', 'احذفي', 'امسح', 'امسحي', 'الغِ', 'ألغِ', 'الغ', 'شيل', 'delete', 'remove', 'cancel'];
+const CMD_UPDATE = ['غيّر', 'غير', 'عدّل', 'عدل', 'أجّل', 'اجل', 'أجل', 'حدّث', 'حدث', 'انقل', 'change', 'update', 'move', 'reschedule', 'rename', 'edit', 'postpone'];
+const CMD_ADD = ['أضف', 'اضف', 'ضيف', 'أضيفي', 'add', 'create'];
+const CMD_BUILD = ['ابنِ', 'ابن', 'ابني', 'سوي', 'اعمل', 'جهّز', 'build', 'plan', 'generate'];
+
+const ENTITY_NOUNS: { words: string[]; type: EntityType }[] = [
+  { words: ['عادة', 'عاده', 'habit'], type: 'habit' },
+  { words: ['مهمة', 'مهمه', 'task', 'todo', 'to-do'], type: 'task' },
+  { words: ['موعد', 'اجتماع', 'appointment', 'meeting'], type: 'appointment' },
+  { words: ['تذكير', 'reminder'], type: 'reminder' },
+];
+
+export interface Command {
+  op: 'update' | 'delete';
+  type: EntityType;
+  target: string; // fuzzy title of the entity to act on
+  detail?: string; // new value (e.g. a new time) for updates
+}
+
+/** Detect an update/delete command. Returns null for plain captures/creates. */
+function detectCommand(line: string): Command | null {
+  const s = line.trim();
+  const low = s.toLowerCase();
+  let op: 'update' | 'delete' | null = null;
+  if (has(low, CMD_DELETE)) op = 'delete';
+  else if (has(low, CMD_UPDATE)) op = 'update';
+  if (!op) return null;
+
+  let type: EntityType | null = null;
+  for (const en of ENTITY_NOUNS) if (has(low, en.words)) { type = en.type; break; }
+  if (!type) return null;
+
+  // Strip the verb + entity noun + filler to isolate the target (and any new
+  // value after a connector like "إلى" / "to").
+  let rest = ` ${s} `;
+  for (const w of [...CMD_DELETE, ...CMD_UPDATE]) rest = rest.split(w).join(' ');
+  for (const en of ENTITY_NOUNS) for (const w of en.words) rest = rest.split(w).join(' ');
+  rest = rest.replace(/\s(لي|the|my)\s/gi, ' ').replace(/\s+/g, ' ').trim();
+
+  let target = rest;
+  let detail: string | undefined;
+  const conn = rest.split(/\s(?:إلى|الى|to|=>|->)\s/);
+  if (conn.length >= 2) {
+    target = conn[0].trim();
+    detail = conn.slice(1).join(' ').trim();
+  }
+  target = target.trim();
+  if (!target) return null;
+  return { op, type, target, detail };
+}
+
+/** Detect a "build me a study plan for … exam" command. */
+function detectStudyBuild(text: string): { exam: string; when?: string } | null {
+  const low = text.toLowerCase();
+  const isBuild = has(low, CMD_BUILD);
+  const isStudy = has(low, ['مذاكرة', 'مراجعة', 'دراسة', 'جدول', 'study', 'revision', 'schedule']);
+  const isExam = has(low, ['امتحان', 'اختبار', 'exam', 'quiz', 'test', 'midterm', 'final']);
+  if (!(isBuild && (isStudy || isExam))) return null;
+  return { exam: text.trim(), when: extractTime(text) };
+}
+
 function extractTime(line: string): string | undefined {
   const m = line.match(TIME_RE);
   if (!m || !m[1]) return undefined;
@@ -106,6 +171,54 @@ const localAI: AIService = {
 
     const lines = segment(text);
     const items: DetectedItem[] = [];
+
+    // A "build me a study plan for … exam" request: propose an exam + spaced
+    // revision sessions (as calendar appointments → they get real reminders).
+    const build = detectStudyBuild(text);
+    if (build) {
+      const dayRef = build.when ?? text.trim();
+      items.push({ id: uid(), type: 'exam', title: build.exam.slice(0, 46), source: text.trim(), confidence: 0.85, status: 'pending' });
+      for (let i = 1; i <= 3; i++) {
+        items.push({
+          id: uid(),
+          type: 'appointment',
+          title: `مراجعة — جلسة ${i}`,
+          detail: dayRef,
+          source: dayRef,
+          confidence: 0.8,
+          status: 'pending',
+        });
+      }
+      return {
+        reply: 'جهّزت خطة مذاكرة مقترحة — راجِعها وطبّقها لتنزل الجلسات في جدولك مع تذكيرات.',
+        items,
+      };
+    }
+
+    // Commands (update/delete an existing entity) short-circuit plain capture.
+    const commandItems: DetectedItem[] = [];
+    for (const line of lines) {
+      const cmd = detectCommand(line);
+      if (cmd) {
+        commandItems.push({
+          id: uid(),
+          type: cmd.type,
+          op: cmd.op,
+          title: cmd.target,
+          detail: cmd.detail,
+          source: line,
+          confidence: 0.8,
+          status: 'pending',
+        });
+      }
+    }
+    if (commandItems.length > 0) {
+      const verbAr = commandItems[0].op === 'delete' ? 'أحذف' : 'أحدّث';
+      return {
+        reply: `تمام — راجِع الأمر وأنا ${verbAr} ما طلبت.`,
+        items: commandItems,
+      };
+    }
 
     // Always keep the raw dump as a verbatim journal entry.
     if (text.trim().length > 0) {

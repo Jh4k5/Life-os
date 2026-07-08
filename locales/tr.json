@@ -630,7 +630,14 @@
     "type_suggestion": "Öneri",
     "type_meal": "Öğün",
     "type_workout": "Antrenman",
-    "type_study_session": "Çalışma oturumu"
+    "type_study_session": "Çalışma oturumu",
+    "delete": "Sil",
+    "deleted": "Silindi",
+    "updated": "Güncellendi",
+    "apply_change": "Değişikliği uygula",
+    "cancel": "İptal",
+    "confirm_delete_title": "Bu silinsin mi?",
+    "confirm_delete_body": "“{{title}}” kalıcı olarak silinecek."
   },
   "modes": {
     "normal_label": "Normal",

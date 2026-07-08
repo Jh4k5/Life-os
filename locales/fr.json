@@ -630,7 +630,14 @@
     "type_suggestion": "Suggestion",
     "type_meal": "Repas",
     "type_workout": "Séance",
-    "type_study_session": "Session d’étude"
+    "type_study_session": "Session d’étude",
+    "delete": "Supprimer",
+    "deleted": "Supprimé",
+    "updated": "Mis à jour",
+    "apply_change": "Appliquer",
+    "cancel": "Annuler",
+    "confirm_delete_title": "Supprimer ceci ?",
+    "confirm_delete_body": "« {{title}} » sera supprimé définitivement."
   },
   "modes": {
     "normal_label": "Normal",

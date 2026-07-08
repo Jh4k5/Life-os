@@ -630,7 +630,14 @@
     "type_suggestion": "Suggestion",
     "type_meal": "Meal",
     "type_workout": "Workout",
-    "type_study_session": "Study session"
+    "type_study_session": "Study session",
+    "delete": "Delete",
+    "deleted": "Deleted",
+    "updated": "Updated",
+    "apply_change": "Apply change",
+    "cancel": "Cancel",
+    "confirm_delete_title": "Delete this?",
+    "confirm_delete_body": "“{{title}}” will be permanently removed."
   },
   "modes": {
     "normal_label": "Normal",
