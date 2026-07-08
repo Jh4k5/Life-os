@@ -118,7 +118,7 @@ export default function JournalScreen() {
               <SmartCard accent={item.pinned ? c.accent : undefined}>
                 <View style={[S.entryHeader, { flexDirection: rowDir }]}>
                   <Text style={[S.entryTitle, { color: c.t1, textAlign }]} numberOfLines={1}>
-                    {item.title}
+                    {item.icon ? `${item.icon} ` : ''}{item.title}
                   </Text>
                   <View style={[S.moodChip, { flexDirection: rowDir, backgroundColor: c.bg3 }]}>
                     <View style={[S.moodDot, { backgroundColor: moodColor(item.mood, c) }]} />

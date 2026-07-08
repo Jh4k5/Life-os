@@ -10,8 +10,10 @@ import { useTranslation } from 'react-i18next';
 import { useRTL } from '@/hooks/useRTL';
 import { Header } from '@/components/layout/Header';
 import { ViewToggle } from '@/components/ui/ViewToggle';
+import { EmojiPicker } from '@/components/ui/EmojiPicker';
 import { repository } from '@/services/repository';
 import { intelligence } from '@/services/intelligence';
+import { useAsync } from '@/hooks/useAsync';
 
 // Mood is data → semantic dot + label (same v3 language as the journal list).
 const MOODS = ['great', 'good', 'neutral', 'bad', 'awful'] as const;
@@ -31,6 +33,9 @@ export default function NewJournalScreen() {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [pinned, setPinned] = useState(false);
+  const [icon, setIcon] = useState('');
+  const [areaId, setAreaId] = useState<string | null>(null);
+  const { data: areas } = useAsync(() => repository.listAreas(), []);
 
   const templates = [
     { key: 'reflect', label: t('journal.tpl_reflect') },
@@ -55,7 +60,7 @@ export default function NewJournalScreen() {
       return;
     }
     setSaving(true);
-    const entryId = await repository.addJournal({ title: title.trim(), content: text, mood, tags, pinned });
+    const entryId = await repository.addJournal({ title: title.trim(), content: text, mood, tags, pinned, icon, areaId });
     // feed the Intelligence Engine (never blocks or breaks saving)
     intelligence.recordJournalSignals(entryId, text).catch(() => {});
     setSaving(false);
@@ -162,6 +167,31 @@ export default function NewJournalScreen() {
               {templates.map((tpl) => (
                 <Pressable key={tpl.key} style={[S.tplChip, { backgroundColor: c.bg2, borderColor: c.b1 }]}>
                   <Text style={{ color: c.t2, fontSize: 13 }}>{tpl.label}</Text>
+                </Pressable>
+              ))}
+            </View>
+
+            {/* Icon (personal, shown on the entry) */}
+            <Text style={[S.label, { color: c.t2 }]}>{t('customize.icon')}</Text>
+            <EmojiPicker value={icon} onChange={setIcon} color={c.accent} />
+
+            {/* Link area */}
+            <Text style={[S.label, { color: c.t2 }]}>{t('common.link_area')}</Text>
+            <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+              <Pressable
+                onPress={() => setAreaId(null)}
+                style={[S.tplChip, { backgroundColor: !areaId ? c.accentDim : c.bg2, borderColor: !areaId ? c.accent : c.b1 }]}
+              >
+                <Text style={{ color: !areaId ? c.accent : c.t2, fontSize: 13 }}>—</Text>
+              </Pressable>
+              {areas.map((area) => (
+                <Pressable
+                  key={area.id}
+                  onPress={() => setAreaId(area.id)}
+                  style={[S.tplChip, { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: areaId === area.id ? area.color + '20' : c.bg2, borderColor: areaId === area.id ? area.color : c.b1 }]}
+                >
+                  <Text style={{ fontSize: 13 }}>{area.emoji}</Text>
+                  <Text style={{ color: areaId === area.id ? area.color : c.t2, fontSize: 13 }}>{area.name}</Text>
                 </Pressable>
               ))}
             </View>
