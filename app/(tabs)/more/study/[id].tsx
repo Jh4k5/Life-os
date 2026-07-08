@@ -173,6 +173,10 @@ export default function CourseDetailScreen() {
                 <Text style={{ color: c.accent, fontWeight: '600', fontSize: 14 }}>{t('study.gen_plan')}</Text>
               </Pressable>
             )}
+            {/* This exam's living connections: course, revision sessions, mentions */}
+            <View style={{ marginTop: 12 }}>
+              <ConnectedLayer query={exam.name} domain="study" />
+            </View>
           </SmartCard>
           );
         })}

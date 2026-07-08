@@ -4,7 +4,8 @@
 // (repository.relatedMemory) and related insights from the Intelligence
 // Engine. Renders nothing when there is genuinely nothing — quiet, honest.
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +13,7 @@ import { useRTL } from '@/hooks/useRTL';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { repository, type MemoryHit } from '@/services/repository';
 import { intelligence, type Insight } from '@/services/intelligence';
+import { feedback } from '@/services/feedback';
 
 const TYPE_ICON: Record<string, keyof typeof Ionicons.glyphMap> = {
   task: 'checkmark-circle-outline',
@@ -41,6 +43,7 @@ export const ConnectedLayer = ({ query, domain }: Props) => {
   const { c } = useTheme();
   const { t } = useTranslation();
   const { rowDir, textAlign } = useRTL();
+  const router = useRouter();
   const [hits, setHits] = useState<MemoryHit[]>([]);
   const [related, setRelated] = useState<Insight[]>([]);
 
@@ -78,15 +81,21 @@ export const ConnectedLayer = ({ query, domain }: Props) => {
               </Text>
             </View>
           ))}
-          {hits.map((h) => (
-            <View key={h.id} style={[S.row, { flexDirection: rowDir }]}>
-              <Ionicons name={TYPE_ICON[h.type] ?? 'ellipse-outline'} size={15} color={c.t2} />
-              <Text style={{ flex: 1, color: c.t2, fontSize: 13, textAlign }} numberOfLines={1}>
-                {h.label}
-              </Text>
-              <Text style={{ color: c.t4, fontSize: 10 }}>{t(`memory.type_${h.type}`, { defaultValue: h.type })}</Text>
-            </View>
-          ))}
+          {hits.map((h) => {
+            const go = h.route
+              ? () => { feedback.tap(); router.push(h.route as never); }
+              : undefined;
+            return (
+              <Pressable key={h.id} onPress={go} disabled={!go} style={[S.row, { flexDirection: rowDir }]}>
+                <Ionicons name={TYPE_ICON[h.type] ?? 'ellipse-outline'} size={15} color={c.t2} />
+                <Text style={{ flex: 1, color: c.t2, fontSize: 13, textAlign }} numberOfLines={1}>
+                  {h.label}
+                </Text>
+                {go && <Ionicons name={rowDir === 'row-reverse' ? 'chevron-back' : 'chevron-forward'} size={13} color={c.t4} />}
+                <Text style={{ color: c.t4, fontSize: 10 }}>{t(`memory.type_${h.type}`, { defaultValue: h.type })}</Text>
+              </Pressable>
+            );
+          })}
         </View>
       </SmartCard>
     </View>

@@ -27,6 +27,7 @@ export interface MemoryHit {
   id: string;
   type: string;
   label: string;
+  route?: string; // deep-link to the real entity when known
 }
 
 export interface PersistResult {
@@ -214,17 +215,40 @@ function routeFor(type: EntityType, id: string): string {
   }
 }
 
-/** Grow the local memory graph: each item a node, chained relates_to. */
-async function persistMemory(items: DetectedItem[]): Promise<void> {
-  const linkable = items.filter((i) => i.type !== 'suggestion');
+/**
+ * Grow the local memory graph. Each item becomes a node that carries its REAL
+ * entity id + type in `data`, so the Connected strip can deep-link straight to
+ * the row. Besides the sequential `relates_to` chain we add typed, id-linked
+ * edges: a journal/note `mentions` its co-detected items, and an exam is
+ * `scheduled_for` any study session applied alongside it.
+ */
+async function persistMemory(entries: { item: DetectedItem; entityId: string | null }[]): Promise<void> {
+  const linkable = entries.filter((e) => e.item.type !== 'suggestion');
   if (linkable.length === 0) return;
-  const ids: string[] = [];
-  for (const i of linkable) {
-    const node = await db.insert('memory_nodes', { type: i.type, label: i.title, data: i.source ? { source: i.source } : null });
-    ids.push(node.id);
+  const nodes: { id: string; item: DetectedItem }[] = [];
+  for (const { item, entityId } of linkable) {
+    const node = await db.insert('memory_nodes', {
+      type: item.type,
+      label: item.title,
+      data: { ...(item.source ? { source: item.source } : {}), entityType: item.type, entityId: entityId ?? null },
+    });
+    nodes.push({ id: node.id, item });
   }
-  for (let k = 1; k < ids.length; k++) {
-    await db.insert('memory_edges', { from_node: ids[k - 1], to_node: ids[k], relation: 'relates_to' });
+  for (let k = 1; k < nodes.length; k++) {
+    await db.insert('memory_edges', { from_node: nodes[k - 1].id, to_node: nodes[k].id, relation: 'relates_to' });
+  }
+  for (const a of nodes) {
+    for (const b of nodes) {
+      if (a.id === b.id) continue;
+      const aJournal = a.item.type === 'journal' || a.item.type === 'note';
+      const bJournal = b.item.type === 'journal' || b.item.type === 'note';
+      if (aJournal && !bJournal) {
+        await db.insert('memory_edges', { from_node: a.id, to_node: b.id, relation: 'mentions' });
+      }
+      if (a.item.type === 'exam' && b.item.type === 'study_session') {
+        await db.insert('memory_edges', { from_node: a.id, to_node: b.id, relation: 'scheduled_for' });
+      }
+    }
   }
 }
 
@@ -235,15 +259,17 @@ export const repository = {
     scheduleReminders(accepted);
     let saved = 0;
     const errors: string[] = [];
+    const entries: { item: DetectedItem; entityId: string | null }[] = [];
     for (const item of accepted) {
       try {
         const id = await insertDetected(item);
         if (id) saved += 1;
+        entries.push({ item, entityId: id });
       } catch (e: any) {
         errors.push(`${item.title}: ${e?.message ?? 'error'}`);
       }
     }
-    await persistMemory(accepted);
+    await persistMemory(entries);
     analytics.log('capture', 'applied', saved);
     // demo:false — the write is real (local), regardless of network/account.
     return { saved, demo: false, errors };
@@ -258,7 +284,7 @@ export const repository = {
     scheduleReminders([item]);
     const id = await insertDetected(item);
     if (!id) return null;
-    await persistMemory([item]);
+    await persistMemory([{ item, entityId: id }]);
     analytics.log('capture', 'applied', 1);
     return { id, route: routeFor(item.type, id) };
   },
@@ -832,8 +858,13 @@ export const repository = {
       if (ids.has(e.from_node) && !ids.has(e.to_node)) nbrIds.add(e.to_node);
       if (ids.has(e.to_node) && !ids.has(e.from_node)) nbrIds.add(e.from_node);
     }
-    const hits: MemoryHit[] = direct.map((n) => ({ id: n.id, type: n.type, label: n.label }));
-    for (const n of nodes) if (nbrIds.has(n.id)) hits.push({ id: n.id, type: n.type, label: n.label });
+    const toHit = (n: any): MemoryHit => {
+      const eId = n.data?.entityId;
+      const eType = (n.data?.entityType ?? n.type) as EntityType;
+      return { id: n.id, type: n.type, label: n.label, route: eId ? routeFor(eType, eId) : undefined };
+    };
+    const hits: MemoryHit[] = direct.map(toHit);
+    for (const n of nodes) if (nbrIds.has(n.id)) hits.push(toHit(n));
     return hits.slice(0, limit);
   },
 

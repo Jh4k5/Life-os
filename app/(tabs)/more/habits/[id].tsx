@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/layout/Header';
 import { SmartCard } from '@/components/ui/SmartCard';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ConnectedLayer } from '@/components/ui/ConnectedLayer';
 import { repository } from '@/services/repository';
 import { useAsync } from '@/hooks/useAsync';
 
@@ -122,6 +123,9 @@ export default function HabitDetailScreen() {
             </Text>
           </SmartCard>
         )}
+
+        {/* Living connections from the memory graph */}
+        <ConnectedLayer query={habit.name} domain="habits" />
       </ScrollView>
     </View>
   );
