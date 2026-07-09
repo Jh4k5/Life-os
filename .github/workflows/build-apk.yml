@@ -47,8 +47,10 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Env for the bundle (public Supabase values)
-        run: cp .env.example .env
+      - name: Write real env for the bundle
+        run: |
+          echo "EXPO_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
+          echo "EXPO_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_PUBLISHABLE_KEY }}" >> .env
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund
