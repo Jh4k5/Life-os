@@ -49,7 +49,7 @@ jobs:
 
       - name: Write real env for the bundle
         run: |
-          echo "EXPO_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
+          echo "EXPO_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_PROJECT_URL }}" >> .env
           echo "EXPO_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_PUBLISHABLE_KEY }}" >> .env
 
       # Fail LOUDLY (not silently in demo mode) if the client Supabase secrets are
