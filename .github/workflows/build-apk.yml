@@ -52,6 +52,29 @@ jobs:
           echo "EXPO_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
           echo "EXPO_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_PUBLISHABLE_KEY }}" >> .env
 
+      # Fail LOUDLY (not silently in demo mode) if the client Supabase secrets are
+      # missing/misnamed. Prints only derived facts (host shape, key length) —
+      # never the secret values themselves.
+      - name: Verify Supabase client env is present
+        run: |
+          set -a; . ./.env; set +a
+          fail=0
+          case "$EXPO_PUBLIC_SUPABASE_URL" in
+            https://*.supabase.co) echo "URL ok (https, *.supabase.co)";;
+            "") echo "::error::EXPO_PUBLIC_SUPABASE_URL is EMPTY — set/rename the SUPABASE_URL Actions secret"; fail=1;;
+            *) echo "::error::EXPO_PUBLIC_SUPABASE_URL is not a https://*.supabase.co URL"; fail=1;;
+          esac
+          klen=${#EXPO_PUBLIC_SUPABASE_ANON_KEY}
+          if [ "$klen" -lt 20 ]; then
+            echo "::error::EXPO_PUBLIC_SUPABASE_ANON_KEY is missing/short (len=$klen) — set/rename the SUPABASE_PUBLISHABLE_KEY Actions secret"; fail=1
+          else
+            echo "anon key ok (length=$klen)"
+          fi
+          if [ "$fail" = "1" ]; then
+            echo "Refusing to build a DEMO-mode APK. Add the two secrets, then re-run."; exit 1
+          fi
+          echo "Supabase client env verified — this APK will run in LIVE mode."
+
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
